@@ -2,7 +2,6 @@ typedef struct {
     int dist_size;
     short max;
     int *left;
-    int *right;
 } Solution;
 
 Solution *solutionCreate(int *w, int wSize)
@@ -14,19 +13,17 @@ Solution *solutionCreate(int *w, int wSize)
         sum += w[i];
     solution->dist_size = sum;
     
-    int *left = malloc(sizeof(int) * wSize);
-    int *right = malloc(sizeof(int) * wSize);
+    int *left = malloc(sizeof(int) * (wSize + 1));
     solution->max = wSize;
     
     int bookmark = -1;
     for (int i = 0; i < wSize; i++) {
         left[i] = bookmark + 1;
-        right[i] = bookmark + w[i];
         bookmark += w[i];
     }
+    left[wSize] = bookmark + 1;
     
     solution->left = left;
-    solution->right = right;
     
     return solution;
 }
@@ -42,7 +39,7 @@ int solutionPickIndex(Solution *obj)
     while (l <= r) {
         int mid = l + (r - l) / 2;
         
-        if (target >= obj->left[mid] && target <= obj->right[mid])
+        if (target >= obj->left[mid] && target <= obj->left[mid + 1] - 1)
             return mid;
         
         if (target < obj->left[mid])
@@ -57,6 +54,5 @@ int solutionPickIndex(Solution *obj)
 void solutionFree(Solution *obj)
 {
     free(obj->left);
-    free(obj->right);
     free(obj);
 }
