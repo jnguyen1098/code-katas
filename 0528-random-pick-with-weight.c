@@ -1,45 +1,48 @@
 typedef struct {
     int dist_size;
     int max;
-    int left[10000];
-    int right[10000];
+    int *left;
+    int *right;
 } Solution;
-
-int inclrand(int M, int N) // inclusive-inclusive
-{
-    return M + rand() / (RAND_MAX / (N - M + 1) + 1);
-}
 
 Solution *solutionCreate(int *w, int wSize)
 {
-    Solution *solution;
-    if (!(solution = calloc(1, sizeof(Solution))))
-        return NULL;
+    Solution *solution = malloc(sizeof(Solution));
     
     int sum = 0;
     for (int i = 0; i < wSize; i++)
         sum += w[i];
     solution->dist_size = sum;
     
-
+    int *left = malloc(sizeof(int) * wSize);
+    int *right = malloc(sizeof(int) * wSize);
     solution->max = wSize;
     
     int bookmark = -1;
     for (int i = 0; i < wSize; i++) {
-        solution->left[i] = bookmark + 1;
-        solution->right[i] = bookmark + w[i];
+        left[i] = bookmark + 1;
+        right[i] = bookmark + w[i];
         bookmark += w[i];
     }
+    
+    solution->left = left;
+    solution->right = right;
     
     srand(time(NULL));
     return solution;
 }
 
-int search(int *left, int *right, int size, int target)
+int search(int *left, int *right, int l, int r, int target)
 {
-    for (int i = 0; i < size; i++) {
-        if (target >= left[i] && target <= right[i])
-            return i;
+    int index = (l + r) / 2;
+    if (target >= left[index] && target <= right[index]) {
+        return index;
+    }
+    else if (target < left[index]) {
+        return search(left, right, 0, index - 1, target);
+    }
+    else if (target > right[index]) {
+        return search(left, right, index + 1, r, target);
     }
     return -1;
 }
@@ -47,12 +50,13 @@ int search(int *left, int *right, int size, int target)
 int solutionPickIndex(Solution *obj)
 {
     if (!(obj->dist_size - 1)) return 0;
-    int start = inclrand(0, obj->dist_size - 1);
-    return search(obj->left, obj->right, obj->max, start);
+    return search(obj->left, obj->right, 0, obj->max - 1, rand() % obj->dist_size);
     return -1;
 }
 
 void solutionFree(Solution *obj)
 {
+    free(obj->left);
+    free(obj->right);
     free(obj);
 }
