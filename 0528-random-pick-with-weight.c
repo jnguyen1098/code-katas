@@ -1,6 +1,6 @@
 typedef struct {
     int dist_size;
-    int max;
+    short max;
     int *left;
     int *right;
 } Solution;
@@ -28,29 +28,29 @@ Solution *solutionCreate(int *w, int wSize)
     solution->left = left;
     solution->right = right;
     
-    srand(time(NULL));
     return solution;
-}
-
-int search(int *left, int *right, int l, int r, int target)
-{
-    int index = (l + r) / 2;
-    if (target >= left[index] && target <= right[index]) {
-        return index;
-    }
-    else if (target < left[index]) {
-        return search(left, right, 0, index - 1, target);
-    }
-    else if (target > right[index]) {
-        return search(left, right, index + 1, r, target);
-    }
-    return -1;
 }
 
 int solutionPickIndex(Solution *obj)
 {
-    if (!(obj->dist_size - 1)) return 0;
-    return search(obj->left, obj->right, 0, obj->max - 1, rand() % obj->dist_size);
+    if (obj->dist_size == 1) return 0;
+    
+    int l = 0;
+    int r = obj->max - 1;
+    int target = rand() % obj->dist_size;
+    
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+        
+        if (target >= obj->left[mid] && target <= obj->right[mid])
+            return mid;
+        
+        if (target < obj->left[mid])
+            r = mid - 1;
+        
+        else
+            l = mid + 1;
+    }
     return -1;
 }
 
