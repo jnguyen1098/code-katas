@@ -6,8 +6,10 @@
 // 32 = 10000
 // 31 = 01111
 
-// Notice how the ones between a power of two and its increment are mutually-exclusive.
+// Notice how the ones in a power of two and its increment are mutually-exclusive.
 // That means if we mask them using &, it should be return 0.
+
+// Of course, we also need to check if the number is positive.
 
 bool isPowerOfTwo(int n)
 {
