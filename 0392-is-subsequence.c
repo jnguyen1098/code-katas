@@ -1,6 +1,4 @@
 bool isSubsequence(char *s, char *t)
 {
-    for (; *t; s += *s == *t++)
-        ;
-    return !*s;
+    return (({for(;*t;s+=*s==*t++);!*s;}));
 }
