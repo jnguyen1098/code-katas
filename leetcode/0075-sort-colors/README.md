@@ -28,5 +28,6 @@ elements, we literally just count them.
 <b id="f1">1. </b> [^](#a1) A sort that involves comparing elements relative
 to each other, which is mathematically bounded to Θ(_n log n_). See
 [Wikpedia](https://en.wikipedia.org/wiki/Comparison_sort).
+
 <b id="f2">2. </b> [^](#a2) Also known as histogram sort; in both cases we
 deal with bins/"buckets" and distribute elements into them.
