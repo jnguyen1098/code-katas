@@ -8,9 +8,25 @@ We will use the integers `0`, `1`, and `2` to represent the color red, white,
    and blue, respectively.
 
 The interesting thing about this problem is that it doesn't necessarily
-require a typical comparison sort <sup id="a1">[\[1\]](#f1)</sup>like how some
-problems would like.
+require a typical comparison sort <sup id="a1">[\[1\]](#f1)</sup> like how some
+problems ask.
 
-<b id="f1">1. </b> [^](#a1) A sort that involves comparing elements relative to each other, which is
-mathematically bounded to Θ(_n log n_). See
-[Wikpedia](https://en.wikipedia.org/wiki/Comparison_sort)
+The `0`s, `1`s and `2`s in this particular array are indistinguishable from one
+another. As a result, the only value an element has in this array is whether
+it's a `0`, `1`, or `2`. This is in contrast to comparison-based algorithms
+where elements are compared using a key, but it doesn't imply that the elements
+are equal. But equality is not sameness.
+
+Using this idea, we can subvert how most sorting algorithms operate and instead
+use a particular instance of
+[bucket sort](https://en.wikipedia.org/wiki/Bucket_sort) known as
+"counting sort".<sup id="a2">[\[2\]](#2)</sup>, where instead of comparing
+elements, we literally just count them.
+
+## Notes
+
+<b id="f1">1. </b> [^](#a1) A sort that involves comparing elements relative
+to each other, which is mathematically bounded to Θ(_n log n_). See
+[Wikpedia](https://en.wikipedia.org/wiki/Comparison_sort).
+<b id="f2">2. </b> [^](#a2) Also known as histogram sort; in both cases we
+deal with bins/"buckets" and distribute elements into them.
