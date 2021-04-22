@@ -13,4 +13,4 @@ problems would like.
 
 <b id="f1">1</b> A sort that involves comparing elements relative to each other, which is
 mathematically bounded to Θ(_n log n_). See
-[Wikpedia](https://en.wikipedia.org/wiki/Comparison_sort) [\↩](#a1)
+[Wikpedia](https://en.wikipedia.org/wiki/Comparison_sort) [^](#a1)
