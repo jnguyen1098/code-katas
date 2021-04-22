@@ -11,5 +11,5 @@ The interesting thing about this problem is that it doesn't necessarily
 require a typical comparison sort[^1] like how some problems would like.
 
 [^1]: A sort that involves comparing elements relative to each other, which is
-mathematically bounded to Θ(_n log n_). See [Wikpedia]
-(https://en.wikipedia.org/wiki/Comparison_sort)
+mathematically bounded to Θ(_n log n_). See
+[Wikpedia](https://en.wikipedia.org/wiki/Comparison_sort)
