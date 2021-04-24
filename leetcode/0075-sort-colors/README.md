@@ -23,6 +23,25 @@ use a particular instance of
 "counting sort".<sup id="a2">[\[2\]](#2)</sup>, where instead of comparing
 elements, we literally just count them.
 
+## Algorithm
+
+1. Count the number of zeroes into `num_zeroes`
+
+2. Count the number of ones into `num_ones`
+
+3. Count the number of twos into `num_twos`
+
+4. Write `num_zeroes` zeroes into the array, starting at index `0`
+
+5. Write `num_ones` ones into the array, after the last `0`
+
+6. Write `num_twos` twos into the array, after the last `1`
+
+This algorithm runs in Θ(_n_) time, requiring one pass over the initial array,
+and one final pass to rewrite the elements of the array. This algorithm, like
+counting sort, only works because we can enumerate the entirety of an element's
+value in an indistinguishable way.
+
 ## Notes
 
 <b id="f1">1. </b> [^](#a1) A sort that involves comparing elements relative
