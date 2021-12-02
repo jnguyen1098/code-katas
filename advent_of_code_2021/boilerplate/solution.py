@@ -2,7 +2,10 @@
 
 from collections import deque
 
-fin = open("input", "r").read().split()
-lines = [int(line) for line in fin]
+delim = "\n"
 
-print(lines)
+lines = open("input", "r").read().splitlines()
+
+for idx, line in enumerate(lines):
+    print(idx, line)
+print(len(lines))
