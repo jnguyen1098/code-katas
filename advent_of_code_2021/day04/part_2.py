@@ -18,8 +18,16 @@ def mark(board, num):
                 return cpy
     return cpy
 
+test = [
+[3, -1, -1, -1, 22],
+[-1, 18, -1, -1, -1],
+[19, 8, -1, -1, -1],
+[20, -1, -1, -1, -1],
+[-1, -1, -1, 12, -1],
+]
+
 def win(board, nums):
-    zop = zip(list(zip(board)))
+    zop = list(zip(*board))
     for num in nums:
         board = mark(board, num)
 
@@ -27,12 +35,11 @@ def win(board, nums):
         if set(row) == set([-1]):
             return True
 
-    for col in board:
+    for col in zop:
         if set(col) == set([-1]):
             return True
 
     return False
-
 
 MOD = 1000000007
 
@@ -88,12 +95,21 @@ for i in range(len(numbers)):
            print(curr)
            """
 
+print("investigate last")
+already_won = False
 for i in range(len(numbers)):
     curr = numbers[:i+1]
     board_idx = last_win
+    print("*" if already_won else "", end="")
     tmp = copy.deepcopy(boards[board_idx])
     for num in curr:
         tmp = mark(tmp, num)
+    already_won = win(tmp, curr)
+    print("win" if already_won else "", end="")
+    print("", curr[-1])
     for row in tmp:
         print(row)
+    print(curr)
+    print()
+    print()
     print()
