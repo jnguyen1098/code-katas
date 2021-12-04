@@ -44,6 +44,27 @@ lines = open("input", "r").read().splitlines()
 
 numbers = [int(num) for num in lines[0].split(",")]
 
+boards = []
+b_i = -1
+
 for idx, line in enumerate(lines):
-    print(line)
-print("linecount:", len(lines))
+#print(idx, line)
+    if idx == 0: continue
+    if line == "":
+        b_i += 1
+        boards.append([])
+        print("created new board")
+    else:
+        row = [int(tmp) for tmp in line.split()]
+        boards[b_i].append(row)
+
+for board in boards:
+    for row in board:
+        print(row)
+    print()
+
+for i in range(len(numbers)):
+    curr = numbers[:i+1]
+    for board in boards:
+       if win(board, curr): 
+           print("win")
