@@ -57,31 +57,6 @@ for board in boards:
 winset = set()
 last_win = None
 
-for i in range(len(numbers)):
-    curr = numbers[:i+1]
-    for board_idx, board in enumerate(boards):
-       if win(board, curr):
-           cpy = copy.deepcopy(board)
-           for num in curr:
-               cpy = mark(cpy, num)
-           #print(board, curr)
-           finsum = 0
-           for row in cpy:
-               for num in row:
-                   if num != -1:
-                       finsum += num
-           #print(finsum)
-           if board_idx not in winset:
-               print("win", board_idx)
-               for row in cpy:
-                   print(row)
-               print(finsum * curr.pop())
-               winset.add(board_idx)
-               last_win = board_idx
-           """
-           print(curr)
-           """
-
 def get_score(board, last):
     score = 0
     for row in board:
@@ -89,6 +64,22 @@ def get_score(board, last):
             if num != -1:
                 score += num
     return score * last
+
+for i in range(len(numbers)):
+    curr = numbers[:i+1]
+    for board_idx, board in enumerate(boards):
+       if win(board, curr):
+           cpy = copy.deepcopy(board)
+           for num in curr:
+               cpy = mark(cpy, num)
+           if board_idx not in winset:
+               print("win", board_idx)
+               for row in cpy:
+                   print(row)
+               print("score", get_score(cpy, curr.pop()))
+               winset.add(board_idx)
+               last_win = board_idx
+               print()
 
 print("investigate last")
 already_won = False
