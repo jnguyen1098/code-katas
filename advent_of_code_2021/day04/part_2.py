@@ -18,14 +18,6 @@ def mark(board, num):
                 return cpy
     return cpy
 
-test = [
-[3, -1, -1, -1, 22],
-[-1, 18, -1, -1, -1],
-[19, 8, -1, -1, -1],
-[20, -1, -1, -1, -1],
-[-1, -1, -1, 12, -1],
-]
-
 def win(board, nums):
     zop = list(zip(*board))
     for num in nums:
@@ -41,10 +33,6 @@ def win(board, nums):
 
     return False
 
-MOD = 1000000007
-
-delim = "\n"
-
 lines = open("input", "r").read().splitlines()
 
 numbers = [int(num) for num in lines[0].split(",")]
@@ -53,7 +41,6 @@ boards = []
 b_i = -1
 
 for idx, line in enumerate(lines):
-#print(idx, line)
     if idx == 0: continue
     if line == "":
         b_i += 1
