@@ -18,7 +18,7 @@ boards = []
 class Board:
 
     def __init__(self, rows):
-        self.rows = rows
+        self.rows = copy.deepcopy(rows)
         self.idx = {}
         for i in range(len(self.rows)):
             for j in range(len(self.rows[i])):
@@ -27,18 +27,21 @@ class Board:
     def mark(self, num):
         pass
 
+    def __str__(self):
+        return "\n".join(str(row) for row in self.rows)
+
 tmp = []
 for idx, line in enumerate(lines):
     if idx == 0: continue
     if line == "":
         if tmp != []:
             boards.append(Board(tmp))
-        else:
-            tmp = []
+            tmp.clear()
     else:
         row = [int(_tmp) for _tmp in line.split()]
         tmp.append(row)
 
-for board in boards:
+for idx, board in enumerate(boards):
+    print(idx)
     print(board)
     print()
