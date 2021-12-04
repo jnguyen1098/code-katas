@@ -95,12 +95,21 @@ for i in range(len(numbers)):
            print(curr)
            """
 
+def get_score(board, last):
+    score = 0
+    for row in board:
+        for num in row:
+            if num != -1:
+                score += num
+    return score * last
+
 print("investigate last")
 already_won = False
 for i in range(len(numbers)):
     curr = numbers[:i+1]
     board_idx = last_win
-    print("*" if already_won else "", end="")
+    if already_won:
+        exit()
     tmp = copy.deepcopy(boards[board_idx])
     for num in curr:
         tmp = mark(tmp, num)
@@ -110,6 +119,7 @@ for i in range(len(numbers)):
     for row in tmp:
         print(row)
     print(curr)
+    print("score:", get_score(tmp, curr[-1]))
     print()
     print()
     print()
