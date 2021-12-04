@@ -15,22 +15,18 @@ def mark(board, num):
             if board[i][j] == num:
                 board[i][j] = -1
 
-DISPLACEMENT = (0, 1, 2, 3, 4)
-
 def win(board, nums):
     tmp = copy.deepcopy(board)
+    zop = zip(list(zip(*tmp)))
     for num in nums:
-        mark(board, num)
+        mark(tmp, num)
 
-    for row in board:
-        if set(row) == set(-1):
+    for row in tmp:
+        if set(row) == set([-1]):
             return True
 
-    for i in range(5):
-        symb = set()
-        for disp in DISPLACEMENT:
-            symb.add(board[i + disp][i])
-        if symb == set(-1):
+    for col in tmp:
+        if set(col) == set([-1]):
             return True
 
     return False
@@ -66,5 +62,15 @@ for board in boards:
 for i in range(len(numbers)):
     curr = numbers[:i+1]
     for board in boards:
-       if win(board, curr): 
+       if win(board, curr):
            print("win")
+           for num in curr:
+               mark(board, num)
+           print(board, curr)
+           finsum = 0
+           for row in board:
+               for num in row:
+                   if num != -1:
+                       finsum += num
+           print(finsum)
+           exit()
