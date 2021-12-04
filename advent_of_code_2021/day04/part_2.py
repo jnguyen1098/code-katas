@@ -24,8 +24,9 @@ class Board:
             for j in range(len(self.rows[i])):
                 self.idx[self.rows[i][j]] = (i, j)
 
-    def mark(self, num):
-        pass
+    def mark(self, num, mark):
+        location = self.idx[num]
+        self.rows[location[0]][location[1]] = mark
 
     def __str__(self):
         return "\n".join(str(row) for row in self.rows)
