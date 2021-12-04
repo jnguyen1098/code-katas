@@ -49,7 +49,6 @@ for idx, line in enumerate(lines):
     if line == "":
         b_i += 1
         boards.append([])
-        print("created new board")
     else:
         row = [int(tmp) for tmp in line.split()]
         boards[b_i].append(row)
@@ -59,18 +58,26 @@ for board in boards:
         print(row)
     print()
 
+winset = set()
+
 for i in range(len(numbers)):
     curr = numbers[:i+1]
-    for idx, board in enumerate(boards):
+    for board_idx, board in enumerate(boards):
        if win(board, curr):
-           print("win", idx)
            for num in curr:
                mark(board, num)
-           print(board, curr)
+           #print(board, curr)
            finsum = 0
            for row in board:
                for num in row:
                    if num != -1:
                        finsum += num
-           print(finsum)
-           exit()
+           #print(finsum)
+           if board_idx not in winset:
+               print("win", board_idx)
+               """
+               for row in board:
+                   print(row)
+               """
+               print(finsum * curr.pop())
+               winset.add(board_idx)
