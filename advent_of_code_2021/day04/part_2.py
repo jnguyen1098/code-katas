@@ -10,22 +10,24 @@ from bisect import bisect_left, bisect_right
 import copy
 
 def mark(board, num):
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if board[i][j] == num:
-                board[i][j] = -1
+    cpy = copy.deepcopy(board)
+    for i in range(len(cpy)):
+        for j in range(len(cpy[i])):
+            if cpy[i][j] == num:
+                cpy[i][j] = -1
+                return cpy
+    return cpy
 
 def win(board, nums):
-    tmp = copy.deepcopy(board)
-    zop = zip(list(zip(*tmp)))
+    zop = zip(list(zip(board)))
     for num in nums:
-        mark(tmp, num)
+        board = mark(board, num)
 
-    for row in tmp:
+    for row in board:
         if set(row) == set([-1]):
             return True
 
-    for col in tmp:
+    for col in board:
         if set(col) == set([-1]):
             return True
 
@@ -59,25 +61,39 @@ for board in boards:
     print()
 
 winset = set()
+last_win = None
 
 for i in range(len(numbers)):
     curr = numbers[:i+1]
     for board_idx, board in enumerate(boards):
        if win(board, curr):
+           cpy = copy.deepcopy(board)
            for num in curr:
-               mark(board, num)
+               cpy = mark(cpy, num)
            #print(board, curr)
            finsum = 0
-           for row in board:
+           for row in cpy:
                for num in row:
                    if num != -1:
                        finsum += num
            #print(finsum)
            if board_idx not in winset:
                print("win", board_idx)
-               """
-               for row in board:
+               for row in cpy:
                    print(row)
-               """
                print(finsum * curr.pop())
                winset.add(board_idx)
+               last_win = board_idx
+           """
+           print(curr)
+           """
+
+for i in range(len(numbers)):
+    curr = numbers[:i+1]
+    board_idx = last_win
+    tmp = copy.deepcopy(boards[board_idx])
+    for num in curr:
+        tmp = mark(tmp, num)
+    for row in tmp:
+        print(row)
+    print()
