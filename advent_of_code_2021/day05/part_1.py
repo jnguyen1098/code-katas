@@ -132,3 +132,9 @@ for point in points:
 for row in grid:
     print(row)
     
+count = 0
+for row in grid:
+    for thing in row:
+        if thing >= 2:
+            count += 1
+print(count)
