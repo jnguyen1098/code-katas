@@ -52,6 +52,21 @@ def get_points(line):
                 x1 += 1
     else:
         print("diagonal")
+        if x1 < x2:
+            while x1 != x2 and y1 != y2:
+                print(f"    {x1},{y1}")
+                x1 += 1
+                y1 += 1
+            print(f"    {x2},{y2}")
+        elif x1 > x2:
+            while x1 != x2 and y1 != y2:
+                print(f"    {x2},{y2}")
+                x2 += 1
+                y2 += 1
+            print(f"    {x1},{y1}")
+        else:
+            print("same point? lol")
+            
     return points
 
 for idx, line in enumerate(_lines):
