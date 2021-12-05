@@ -55,6 +55,7 @@ def get_points(line):
                 points.append((x1, y1))
                 x1 += 1
     elif x1 - x2 == y1 - y2:
+        return []
         print("diagonal pointing north east")
         if x1 < x2:
             while x1 != x2 and y1 != y2:
@@ -76,6 +77,7 @@ def get_points(line):
             print("same point? lol")
 
     elif x1 - x2 == -(y1 - y2):
+        return []
         print("diagonal pointing south east")
         if x1 < x2:
             while x1 != x2 and y1 != y2:
