@@ -35,37 +35,70 @@ def get_points(line):
         if y1 > y2:
             while y2 <= y1:
                 print(f"    {x2},{y2}")
+                points.append((x2, y2))
                 y2 += 1
         else:
             while y1 <= y2:
                 print(f"    {x1},{y1}")
+                points.append((x1, y1))
                 y1 += 1
     elif y1 == y2:
         print("horizontal")
         if x1 > x2:
             while x2 <= x1:
                 print(f"    {x2},{y2}")
+                points.append((x2, y2))
                 x2 += 1
         else:
             while x1 <= x2:
                 print(f"    {x1},{y1}")
+                points.append((x1, y1))
                 x1 += 1
-    else:
-        print("diagonal")
+    elif x1 - x2 == y1 - y2:
+        print("diagonal pointing north east")
         if x1 < x2:
             while x1 != x2 and y1 != y2:
                 print(f"    {x1},{y1}")
+                points.append((x1, y1))
                 x1 += 1
                 y1 += 1
             print(f"    {x2},{y2}")
+            points.append((x2, y2))
         elif x1 > x2:
             while x1 != x2 and y1 != y2:
                 print(f"    {x2},{y2}")
+                points.append((x2, y2))
                 x2 += 1
                 y2 += 1
             print(f"    {x1},{y1}")
+            points.append((x1, y1))
         else:
             print("same point? lol")
+
+    elif x1 - x2 == -(y1 - y2):
+        print("diagonal pointing south east")
+        if x1 < x2:
+            while x1 != x2 and y1 != y2:
+                print(f"    {x1},{y1}")
+                points.append((x1, y1))
+                x1 += 1
+                y1 -= 1
+            print(f"    {x2},{y2}")
+            points.append((x2, y2))
+        elif x1 > x2:
+            while x1 != x2 and y1 != y2:
+                print(f"    {x2},{y2}")
+                points.append((x2, y2))
+                x2 += 1
+                y2 -= 1
+            print(f"    {x1},{y1}")
+            points.append((x1, y1))
+        else:
+            print("same point? lol")
+
+    else:
+        print("something else")
+        exit()
             
     return points
 
@@ -84,10 +117,16 @@ for i in range(length):
 
 print()
 
-for row in grid:
-    print(row)
-
-print()
+points = []
 
 for line in lines:
-    get_points(line)
+    points.append(get_points(line))
+
+for point in points:
+    for shit in point:
+        print(shit)
+        grid[shit[0]][shit[1]] += 1
+
+for row in grid:
+    print(row)
+    
