@@ -23,8 +23,56 @@ class Line:
     def __str__(self):
         return f"{self.points}"
 
+def get_points(line):
+    x1 = int(line.points[0][0])
+    y1 = int(line.points[0][1])
+    x2 = int(line.points[1][0])
+    y2 = int(line.points[1][1])
+    points = []
+    print(x1, y1, x2, y2, end=" ")
+    if x1 == x2:
+        print("vertical")
+        if y1 > y2:
+            while y2 <= y1:
+                print(f"    {x2},{y2}")
+                y2 += 1
+        else:
+            while y1 <= y2:
+                print(f"    {x1},{y1}")
+                y1 += 1
+    elif y1 == y2:
+        print("horizontal")
+        if x1 > x2:
+            while x2 <= x1:
+                print(f"    {x2},{y2}")
+                x2 += 1
+        else:
+            while x1 <= x2:
+                print(f"    {x1},{y1}")
+                x1 += 1
+    else:
+        print("diagonal")
+    return points
+
 for idx, line in enumerate(_lines):
     lines.append(Line(line))
 
 for line in lines:
     print(line)
+
+grid = []
+
+length = 10
+
+for i in range(length):
+    grid.append([0] * length)
+
+print()
+
+for row in grid:
+    print(row)
+
+print()
+
+for line in lines:
+    get_points(line)
