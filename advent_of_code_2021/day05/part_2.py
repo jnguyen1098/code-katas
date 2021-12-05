@@ -4,14 +4,6 @@ from dataclasses import dataclass
 import sys
 import math
 
-from math import gcd, floor, sqrt, log
-from collections import defaultdict, deque
-from bisect import bisect_left, bisect_right
-
-MOD = 1000000007
-
-delim = "\n"
-
 _lines = open("input", "r").read().splitlines()
 lines = []
 
@@ -48,7 +40,6 @@ def get_points(line):
                 points.append((x1, y1))
                 x1 += 1
     elif x1 - x2 == y1 - y2:
-        return []
         if x1 < x2:
             while x1 != x2 and y1 != y2:
                 points.append((x1, y1))
@@ -63,7 +54,6 @@ def get_points(line):
             points.append((x1, y1))
 
     elif x1 - x2 == -(y1 - y2):
-        return []
         if x1 < x2:
             while x1 != x2 and y1 != y2:
                 points.append((x1, y1))
