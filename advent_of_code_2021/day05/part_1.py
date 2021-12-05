@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from dataclasses import dataclass
 import sys
 import math
 
@@ -11,11 +12,14 @@ MOD = 1000000007
 
 delim = "\n"
 
-lines = open("input", "r").read().splitlines()
-comms = []
+_lines = open("input", "r").read().splitlines()
+lines = []
 
-for idx, line in enumerate(lines):
-    tmp = line.split(" -> ")
-    comms.append((tmp[0], tmp[1]))
+@dataclass
+class Line:
+    def __init__(self, line):
+        points = line.split(" -> ")
+        print(points)
 
-print(comms)
+for idx, line in enumerate(_lines):
+    lines.append(Line(line))
