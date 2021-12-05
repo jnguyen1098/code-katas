@@ -18,8 +18,13 @@ lines = []
 @dataclass
 class Line:
     def __init__(self, line):
-        points = line.split(" -> ")
-        print(points)
+        tmp = line.split(" -> ")
+        self.points = [tmp[0].split(","), tmp[1].split(",")]
+    def __str__(self):
+        return f"{self.points}"
 
 for idx, line in enumerate(_lines):
     lines.append(Line(line))
+
+for line in lines:
+    print(line)
