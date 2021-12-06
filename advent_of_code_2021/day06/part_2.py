@@ -31,11 +31,6 @@ while reqs:
     while tmp + adder <= days:
         reqs.append(tmp + adder)
         adder += 7
-    if popped == days - 2:
-        result += 1
-    elif popped == days - 1:
-        result += 1
-    else:
-        result += 1
+    result += 1
 
 print(result)
