@@ -4,6 +4,7 @@ import sys
 import math
 
 from dataclasses import dataclass
+from timeit import default_timer as timer
 
 lines = open("input", "r").read().splitlines()
 
@@ -23,10 +24,14 @@ for i in range(len(fish)):
         adder += 7
     result += 1
 
+last_time = timer()
+
 while reqs:
     popped = reqs.pop()
     if popped < minnum:
-        print(popped)
+        curr = timer()
+        print(f"{popped} -> {curr - last_time}")
+        last_time = curr
         minnum = popped
     if popped == days:
         result += 1
@@ -37,5 +42,7 @@ while reqs:
         reqs.append(tmp + adder)
         adder += 7
     result += 1
+
+print(f"x -> {timer() - last_time}")
 
 print(result)
