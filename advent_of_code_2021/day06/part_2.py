@@ -9,10 +9,12 @@ lines = open("input", "r").read().splitlines()
 
 fish = [int(tmp) for tmp in lines[0].split(",")]
 
-days = 80
+days = 256
 
 reqs = []
 result = 0
+
+minnum = math.inf
 
 for i in range(len(fish)):
     adder = 1
@@ -23,6 +25,9 @@ for i in range(len(fish)):
 
 while reqs:
     popped = reqs.pop()
+    if popped < minnum:
+        print(popped)
+        minnum = popped
     if popped == days:
         result += 1
         continue
