@@ -27,7 +27,7 @@ while reqs:
     popped = heappop(reqs)
     print(popped)
     adder = 1
-    while popped + adder <= days:
+    while popped + adder + 8 <= days:
         heappush(reqs, popped + adder + 8)
         adder += 7
 
