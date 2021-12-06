@@ -12,19 +12,21 @@ fish = [int(tmp) for tmp in lines[0].split(",")]
 days = 80
 
 reqs = []
-result = []
+result = 0
 
 for i in range(len(fish)):
     adder = 1
     while fish[i] + adder <= days:
         reqs.append(fish[i] + adder)
         adder += 7
-    result.append((fish[i] - days) % 7)
+    result += 1
 
 while reqs:
+    if len(reqs) % 100 == 0:
+        print(len(reqs))
     popped = reqs.pop()
     if popped == days:
-        result.append(8)
+        result += 1
         continue
     adder = 1
     tmp = popped + 8
@@ -32,10 +34,10 @@ while reqs:
         reqs.append(tmp + adder)
         adder += 7
     if popped == days - 2:
-        result.append(6)
+        result += 1
     elif popped == days - 1:
-        result.append(7)
+        result += 1
     else:
-        result.append((8 - (days - popped)) % 7)
+        result += 1
 
-print(len(result))
+print(result)
