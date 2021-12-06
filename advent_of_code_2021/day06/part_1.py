@@ -7,8 +7,6 @@ from math import gcd, floor, sqrt, log
 from collections import defaultdict, deque
 from bisect import bisect_left, bisect_right
 
-MOD = 1000000007
-
 lines = open("input", "r").read().splitlines()
 
 fish = [int(tmp) for tmp in lines[0].split(",")]
