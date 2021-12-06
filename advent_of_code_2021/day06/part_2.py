@@ -17,11 +17,19 @@ reqs = []
 result = []
 
 for i in range(len(fish)):
-    heappush(reqs, fish[i] + 1)
+    adder = 1
+    while fish[i] + adder <= days:
+        heappush(reqs, fish[i] + adder)
+        adder += 7
     result.append((fish[i] - days) % 7)
 
 while reqs:
-    print(heappop(reqs))
+    popped = heappop(reqs)
+    print(popped)
+    adder = 1
+    while popped + adder <= days:
+        heappush(reqs, popped + adder + 8)
+        adder += 7
 
 print(result)
 print(len(result))
