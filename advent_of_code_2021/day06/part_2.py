@@ -16,6 +16,8 @@ days = 18
 reqs = []
 result = []
 
+expected = [6, 0, 6, 4, 5, 6, 0, 1, 1, 2, 6, 0, 1, 1, 1, 2, 2, 3, 3, 4, 6, 7, 8, 8, 8, 8]
+
 for i in range(len(fish)):
     adder = 1
     while fish[i] + adder <= days:
@@ -30,6 +32,15 @@ while reqs:
     while popped + adder + 8 <= days:
         heappush(reqs, popped + adder + 8)
         adder += 7
+    if popped == days - 2:
+        result.append(6)
+    elif popped == days - 1:
+        result.append(7)
+    else:
+        result.append(  (6 - days - popped - 2)  % 7)
+
+if len(result) != len(expected):
+    print("len differ")
 
 print(result)
 print(len(result))
