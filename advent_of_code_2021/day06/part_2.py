@@ -9,7 +9,7 @@ lines = open("input", "r").read().splitlines()
 
 fish = [int(tmp) for tmp in lines[0].split(",")]
 
-days = 151
+days = 80
 
 reqs = []
 result = []
