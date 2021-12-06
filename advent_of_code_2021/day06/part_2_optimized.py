@@ -11,9 +11,10 @@ def advance(data):
         thing[(i - 1) % 7] += data[i]
     return thing
 
-data = Counter([int(tmp) for tmp in open("input", "r").read().split(",")])
+data = Counter([int(tmp) for tmp in open("example", "r").read().split(",")])
 
-for i in range(256):
+for i in range(3):
+    print(data)
     data = advance(data)
 
 print(sum(data.values()))
