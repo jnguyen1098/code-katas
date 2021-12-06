@@ -9,7 +9,7 @@ lines = open("input", "r").read().splitlines()
 
 fish = [int(tmp) for tmp in lines[0].split(",")]
 
-days = 80
+days = 151
 
 reqs = []
 result = []
@@ -36,6 +36,6 @@ while reqs:
     elif popped == days - 1:
         result.append(7)
     else:
-        result.append(  (8 - (days - popped))  % 7)
+        result.append((8 - (days - popped)) % 7)
 
 print(len(result))
