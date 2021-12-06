@@ -22,8 +22,6 @@ for i in range(len(fish)):
     result += 1
 
 while reqs:
-    if len(reqs) % 100 == 0:
-        print(len(reqs))
     popped = reqs.pop()
     if popped == days:
         result += 1
