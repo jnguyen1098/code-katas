@@ -22,3 +22,15 @@ for i in range(256):
 
 print(sum(data))
 print(sum(data) == 1686252324092)
+
+"""
+  thing[0] = data[1]
+  thing[1] = data[2]
+  thing[2] = data[3]
+  thing[3] = data[4]
+  thing[4] = data[5]
+  thing[5] = data[6]
+  thing[6] = data[7] + data[0]
+  thing[7] = data[8]
+  thing[8] = data[0]
+"""
