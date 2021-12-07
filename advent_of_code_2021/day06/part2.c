@@ -4,6 +4,12 @@
 
 #define int unsigned long long int
 
+#define FILENAME "input"
+#define MAX_FILE 10000
+#define NUM_FISH 300
+#define ANSWER   1686252324092
+#define DAYS     256
+
 typedef struct arr_struct {
     int *data;
     size_t size;
@@ -11,7 +17,7 @@ typedef struct arr_struct {
 
 arr_t read_ints(char *filename, int max)
 {
-    char *tok = strtok(fgets(malloc(999999), BUFSIZ, fopen(filename, "r")), ",");
+    char *tok = strtok(fgets(malloc(MAX_FILE), BUFSIZ, fopen(filename, "r")), ",");
     int *ints = malloc(max * sizeof(int));
     int i = 0;
     while (tok) {
@@ -44,11 +50,11 @@ void advance(int *arr)
 
 int main(void)
 {
-    arr_t arr = read_ints("input", 10000);
+    arr_t arr = read_ints(FILENAME, NUM_FISH);
 
     int *data = counter(arr);
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < DAYS; i++) {
         advance(data);
     }
 
@@ -58,7 +64,7 @@ int main(void)
     }
 
     printf("%ld\n", sum);
-    puts(sum == 1686252324092 ? "True" : "False");
+    puts(sum == ANSWER ? "Solved" : "Error");
 
     return 0;
 }
