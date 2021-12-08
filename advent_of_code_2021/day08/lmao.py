@@ -9,9 +9,9 @@ from bisect import bisect_left, bisect_right
 
 MOD = 1000000007
 
-inputname = "example"
 inputname = "real"
 inputname = "small"
+inputname = "example"
 
 letters = {
     1: "cf",
@@ -47,15 +47,15 @@ def deduce(letters, translate):
     if len(letters) == 4:
         return 4
     if len(letters) == 5:
-        if "b" in letters:
+        if translate["b"] in letters:
             return 5
-        if "e" in letters:
+        if translate["e"] in letters:
             return 2
         return 3
     if len(letters) == 6:
-        if "d" not in letters:
+        if translate["d"] not in letters:
             return 0
-        if "c" in letters:
+        if translate["c"] in letters:
             return 9
         return 6
     if len(letters) == 7:
@@ -63,27 +63,29 @@ def deduce(letters, translate):
 
 def fix_dictionary(translate, extra, fives, sixes):
     extra_rev = {v: k for k, v in extra.items()}
+    """
     print("map", translate)
     print("mapkeys", translate)
     print("extra", extra)
     print("extra_rev", extra_rev)
     print("fives", fives)
     print("sixes", sixes)
+    """
     for key, value in extra_rev.items():
-        print(letters[key], value)
         for i in range(len(value)):
             if letters[key][i] not in translate:
-                print(f"{letters[key][i]} not in translate")
                 translate[letters[key][i]] = value[i]
             elif translate[letters[key][i]] != value[i]:
-                print("redefined")
                 translate[letters[key][i]] = value[i]
     lts = set(["a", "b", "c", "d", "e", "f", "g"])
     rts = set(["a", "b", "c", "d", "e", "f", "g"])
     for key, value in translate.items():
         lts.remove(key)
         rts.remove(key)
-    translate[lts.pop()] = rts.pop()
+    try:
+        translate[lts.pop()] = rts.pop()
+    except:
+        pass
 
 lines = open(inputname, "r").read().splitlines()
 
@@ -121,15 +123,18 @@ for line in lines:
         elif len(signal) == 6:
             sixes.append("".join(sorted(signal)))
     fix_dictionary(translate, extra, fives, sixes)
+    lmao = []
     for word in result:
         broken = list(word)
         for i in range(len(broken)):
             broken[i] = translate.get(broken[i], "?")
         result = "".join(broken)
         res = deduce(result, translate)
+        lmao.append(str(res))
         if res in [1, 4, 7, 8]:
             count += 1
-    print(translate)
-
+    fuck = int("".join(lmao))
+    print(fuck)
+    #print(translate)
 
 print(count)
