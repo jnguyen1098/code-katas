@@ -42,8 +42,8 @@ lines = open(inputname, "r").read().splitlines()
 
 for line in lines:
     left, right = line.split(" | ")
-    signals = left.split()
-    result = right.split()
+    signals = ["".join(sorted(word)) for word in left.split()]
+    result = ["".join(sorted(word)) for word in right.split()]
     print(signals)
     print(result)
     print()
