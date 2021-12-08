@@ -39,6 +39,22 @@ digit = {
     "abcdefg": 8,
 }
 
+import itertools
+
+def attempt(bf):
+    return False
+
+for perm in itertools.permutations("abcdefg"):
+    bf = {a: b for a, b in zip(perm, "abcdefg")}
+    if not attempt(bf):
+        continue
+    else:
+        print("found")
+        print(bf)
+        exit()
+print("could not find")
+exit()
+
 def deduce(letters, translate):
     if len(letters) == 2:
         return 1
