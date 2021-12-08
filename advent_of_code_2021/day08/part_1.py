@@ -13,16 +13,29 @@ inputname = "real"
 inputname = "example"
 
 letters = {
-    0: "abcefg",
     1: "cf",
+    7: "acf",
+    4: "bcdf",
     2: "acdeg",
     3: "acdfg",
-    4: "bcdf",
     5: "abdfg",
-    6: "abdfeg",
-    7: "acf",
-    8: "abcdefg",
+    0: "abcefg",
+    6: "abdefg",
     9: "abcdfg",
+    8: "abcdefg",
+}
+
+digit = {
+    "cf": 1,
+    "acf": 7,
+    "bcdf": 4,
+    "acdeg": 2,
+    "acdfg": 3,
+    "abdfg": 5,
+    "abcefg": 0,
+    "abdefg": 6,
+    "abcdfg": 9,
+    "abcdefg": 8,
 }
 
 lines = open(inputname, "r").read().splitlines()
