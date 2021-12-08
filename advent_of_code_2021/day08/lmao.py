@@ -39,20 +39,47 @@ digit = {
     "abcdefg": 8,
 }
 
+lines = open(inputname, "r").read().splitlines()
+
 import itertools
 
-def attempt(bf):
-    return False
+def attempt(bf, signals, result):
+    signals = list(signals)
+    result = list(result)
+    for i in range(len(signals)):
+        if signals[i] == " ": continue
+        signals[i] = bf[signals[i]]
+    for i in range(len(result)):
+        if result[i] == " ": continue
+        result[i] = bf[result[i]]
+    signals = "".join(signals)
+    result = "".join(result)
+    for signal in signals.split():
+        if signal not in digit:
+            return False
+    return True
 
-for perm in itertools.permutations("abcdefg"):
-    bf = {a: b for a, b in zip(perm, "abcdefg")}
-    if not attempt(bf):
-        continue
-    else:
-        print("found")
-        print(bf)
-        exit()
-print("could not find")
+found = False
+
+def go(signals, result):
+    for perm in itertools.permutations("abcdefg"):
+        bf = {a: b for a, b in zip(perm, "abcdefg")}
+        if not attempt(bf, signals, result):
+            continue
+        else:
+            print("found")
+            print(bf)
+            found = True
+
+found = True
+if not found:
+    print("could not find")
+    exit()
+
+for line in lines:
+    left, right = line.split(" | ")
+    go(left, right)
+
 exit()
 
 def deduce(letters, translate):
@@ -103,7 +130,6 @@ def fix_dictionary(translate, extra, fives, sixes):
     except:
         pass
 
-lines = open(inputname, "r").read().splitlines()
 
 count = 0
 
