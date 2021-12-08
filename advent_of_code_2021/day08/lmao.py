@@ -78,8 +78,12 @@ def fix_dictionary(translate, extra, fives, sixes):
             elif translate[letters[key][i]] != value[i]:
                 print("redefined")
                 translate[letters[key][i]] = value[i]
-    print("map2", translate)
-    exit()
+    lts = set(["a", "b", "c", "d", "e", "f", "g"])
+    rts = set(["a", "b", "c", "d", "e", "f", "g"])
+    for key, value in translate.items():
+        lts.remove(key)
+        rts.remove(key)
+    translate[lts.pop()] = rts.pop()
 
 lines = open(inputname, "r").read().splitlines()
 
