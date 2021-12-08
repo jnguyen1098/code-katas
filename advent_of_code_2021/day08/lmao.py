@@ -92,6 +92,9 @@ lines = open(inputname, "r").read().splitlines()
 count = 0
 
 for line in lines:
+    print(line)
+
+for line in lines:
     translate = {}
     extra = {}
     fives = []
