@@ -11,6 +11,7 @@ MOD = 1000000007
 
 inputname = "example"
 inputname = "real"
+inputname = "small"
 
 letters = {
     1: "cf",
@@ -61,9 +62,9 @@ def deduce(letters, translate):
         return 8
 
 def fix_dictionary(translate, fives, sixes):
-    print(translate)
-    print(fives)
-    print(sixes)
+    print("map", translate)
+    print("fives", fives)
+    print("sixes", sixes)
     exit()
 
 lines = open(inputname, "r").read().splitlines()
@@ -93,9 +94,9 @@ for line in lines:
             translate[signal[2]] = "d"
             translate[signal[3]] = "f"
         elif len(signal) == 5:
-            fives.append(signal)
+            fives.append("".join(sorted(signal)))
         elif len(signal) == 6:
-            sixes.append(signal)
+            sixes.append("".join(sorted(signal)))
     fix_dictionary(translate, fives, sixes)
     for word in result:
         broken = list(word)
