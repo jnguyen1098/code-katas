@@ -38,12 +38,33 @@ digit = {
     "abcdefg": 8,
 }
 
+translate = {}
+
 lines = open(inputname, "r").read().splitlines()
 
 for line in lines:
     left, right = line.split(" | ")
     signals = ["".join(sorted(word)) for word in left.split()]
     result = ["".join(sorted(word)) for word in right.split()]
+    for signal in signals:
+        if len(signal) == 2:
+            translate[signal[0]] = "c"
+            translate[signal[1]] = "f"
+        elif len(signal) == 3:
+            translate[signal[0]] = "a"
+            translate[signal[1]] = "c"
+            translate[signal[2]] = "f"
+        elif len(signal) == 4:
+            translate[signal[0]] = "b"
+            translate[signal[1]] = "c"
+            translate[signal[2]] = "d"
+            translate[signal[3]] = "f"
     print(signals)
     print(result)
-    print()
+    for word in result:
+        broken = list(word)
+        for i in range(len(broken)):
+            broken[i] = translate.get(broken[i], "?")
+        print("".join(broken))
+    print(translate)
+
