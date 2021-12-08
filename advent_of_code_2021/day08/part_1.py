@@ -38,6 +38,28 @@ digit = {
     "abcdefg": 8,
 }
 
+def deduce(letters):
+    if len(letters) == 2:
+        return 1
+    if len(letters) == 3:
+        return 7
+    if len(letters) == 4:
+        return 4
+    if len(letters) == 5:
+        if "b" in letters:
+            return 5
+        if "e" in letters:
+            return 2
+        return 3
+    if len(letters) == 6:
+        if "d" not in letters:
+            return 0
+        if "c" in letters:
+            return 9
+        return 6
+    if len(letters) == 7:
+        return 8
+
 translate = {}
 
 lines = open(inputname, "r").read().splitlines()
@@ -45,7 +67,9 @@ lines = open(inputname, "r").read().splitlines()
 for line in lines:
     left, right = line.split(" | ")
     signals = ["".join(sorted(word)) for word in left.split()]
+    signals = [word for word in left.split()]
     result = ["".join(sorted(word)) for word in right.split()]
+    result = [word for word in right.split()]
     for signal in signals:
         if len(signal) == 2:
             translate[signal[0]] = "c"
@@ -65,6 +89,7 @@ for line in lines:
         broken = list(word)
         for i in range(len(broken)):
             broken[i] = translate.get(broken[i], "?")
-        print("".join(broken))
+        result = "".join(broken)
+        print(deduce(result))
     print(translate)
 
