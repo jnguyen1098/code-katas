@@ -61,10 +61,24 @@ def deduce(letters, translate):
     if len(letters) == 7:
         return 8
 
-def fix_dictionary(translate, fives, sixes):
+def fix_dictionary(translate, extra, fives, sixes):
+    extra_rev = {v: k for k, v in extra.items()}
     print("map", translate)
+    print("mapkeys", translate)
+    print("extra", extra)
+    print("extra_rev", extra_rev)
     print("fives", fives)
     print("sixes", sixes)
+    for key, value in extra_rev.items():
+        print(letters[key], value)
+        for i in range(len(value)):
+            if letters[key][i] not in translate:
+                print(f"{letters[key][i]} not in translate")
+                translate[letters[key][i]] = value[i]
+            elif translate[letters[key][i]] != value[i]:
+                print("redefined")
+                translate[letters[key][i]] = value[i]
+    print("map2", translate)
     exit()
 
 lines = open(inputname, "r").read().splitlines()
@@ -73,6 +87,7 @@ count = 0
 
 for line in lines:
     translate = {}
+    extra = {}
     fives = []
     sixes = []
     left, right = line.split(" | ")
@@ -80,24 +95,28 @@ for line in lines:
     signals = [word for word in left.split()]
     result = ["".join(sorted(word)) for word in right.split()]
     result = [word for word in right.split()]
+
     for signal in signals:
         if len(signal) == 2:
             translate[signal[0]] = "c"
             translate[signal[1]] = "f"
+            extra[signal] = 1
         elif len(signal) == 3:
             translate[signal[0]] = "a"
             translate[signal[1]] = "c"
             translate[signal[2]] = "f"
+            extra[signal] = 7
         elif len(signal) == 4:
             translate[signal[0]] = "b"
             translate[signal[1]] = "c"
             translate[signal[2]] = "d"
             translate[signal[3]] = "f"
+            extra[signal] = 4
         elif len(signal) == 5:
             fives.append("".join(sorted(signal)))
         elif len(signal) == 6:
             sixes.append("".join(sorted(signal)))
-    fix_dictionary(translate, fives, sixes)
+    fix_dictionary(translate, extra, fives, sixes)
     for word in result:
         broken = list(word)
         for i in range(len(broken)):
