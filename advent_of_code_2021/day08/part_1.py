@@ -40,6 +40,10 @@ digit = {
 
 lines = open(inputname, "r").read().splitlines()
 
-for idx, line in enumerate(lines):
-    print(idx, line)
-print("linecount:", len(lines))
+for line in lines:
+    left, right = line.split(" | ")
+    signals = left.split()
+    result = right.split()
+    print(signals)
+    print(result)
+    print()
