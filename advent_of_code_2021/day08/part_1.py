@@ -9,8 +9,8 @@ from bisect import bisect_left, bisect_right
 
 MOD = 1000000007
 
-inputname = "real"
 inputname = "example"
+inputname = "real"
 
 letters = {
     1: "cf",
@@ -64,6 +64,8 @@ translate = {}
 
 lines = open(inputname, "r").read().splitlines()
 
+count = 0
+
 for line in lines:
     left, right = line.split(" | ")
     signals = ["".join(sorted(word)) for word in left.split()]
@@ -91,5 +93,10 @@ for line in lines:
             broken[i] = translate.get(broken[i], "?")
         result = "".join(broken)
         print(deduce(result))
+        res = deduce(result)
+        if res in [1, 4, 7, 8]:
+            count += 1
     print(translate)
 
+
+print(count)
