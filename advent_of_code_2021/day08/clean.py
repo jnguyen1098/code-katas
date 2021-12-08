@@ -34,30 +34,27 @@ def print_map(translate):
     for letter in "abcdefg":
         result = translate.get(letter)
         print(f"{letter}: {result}")
+    print()
 
 inputname = "small"
+inputname = "example"
 
 lines = open(inputname, "r").read().splitlines()
 
 for idx, line in enumerate(lines):
+    print(line)
     letters = {}
     model_line, test_line = line.split(" | ")
-    models = model_line.split()
-    tests = test_line.split()
+    models = [sorted(word) for word in model_line.split()]
+    tests = [sorted(word) for word in test_line.split()]
 
     # Do trivial deduction
     for model in models:
         if len(model) == 2:
-            letters["c"] = model[0]
-            letters["f"] = model[1]
+            pass
         elif len(model) == 3:
-            letters["a"] = model[0]
-            letters["c"] = model[1]
-            letters["f"] = model[2]
+            pass
         elif len(model) == 4:
-            letters["b"] = model[0]
-            letters["c"] = model[1]
-            letters["d"] = model[2]
-            letters["f"] = model[3]
+            pass
 
     print_map(letters)
