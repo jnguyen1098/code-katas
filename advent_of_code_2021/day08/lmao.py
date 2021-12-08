@@ -9,8 +9,8 @@ from bisect import bisect_left, bisect_right
 
 MOD = 1000000007
 
-inputname = "real"
 inputname = "example"
+inputname = "real"
 
 letters = {
     1: "cf",
@@ -38,7 +38,7 @@ digit = {
     "abcdefg": 8,
 }
 
-def deduce(letters, trans):
+def deduce(letters, translate):
     if len(letters) == 2:
         return 1
     if len(letters) == 3:
@@ -46,22 +46,24 @@ def deduce(letters, trans):
     if len(letters) == 4:
         return 4
     if len(letters) == 5:
-        if trans["b"] in letters:
+        if "b" in letters:
             return 5
-        if trans["e"] in letters:
+        if "e" in letters:
             return 2
         return 3
     if len(letters) == 6:
-        if trans["d"] not in letters:
+        if "d" not in letters:
             return 0
-        if trans["c"] in letters:
+        if "c" in letters:
             return 9
         return 6
     if len(letters) == 7:
         return 8
 
-def fortify_dictionary(translate):
-    print(translate.keys())
+def fix_dictionary(translate, fives, sixes):
+    print(translate)
+    print(fives)
+    print(sixes)
     exit()
 
 lines = open(inputname, "r").read().splitlines()
@@ -69,8 +71,9 @@ lines = open(inputname, "r").read().splitlines()
 count = 0
 
 for line in lines:
-    print(line)
     translate = {}
+    fives = []
+    sixes = []
     left, right = line.split(" | ")
     signals = ["".join(sorted(word)) for word in left.split()]
     signals = [word for word in left.split()]
@@ -89,18 +92,20 @@ for line in lines:
             translate[signal[1]] = "c"
             translate[signal[2]] = "d"
             translate[signal[3]] = "f"
-    tmp = 0
+        elif len(signal) == 5:
+            fives.append(signal)
+        elif len(signal) == 6:
+            sixes.append(signal)
+    fix_dictionary(translate, fives, sixes)
     for word in result:
         broken = list(word)
         for i in range(len(broken)):
             broken[i] = translate.get(broken[i], "?")
         result = "".join(broken)
-        fortify_dictionary(translate)
-        res = deduce(result, {v: k for k, v in translate.items()})
-        tmp *= 10
-        tmp += res
-    print("lmao", tmp)
-    count += tmp
+        res = deduce(result, translate)
+        if res in [1, 4, 7, 8]:
+            count += 1
+    print(translate)
 
 
 print(count)
