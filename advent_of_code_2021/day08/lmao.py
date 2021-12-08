@@ -10,8 +10,8 @@ from bisect import bisect_left, bisect_right
 MOD = 1000000007
 
 inputname = "real"
-inputname = "small"
 inputname = "example"
+inputname = "small"
 
 letters = {
     1: "cf",
@@ -44,6 +44,8 @@ lines = open(inputname, "r").read().splitlines()
 import itertools
 
 def attempt(bf, signals, result):
+    signals = " ".join(["".join(sorted(word)) for word in signals.split()])
+    result = " ".join(["".join(sorted(word)) for word in result.split()])
     signals = list(signals)
     result = list(result)
     for i in range(len(signals)):
@@ -54,6 +56,7 @@ def attempt(bf, signals, result):
         result[i] = bf[result[i]]
     signals = "".join(signals)
     result = "".join(result)
+    print(signals, "    ", result)
     for signal in signals.split():
         if signal not in digit:
             return False
@@ -69,12 +72,7 @@ def go(signals, result):
         else:
             print("found")
             print(bf)
-            found = True
-
-found = True
-if not found:
-    print("could not find")
-    exit()
+            exit()
 
 for line in lines:
     left, right = line.split(" | ")
