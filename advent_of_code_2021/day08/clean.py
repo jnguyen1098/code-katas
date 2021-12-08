@@ -41,13 +41,13 @@ def deduce_a(letters, models):
     three = None
     for model in models:
         if len(model) == 2:
-            two = model
+            two = set(model)
         if len(model) == 3:
-            three = model
+            three = set(model)
     if not all([two, three]):
         print("could not find both 2 and 3")
         exit(1)
-
+    letters["a"] = (three - two).pop()
 
 inputname = "small"
 inputname = "example"
@@ -55,11 +55,11 @@ inputname = "example"
 lines = open(inputname, "r").read().splitlines()
 
 for idx, line in enumerate(lines):
-    print(line)
     letters = {}
     model_line, test_line = line.split(" | ")
-    models = [sorted(word) for word in model_line.split()]
-    tests = [sorted(word) for word in test_line.split()]
+    models = ["".join(sorted(word)) for word in model_line.split()]
+    tests = ["".join(sorted(word)) for word in test_line.split()]
+    print(f"{' '.join(models)} | {' '.join(tests)}")
 
     deduce_a(letters, models)
 
