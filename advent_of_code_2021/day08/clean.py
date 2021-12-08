@@ -36,6 +36,19 @@ def print_map(translate):
         print(f"{letter}: {result}")
     print()
 
+def deduce_a(letters, models):
+    two = None
+    three = None
+    for model in models:
+        if len(model) == 2:
+            two = model
+        if len(model) == 3:
+            three = model
+    if not all([two, three]):
+        print("could not find both 2 and 3")
+        exit(1)
+
+
 inputname = "small"
 inputname = "example"
 
@@ -48,13 +61,6 @@ for idx, line in enumerate(lines):
     models = [sorted(word) for word in model_line.split()]
     tests = [sorted(word) for word in test_line.split()]
 
-    # Do trivial deduction
-    for model in models:
-        if len(model) == 2:
-            pass
-        elif len(model) == 3:
-            pass
-        elif len(model) == 4:
-            pass
+    deduce_a(letters, models)
 
     print_map(letters)
