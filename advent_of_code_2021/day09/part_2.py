@@ -16,7 +16,9 @@ def is_low_point(point, x, y, rows, cols):
 def get_basin_size(point, x, y, rows, cols):
     bfs = deque([(x, y)])
     size = 1
-    pushed = set()
+    pushed = []
+    for i in range(rows):
+        pushed.append([0] * cols)
 
     while bfs:
         pop_x, pop_y = bfs.popleft()
@@ -26,12 +28,12 @@ def get_basin_size(point, x, y, rows, cols):
             new_x = pop_x + MOVE[0]
             new_y = pop_y + MOVE[1]
             if new_x >= 0 and new_x < rows and new_y >= 0 and new_y < cols:
-                if (new_x, new_y) in pushed:
+                if pushed[new_x][new_y]:
                     continue
                 if point[new_x][new_y] != 9 and point[new_x][new_y] >= curr_val:
                     size += 1
                     bfs.append((new_x, new_y))
-                    pushed.add((new_x, new_y))
+                    pushed[new_x][new_y] = 1
 
     return size
 
