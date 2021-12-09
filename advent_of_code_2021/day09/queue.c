@@ -64,8 +64,8 @@ void pop_test(void)
         assert(queue->nel == i + 1);
         assert(queue->data[i] == i * 10);
     }
-    for (int i = 9; i >= 0; i--) {
-        assert(pop(queue) == i);
+    for (int i = 0; i < 10; i++) {
+        assert(pop(queue) == i * 10);
     }
 }
 
@@ -73,6 +73,7 @@ void run_all_tests(void)
 {
     init_test();
     push_test();
+    pop_test();
 }
 
 int main(void)
