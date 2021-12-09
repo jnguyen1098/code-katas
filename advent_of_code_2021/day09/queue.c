@@ -4,17 +4,23 @@
 
 struct queue {
     int *data;
-    int head;
-    int nel;
-    int max;
+    size_t head;
+    size_t nel;
+    size_t max;
 };
 
 struct queue *create_queue(size_t size)
 {
-    struct queue *queue = calloc(1, sizeof(queue));
+    struct queue *queue = calloc(1, sizeof(struct queue));
     queue->data = calloc(sizeof(int), size);
     queue->max = size;
     return queue;
+}
+
+void destroy_queue(struct queue *queue)
+{
+    free(queue->data);
+    free(queue);
 }
 
 int push(struct queue *queue, int val)
@@ -44,6 +50,7 @@ void init_test(void)
     assert(queue->head == 0);
     assert(queue->nel == 0);
     assert(queue->max == 10);
+    destroy_queue(queue);
 }
 
 void push_test(void)
@@ -54,26 +61,42 @@ void push_test(void)
         assert(queue->nel == i + 1);
         assert(queue->data[i] == i * 10);
     }
+    destroy_queue(queue);
 }
 
 void pop_test(void)
 {
     struct queue *queue = create_queue(10);
     for (int i = 0; i < 10; i++) {
-        assert(push(queue, i * 10));
-        assert(queue->nel == i + 1);
-        assert(queue->data[i] == i * 10);
+        push(queue, i * 10);
     }
     for (int i = 0; i < 10; i++) {
         assert(pop(queue) == i * 10);
     }
+    destroy_queue(queue);
+}
+
+void spillover_test(void)
+{
+    struct queue *queue = create_queue(10);
+    for (int i = 0; i < 10; i++) {
+        push(queue, i * 10);
+    }
+    for (int i = 0; i < 5; i++) {
+        pop(queue);
+    }
+    for (int i = 0; i < 5; i++) {
+        push(queue, i);
+    }
+    destroy_queue(queue);
 }
 
 void run_all_tests(void)
 {
     init_test();
-    push_test();
-    pop_test();
+    //push_test();
+    //pop_test();
+    //spillover_test();
 }
 
 int main(void)
