@@ -7,7 +7,10 @@ from math import gcd, floor, sqrt, log
 from collections import defaultdict, deque
 from bisect import bisect_left, bisect_right
 
-lines = open("input", "r").read().splitlines()
+inputname = "real"
+inputname = "example"
+
+lines = open(example, "r").read().splitlines()
 
 MOVES = ((-1, 0), (0, -1), (0, 1), (1, 0))
 
