@@ -77,6 +77,7 @@ digit = {
 
 inputname = "small"
 inputname = "example"
+inputname = "real"
 
 lines = open(inputname, "r").read().splitlines()
 
@@ -87,7 +88,7 @@ for idx, line in enumerate(lines):
     model_line, test_line = line.split(" | ")
     models = ["".join(sorted(word)) for word in model_line.split()]
     tests = ["".join(sorted(word)) for word in test_line.split()]
-    print(f"{' '.join(models)} | {' '.join(tests)}")
+    print(f"{idx} / {len(lines)} {' '.join(models)} | {' '.join(tests)}")
 
     import itertools
     for perm in itertools.permutations("abcdefg"):
