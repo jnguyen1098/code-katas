@@ -26,7 +26,7 @@ void destroy_queue(struct queue *queue)
 int push(struct queue *queue, int val)
 {
     if (queue->nel == queue->max) return 0;
-    queue->data[queue->nel % queue->max] = val;
+    queue->data[(queue->head + queue->nel) % queue->max] = val;
     queue->nel++;
     return 1;
 }
@@ -38,8 +38,23 @@ int pop(struct queue *queue)
         exit(1);
     }
     int val = queue->data[queue->head];
-    queue->head++;
+    queue->head = (queue->head + 1) % queue->max;
+    queue->nel--;
     return val;
+}
+
+void print_queue(struct queue *queue)
+{
+    puts("All Data");
+    for (int i = 0; i < queue->max; i++) {
+        printf("%d ", queue->data[i]);
+    }
+    puts("");
+    puts("Head");
+    for (int i = 0; i < queue->nel; i++) {
+        printf("%d ", queue->data[(i + queue->head) % queue->max]);
+    }
+    puts("\n");
 }
 
 void init_test(void)
@@ -70,8 +85,11 @@ void pop_test(void)
     for (int i = 0; i < 10; i++) {
         push(queue, i * 10);
     }
+    assert(queue->nel == 10);
     for (int i = 0; i < 10; i++) {
         assert(pop(queue) == i * 10);
+        assert(queue->nel == 10 - i - 1);
+        assert(queue->head == (i + 1) % queue->max);
     }
     destroy_queue(queue);
 }
@@ -82,21 +100,26 @@ void spillover_test(void)
     for (int i = 0; i < 10; i++) {
         push(queue, i * 10);
     }
+    print_queue(queue);
     for (int i = 0; i < 5; i++) {
         pop(queue);
     }
+    assert(queue->nel == 5);
+    print_queue(queue);
     for (int i = 0; i < 5; i++) {
         push(queue, i);
     }
+    assert(queue->nel == 10);
+    print_queue(queue);
     destroy_queue(queue);
 }
 
 void run_all_tests(void)
 {
     init_test();
-    //push_test();
-    //pop_test();
-    //spillover_test();
+    push_test();
+    pop_test();
+    spillover_test();
 }
 
 int main(void)
