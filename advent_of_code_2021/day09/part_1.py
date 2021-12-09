@@ -10,7 +10,7 @@ from bisect import bisect_left, bisect_right
 inputname = "real"
 inputname = "example"
 
-lines = open(example, "r").read().splitlines()
+lines = open(inputname, "r").read().splitlines()
 
 MOVES = ((-1, 0), (0, -1), (0, 1), (1, 0))
 
