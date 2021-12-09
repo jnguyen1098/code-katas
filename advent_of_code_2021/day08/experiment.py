@@ -28,6 +28,16 @@ digit = {
     "abcdefg": 8,
 }
 
+class Line:
+    def __init__(self, line):
+        halves = line.split(" | ")
+        self.facts = [list(word) for word in halves[0].split()]
+        self.tests = [list(word) for word in halves[1].split()]
+    def __str__(self):
+        joined_facts = ["".join(word) for word in self.facts]
+        joined_tests = ["".join(word) for word in self.tests]
+        return f"{joined_facts} | {joined_tests}"
+
 inputname = "example"
 inputname = "real"
 inputname = "small"
@@ -37,4 +47,4 @@ lines = open(inputname, "r").read().splitlines()
 total = 0
 
 for idx, line in enumerate(lines):
-    print(line)
+    print(Line(line))
