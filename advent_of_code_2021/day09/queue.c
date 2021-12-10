@@ -124,6 +124,6 @@ void run_all_tests(void)
 
 int main(void)
 {
-    run_all_tests();
+    //run_all_tests();
     return 0;
 }
