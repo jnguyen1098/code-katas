@@ -1,56 +1,39 @@
 #!/usr/bin/env python3
 
-import sys
-import math
-
-from math import gcd, floor, sqrt, log
-from collections import defaultdict, deque
-from bisect import bisect_left, bisect_right
-
-MOD = 1000000007
-
-inputname = "real"
 inputname = "example"
+inputname = "real"
 
-correct = {
-    "(": ")",
-    "[": "]",
-    "{": "}",
-    "<": ">",
-}
-
-_correct = {v: k for k, v in correct.items()}
-
-errorscore = {
-    ")": 1,
-    "]": 2,
-    "}": 3,
-    ">": 4,
-}
+inverse = { ")": "(", "]": "[", "}": "{", ">": "<" }
+errorscore = { "(": 1, "[": 2, "{": 3, "<": 4 }
 
 lines = open(inputname, "r").read().splitlines()
-
-stack = []
-
-score = 0
 
 newlines = []
 
 for idx, line in enumerate(lines):
+    stack = []
     bad = False
     for char in line:
         if char in "([{<":
             stack.append(char)
         else:
             popped = stack.pop()
-            if popped != _correct[char]:
+            if popped != inverse[char]:
                 bad = True
-                print("Error", char)
-                score += errorscore[char]
     if not bad:
         newlines.append(line)
 
-print(score)
-        
+scores = []
 for line in newlines:
-    print(line)
+    stack = []
+    for char in line:
+        if char in "([{<":
+            stack.append(char)
+        else:
+            popped = stack.pop()
+    score = 0
+    while stack:
+        score = score * 5 + errorscore[stack.pop()]
+    scores.append(score)
+
+print(sorted(scores)[len(scores) // 2])
