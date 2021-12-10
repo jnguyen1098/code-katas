@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
 import math
 
-from math import gcd, floor, sqrt, log
-from collections import defaultdict, deque
-from bisect import bisect_left, bisect_right
-
-MOD = 1000000007
-
-inputname = "example"
-inputname = "real"
-
+"""
 letters = {
     1: "cf",
     7: "acf",
@@ -37,66 +28,92 @@ digit = {
     "abcdfg": 9,
     "abcdefg": 8,
 }
+"""
 
-def deduce(letters):
-    if len(letters) == 2:
-        return 1
-    if len(letters) == 3:
-        return 7
-    if len(letters) == 4:
-        return 4
-    if len(letters) == 5:
-        if "b" in letters:
-            return 5
-        if "e" in letters:
-            return 2
-        return 3
-    if len(letters) == 6:
-        if "d" not in letters:
-            return 0
-        if "c" in letters:
-            return 9
-        return 6
-    if len(letters) == 7:
-        return 8
+def print_map(translate):
+    for letter in "abcdefg":
+        result = translate.get(letter)
+        print(f"{letter}: {result}")
+    print()
 
-translate = {}
+def deduce_a(letters, models):
+    two = None
+    three = None
+    for model in models:
+        if len(model) == 2:
+            two = set(model)
+        if len(model) == 3:
+            three = set(model)
+    if not all([two, three]):
+        print("could not find both 2 and 3")
+        exit(1)
+    letters["a"] = (three - two).pop()
+
+strings = set([
+    "cf",
+    "acf",
+    "bcdf",
+    "acdeg",
+    "acdfg",
+    "abdfg",
+    "abcefg",
+    "abdefg",
+    "abcdfg",
+    "abcdefg",
+])
+
+digit = {
+    "cf": 1,
+    "acf": 7,
+    "bcdf": 4,
+    "acdeg": 2,
+    "acdfg": 3,
+    "abdfg": 5,
+    "abcefg": 0,
+    "abdefg": 6,
+    "abcdfg": 9,
+    "abcdefg": 8,
+}
+
+inputname = "small"
+inputname = "example"
+inputname = "real"
 
 lines = open(inputname, "r").read().splitlines()
 
-count = 0
+finale = 0
 
-for line in lines:
-    left, right = line.split(" | ")
-    signals = ["".join(sorted(word)) for word in left.split()]
-    signals = [word for word in left.split()]
-    result = ["".join(sorted(word)) for word in right.split()]
-    result = [word for word in right.split()]
-    for signal in signals:
-        if len(signal) == 2:
-            translate[signal[0]] = "c"
-            translate[signal[1]] = "f"
-        elif len(signal) == 3:
-            translate[signal[0]] = "a"
-            translate[signal[1]] = "c"
-            translate[signal[2]] = "f"
-        elif len(signal) == 4:
-            translate[signal[0]] = "b"
-            translate[signal[1]] = "c"
-            translate[signal[2]] = "d"
-            translate[signal[3]] = "f"
-    print(signals)
-    print(result)
-    for word in result:
-        broken = list(word)
-        for i in range(len(broken)):
-            broken[i] = translate.get(broken[i], "?")
-        result = "".join(broken)
-        print(deduce(result))
-        res = deduce(result)
-        if res in [1, 4, 7, 8]:
-            count += 1
-    print(translate)
+for idx, line in enumerate(lines):
+    letters = {}
+    model_line, test_line = line.split(" | ")
+    models = ["".join(sorted(word)) for word in model_line.split()]
+    tests = ["".join(sorted(word)) for word in test_line.split()]
+    print(f"{idx} / {len(lines)} {' '.join(models)} | {' '.join(tests)}")
 
+    import itertools
+    for perm in itertools.permutations("abcdefg"):
+        test = {}
+        tmp_models = []
+        tmp_tests = []
+        for i in range(len(perm)):
+            test[perm[i]] = list("abcdefg")[i]
+        for idx, model in enumerate(models):
+            test_model = list(model)
+            for i in range(len(test_model)):
+                test_model[i] = test[test_model[i]]
+            tmp_models.append("".join(sorted(test_model[:])))
+        for idx, _test in enumerate(tests):
+            test_test = list(_test)
+            for i in range(len(test_test)):
+                test_test[i] = test[test_test[i]]
+            tmp_tests.append("".join(sorted(test_test[:])))
+        if set(tmp_models) == strings:
+            tmp = []
+            for test in tmp_tests:
+                tmp.append(str(digit[test]))
+            cnt = int("".join(tmp))
+            print(cnt)
+            finale += cnt
+            break
 
-print(count)
+print(finale)
