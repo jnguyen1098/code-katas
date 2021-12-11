@@ -35,7 +35,15 @@ grid = [[int(char) for char in line] for line in _lines]
 def print_grid(grid):
     for i in grid:
         for j in i:
-            print(j if j != 0 else bcolors.OKCYAN + str(j) + bcolors.ENDC, end="")
+            if j == 0:
+                print(bcolors.OKCYAN + str(j) + bcolors.ENDC + " ", end="")
+            elif j <= 9:
+                print(str(j) + " ", end="")
+            elif j > 9:
+                print(bcolors.FAIL + "X" + bcolors.ENDC + " ", end="")
+            else:
+                print("broken")
+                exit()
         print()
     print()
 
@@ -50,18 +58,23 @@ def incr_all(grid, rows, cols):
         for j in range(cols):
             if grid[i][j] > 9:
                 flashers.add((i, j))
-    for x, y in flashers:
-        for move in MOVES:
-            new_x = x + move[0]
-            new_y = y + move[1]
-            if new_x >= 0 and new_x < rows and new_y >= 0 and new_y < cols:
-                grid[new_x][new_y] += 1
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] > 9:
-                num_flash += 1
-                grid[i][j] = 0
-    return num_flash
+    while True:
+        new_flashes = set()
+        for x, y in flashers:
+            for move in MOVES:
+                new_x = x + move[0]
+                new_y = y + move[1]
+                if new_x >= 0 and new_x < rows and new_y >= 0 and new_y < cols:
+                    grid[new_x][new_y] += 1
+                    if grid[new_x][new_y] > 9 and (new_x, new_y) not in flashers:
+                        new_flashes.add((new_x, new_y))
+        if new_flashes:
+            break
+        else:
+            break
+    for x, y, in flashers:
+        grid[x][y] = 0
+    return len(flashers)
 
 def advance(grid, rows, cols):
     return incr_all(grid, rows, cols)
