@@ -47,41 +47,19 @@ def print_grid(grid):
         print()
     print()
 
-def incr_all(grid, rows, cols):
-    num_flash = 0
-    flashers = set()
-    for i in range(rows):
-        for j in range(cols):
-            if (i, j) not in flashers:
-                grid[i][j] += 1
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] > 9:
-                flashers.add((i, j))
-    while True:
-        new_flashes = set()
-        for x, y in flashers:
-            for move in MOVES:
-                new_x = x + move[0]
-                new_y = y + move[1]
-                if new_x >= 0 and new_x < rows and new_y >= 0 and new_y < cols:
-                    grid[new_x][new_y] += 1
-                    if grid[new_x][new_y] > 9 and (new_x, new_y) not in flashers:
-                        new_flashes.add((new_x, new_y))
-        if new_flashes:
-            break
-        else:
-            break
-    for x, y, in flashers:
-        grid[x][y] = 0
-    return len(flashers)
 
-def advance(grid, rows, cols):
-    return incr_all(grid, rows, cols)
+def incr_all(grid, rows, cols, amt):
+    for i in range(rows):
+        for j in range(cols):
+            grid[i][j] += amount
+
+def advance_and_get_flashes(grid, rows, cols):
+    incr_all(grid, rows, cols, 1)
+    return 0
 
 total = 0
 print_grid(grid)
 for i in range(2):
-    total += advance(grid, len(grid), len(grid[0]))
+    total += advance_and_get_flashes(grid, len(grid), len(grid[0]))
     print_grid(grid)
 print(total)
