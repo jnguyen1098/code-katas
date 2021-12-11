@@ -21,9 +21,9 @@ class bcolors:
 
 MOD = 1000000007
 
-inputname = "real"
 inputname = "small"
 inputname = "example"
+inputname = "real"
 
 MOVES = ((-1, -1), (-1, 0), (-1, 1),
          (0, -1),           (0, 1),
@@ -37,10 +37,12 @@ def print_grid(grid):
         for j in i:
             if j == 0:
                 print(bcolors.OKCYAN + str(j) + bcolors.ENDC + " ", end="")
-            elif j <= 9:
-                print(str(j) + " ", end="")
+            elif j == -math.inf:
+                print(bcolors.OKBLUE + "O" + bcolors.ENDC + " ", end="")
             elif j > 9:
                 print(bcolors.FAIL + "X" + bcolors.ENDC + " ", end="")
+            elif j <= 9:
+                print(str(j) + " ", end="")
             else:
                 print("broken")
                 exit()
@@ -68,31 +70,33 @@ def get_flash(grid, rows, cols):
                 fls.add((i, j))
     return fls
 
-def advance_and_get_flashes(grid, rows, cols):
-    add_to_all_cells(grid, rows, cols, 1)
-    fls = get_flash(grid, rows, cols)
+def get_new_flash(grid, rows, cols, old_flash):
+    new_fls = get_flash(grid, rows, cols)
+    return new_fls - old_flash
+
+def flash(grid, rows, cols, fls):
     for x, y in fls:
         add_around_cell(grid, rows, cols, x, y, 1)
-    fls = get_flash(grid, rows, cols)
-    return len(fls)
+        grid[x][y] = -math.inf
 
-lmao = [[6,5,9,4,2,5,4,3,3,4],
-[3,8,5,6,9,6,5,8,2,2],
-[6,3,7,5,6,6,7,2,8,4],
-[7,2,5,2,4,4,7,2,5,7],
-[7,4,6,8,4,9,6,5,8,9],
-[5,2,7,8,6,3,5,7,5,6],
-[3,2,8,7,9,5,2,8,3,2],
-[7,9,9,3,9,9,2,2,4,5],
-[5,9,5,7,9,5,9,6,6,5],
-[6,3,9,4,8,6,2,6,3,7],]
+def clean_board(grid, rows, cols):
+    cnt = 0
+    for i in range(rows):
+        for j in range(cols):
+            if grid[i][j] == -math.inf:
+                grid[i][j] = 0
+                cnt += 1
+    return cnt
+
+def advance_and_get_flashes(grid, rows, cols):
+    add_to_all_cells(grid, rows, cols, 1)
+    while fls := get_flash(grid, rows, cols):
+        flash(grid, rows, cols, fls)
+    return clean_board(grid, rows, cols)
 
 total = 0
 print_grid(grid)
-for i in range(2):
+for i in range(100):
     total += advance_and_get_flashes(grid, len(grid), len(grid[0]))
-    if i == 0 and grid != lmao:
-        print("not ok")
-        exit()
     print_grid(grid)
 print(total)
