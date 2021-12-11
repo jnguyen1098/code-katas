@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
+"""Colour stuff for Python."""
+
+from typing import Any
+
 
 class ANSI:
-    BOLD = '\x1B[1m'  # BOLD
-    DIM  = '\x1B[2m'  # DIM
-    UNDR = '\x1B[4m'  # UNDERLINE 
-    BLNK = '\x1B[5m'  # BLINKING
-    REV  = '\x1B[7m'  # INVERTED COLOURS
-    HIDN = '\x1B[8m'  # HIDDEN TEXT
+    """ANSI colour enum."""
 
-    RED  = "\x1B[31m"  # RED 
-    GRN  = "\x1B[32m"  # GREEN
-    YEL  = "\x1B[33m"  # YELLOW 
-    BLU  = "\x1B[34m"  # BLUE
-    MAG  = "\x1B[35m"  # MAGENTA
-    CYA  = "\x1B[36m"  # CYAN
-    WHT  = "\x1B[37m"  # WHITE
+    BOLD = "\x1B[1m"  # BOLD
+    DIM = "\x1B[2m"  # DIM
+    UNDR = "\x1B[4m"  # UNDERLINE
+    BLNK = "\x1B[5m"  # BLINKING
+    REV = "\x1B[7m"  # INVERTED COLOURS
+    HIDN = "\x1B[8m"  # HIDDEN TEXT
+
+    RED = "\x1B[31m"  # RED
+    GRN = "\x1B[32m"  # GREEN
+    YEL = "\x1B[33m"  # YELLOW
+    BLU = "\x1B[34m"  # BLUE
+    MAG = "\x1B[35m"  # MAGENTA
+    CYA = "\x1B[36m"  # CYAN
+    WHT = "\x1B[37m"  # WHITE
 
     LRED = "\x1B[91m"  # LIGHT RED
     LGRN = "\x1B[92m"  # LIGHT GREEN
@@ -35,89 +41,151 @@ class ANSI:
     RESET = "\x1B[0m"  # RESET ALL
 
     @staticmethod
-    def colourize(s, col):
-        return f"{col}{s}{ANSI.RESET}"
+    def concat(*args: Any) -> str:
+        """Return concatenated string."""
+        return str("".join(args))
 
-def bold(s):
-    return ANSI.colourize(s, ANSI.BOLD)
+    @staticmethod
+    def colourize(string: str, col: str) -> str:
+        """Colourize string."""
+        return ANSI.concat(col, string, ANSI.RESET)
 
-def dim(s):
-    return ANSI.colourize(s, ANSI.DIM)
 
-def undr(s):
-    return ANSI.colourize(s, ANSI.UNDR)
+def bold(string: str) -> str:
+    """Bold text."""
+    return ANSI.colourize(string, ANSI.BOLD)
 
-def blnk(s):
-    return ANSI.colourize(s, ANSI.BLNK)
 
-def rev(s):
-    return ANSI.colourize(s, ANSI.REV)
+def dim(string: str) -> str:
+    """Dim text."""
+    return ANSI.colourize(string, ANSI.DIM)
 
-def hidn(s):
-    return ANSI.colourize(s, ANSI.HIDN)
 
-def red(s):
-    return ANSI.colourize(s, ANSI.RED)
+def undr(string: str) -> str:
+    """Underline text."""
+    return ANSI.colourize(string, ANSI.UNDR)
 
-def grn(s):
-    return ANSI.colourize(s, ANSI.GRN)
 
-def yel(s):
-    return ANSI.colourize(s, ANSI.YEL)
+def blnk(string: str) -> str:
+    """Blink text."""
+    return ANSI.colourize(string, ANSI.BLNK)
 
-def blu(s):
-    return ANSI.colourize(s, ANSI.BLU)
 
-def mag(s):
-    return ANSI.colourize(s, ANSI.MAG)
+def rev(string: str) -> str:
+    """Invert text colour/background."""
+    return ANSI.colourize(string, ANSI.REV)
 
-def cya(s):
-    return ANSI.colourize(s, ANSI.CYA)
 
-def wht(s):
-    return ANSI.colourize(s, ANSI.WHT)
+def hidn(string: str) -> str:
+    """Hide text."""
+    return ANSI.colourize(string, ANSI.HIDN)
 
-def lred(s):
-    return ANSI.colourize(s, ANSI.LRED)
 
-def lgrn(s):
-    return ANSI.colourize(s, ANSI.LGRN)
+def red(string: str) -> str:
+    """Make text red."""
+    return ANSI.colourize(string, ANSI.RED)
 
-def lyel(s):
-    return ANSI.colourize(s, ANSI.LYEL)
 
-def lblu(s):
-    return ANSI.colourize(s, ANSI.LBLU)
+def grn(string: str) -> str:
+    """Make text green."""
+    return ANSI.colourize(string, ANSI.GRN)
 
-def lmag(s):
-    return ANSI.colourize(s, ANSI.LMAG)
 
-def lcya(s):
-    return ANSI.colourize(s, ANSI.LCYA)
+def yel(string: str) -> str:
+    """Make text yellow."""
+    return ANSI.colourize(string, ANSI.YEL)
 
-def lwht(s):
-    return ANSI.colourize(s, ANSI.LWHT)
 
-def bred(s):
-    return ANSI.colourize(s, ANSI.BRED)
+def blu(string: str) -> str:
+    """Make text blue."""
+    return ANSI.colourize(string, ANSI.BLU)
 
-def bgrn(s):
-    return ANSI.colourize(s, ANSI.BGRN)
 
-def byel(s):
-    return ANSI.colourize(s, ANSI.BYEL)
+def mag(string: str) -> str:
+    """Make text magenta."""
+    return ANSI.colourize(string, ANSI.MAG)
 
-def bblu(s):
-    return ANSI.colourize(s, ANSI.BBLU)
 
-def bmag(s):
-    return ANSI.colourize(s, ANSI.BMAG)
+def cya(string: str) -> str:
+    """Make text cyan."""
+    return ANSI.colourize(string, ANSI.CYA)
 
-def bcya(s):
-    return ANSI.colourize(s, ANSI.BCYA)
 
-def bwht(s):
-    return ANSI.colourize(s, ANSI.BWHT)
+def wht(string: str) -> str:
+    """Make text white."""
+    return ANSI.colourize(string, ANSI.WHT)
 
-def reset(s):
-    return ANSI.colourize(s, ANSI.RESET)
+
+def lred(string: str) -> str:
+    """Make text light red."""
+    return ANSI.colourize(string, ANSI.LRED)
+
+
+def lgrn(string: str) -> str:
+    """Make text light green."""
+    return ANSI.colourize(string, ANSI.LGRN)
+
+
+def lyel(string: str) -> str:
+    """Make text light yellow."""
+    return ANSI.colourize(string, ANSI.LYEL)
+
+
+def lblu(string: str) -> str:
+    """Make text light blue."""
+    return ANSI.colourize(string, ANSI.LBLU)
+
+
+def lmag(string: str) -> str:
+    """Make text light magenta."""
+    return ANSI.colourize(string, ANSI.LMAG)
+
+
+def lcya(string: str) -> str:
+    """Make text light cyan."""
+    return ANSI.colourize(string, ANSI.LCYA)
+
+
+def lwht(string: str) -> str:
+    """Make text light white."""
+    return ANSI.colourize(string, ANSI.LWHT)
+
+
+def bred(string: str) -> str:
+    """Make text 'background red'."""
+    return ANSI.colourize(string, ANSI.BRED)
+
+
+def bgrn(string: str) -> str:
+    """Make text 'background green'."""
+    return ANSI.colourize(string, ANSI.BGRN)
+
+
+def byel(string: str) -> str:
+    """Make text 'background yellow'."""
+    return ANSI.colourize(string, ANSI.BYEL)
+
+
+def bblu(string: str) -> str:
+    """Make text 'background blue'."""
+    return ANSI.colourize(string, ANSI.BBLU)
+
+
+def bmag(string: str) -> str:
+    """Make text 'background magenta'."""
+    return ANSI.colourize(string, ANSI.BMAG)
+
+
+def bcya(string: str) -> str:
+    """Make text 'background cyan'."""
+    return ANSI.colourize(string, ANSI.BCYA)
+
+
+def bwht(string: str) -> str:
+    """Make text 'background white'."""
+    return ANSI.colourize(string, ANSI.BWHT)
+
+
+def reset(string: str) -> str:
+    """Reset text."""
+    return ANSI.colourize(string, ANSI.RESET)
