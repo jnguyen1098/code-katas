@@ -1,5 +1,5 @@
 - push next day boilerplate
-- open vscode
+- open vscode and a regex site
 - open code terminal
 - open run terminal
 - set zoom of terminal (3-4 notches)?
