@@ -21,7 +21,8 @@ def print_arr(arr, sep=""):
 
 revdict = lambda dt: {v: k for k, v in dt.items()}
 
-introw = lambda text: list(map(int, text.strip().split()))
+strsep = lambda text, sep=None: list(text.strip().split(sep))
+intsep  = lambda text, sep=None: list(map(int, text.strip().split(sep)))
 intgrid = lambda text: list(map(int, [char for char in text.strip()]))
 parse = lambda pattern, text: re.match(pattern, text).groups()
 
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     inputname = "real"
     inputname = "example"
     inputname = "small"
+    inputname = "jason"
 
     lines = []
     gen = yield_line(inputname)
@@ -40,6 +42,6 @@ if __name__ == "__main__":
     for line in gen:
         lines.append(line)
 
-    print_arr(lines)
+    print_arr(lines, "|")
 
     print(f"{len(lines)} lines in the array")
