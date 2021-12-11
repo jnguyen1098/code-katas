@@ -185,7 +185,3 @@ def bwht(string: str) -> str:
     """Make text 'background white'."""
     return ANSI.colourize(string, ANSI.BWHT)
 
-
-def reset(string: str) -> str:
-    """Reset text."""
-    return ANSI.colourize(string, ANSI.RESET)
