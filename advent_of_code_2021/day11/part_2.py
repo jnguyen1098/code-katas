@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
 import math
-
-from math import gcd, floor, sqrt, log
-from collections import defaultdict, deque, Counter
-from bisect import bisect_left, bisect_right
 
 class bcolors:
     HEADER = '\033[95m'
@@ -18,88 +13,84 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+class Grid:
+    def __init__(self, filename, sentinel):
+        lines = open(filename, "r").read().splitlines()
+        self.grid = [[int(char) for char in line] for line in lines]
+        self.rows = len(self.grid)
+        self.cols = len(self.grid[0])
+        self.sentinel = sentinel
 
-MOD = 1000000007
+    def __str__(self):
+        result = []
+        for row in self.grid:
+            row_line = []
+            for char in row:
+                if char == 0:
+                    row_line.append(bcolors.OKCYAN + str(char) + bcolors.ENDC + " ")
+                elif char == self.sentinel:
+                    row_line.append(bcolors.OKBLUE + "O" + bcolors.ENDC + " ")
+                elif char > 9:
+                    row_line.append(bcolors.FAIL + "X" + bcolors.ENDC + " ")
+                elif char <= 9:
+                    row_line.append(str(char) + " ")
+            result.append("".join(row_line))
+        result.append("")
+        return "\n".join(result)
 
-inputname = "small"
-inputname = "example"
-inputname = "real"
+    def add_to_all_cells(self, amount):
+        for i in range(self.rows):
+            for j in range(self.cols):
+                self.grid[i][j] += amount
 
-MOVES = ((-1, -1), (-1, 0), (-1, 1),
-         (0, -1),           (0, 1),
-         (1, -1),  (1, 0),  (1, 1))
+    def add_around_cell(self, x, y, amount):
+        MOVES = ((-1, -1), (-1, 0), (-1, 1),
+                 (0, -1),           (0, 1),
+                 (1, -1),  (1, 0),  (1, 1),)
+        for move in MOVES:
+            new_x = x + move[0]
+            new_y = y + move[1]
+            if new_x >= 0 and new_x < self.rows and new_y >= 0 and new_y < self.cols:
+                self.grid[new_x][new_y] += amount
 
-_lines = open(inputname, "r").read().splitlines()
-grid = [[int(char) for char in line] for line in _lines]
+    def get_flash(self):
+        fls = set()
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.grid[i][j] > 9:
+                    fls.add((i, j))
+        return fls
 
-def print_grid(grid):
-    for i in grid:
-        for j in i:
-            if j == 0:
-                print(bcolors.OKCYAN + str(j) + bcolors.ENDC + " ", end="")
-            elif j == -math.inf:
-                print(bcolors.OKBLUE + "O" + bcolors.ENDC + " ", end="")
-            elif j > 9:
-                print(bcolors.FAIL + "X" + bcolors.ENDC + " ", end="")
-            elif j <= 9:
-                print(str(j) + " ", end="")
-            else:
-                print("broken")
-                exit()
-        print()
-    print()
+    def get_new_flash(self, old_flash):
+        return self.get_flash() - old_flash
+
+    def flash(self, fls):
+        for x, y in fls:
+            self.add_around_cell(x, y, 1)
+            self.grid[x][y] = self.sentinel
+
+    def clean_board(self):
+        cnt = 0
+        for i in range(self.rows):
+           for j in range(self.cols):
+                if self.grid[i][j] == self.sentinel:
+                    self.grid[i][j] = 0
+                    cnt += 1
+        return cnt
+
+    def advance_and_get_flashes(self):
+        self.add_to_all_cells(1)
+        while fls := self.get_flash():
+            self.flash(fls)
+        return self.clean_board()
 
 
-def add_to_all_cells(grid, rows, cols, amt):
-    for i in range(rows):
-        for j in range(cols):
-            grid[i][j] += amt
-
-def add_around_cell(grid, rows, cols, x, y, amt):
-    for move in MOVES:
-        new_x = x + move[0]
-        new_y = y + move[1]
-        if new_x >= 0 and new_x < rows and new_y >= 0 and new_y < cols:
-            grid[new_x][new_y] += amt
-
-def get_flash(grid, rows, cols):
-    fls = set()
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] > 9:
-                fls.add((i, j))
-    return fls
-
-def get_new_flash(grid, rows, cols, old_flash):
-    new_fls = get_flash(grid, rows, cols)
-    return new_fls - old_flash
-
-def flash(grid, rows, cols, fls):
-    for x, y in fls:
-        add_around_cell(grid, rows, cols, x, y, 1)
-        grid[x][y] = -math.inf
-
-def clean_board(grid, rows, cols):
-    cnt = 0
-    for i in range(rows):
-        for j in range(cols):
-            if grid[i][j] == -math.inf:
-                grid[i][j] = 0
-                cnt += 1
-    return cnt
-
-def advance_and_get_flashes(grid, rows, cols):
-    add_to_all_cells(grid, rows, cols, 1)
-    while fls := get_flash(grid, rows, cols):
-        flash(grid, rows, cols, fls)
-    return clean_board(grid, rows, cols)
-
-total = 0
-print_grid(grid)
-i = 0
-while True:
-    if advance_and_get_flashes(grid, len(grid), len(grid[0])) == len(grid) * len(grid[0]):
-        print(i + 1)
-        exit()
-    i += 1
-    print_grid(grid)
+if __name__ == "__main__":
+    total = 0
+    grid = Grid("real", -math.inf)
+    print(grid)
+    for i in range(1000000000):
+        if grid.advance_and_get_flashes() == grid.rows * grid.cols:
+            print(i + 1)
+            exit()
+        print(grid)
