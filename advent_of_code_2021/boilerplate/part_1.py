@@ -18,20 +18,20 @@ def solve(prob, inputname):
     print(f"{len(lines)} lines in the array")
 
     if prob == 1:
-        return 10
+        return 1
     elif prob == 2:
-        return 20
+        return 2
     else:
         print("Invalid problem code")
         exit()
 
 if __name__ == "__main__":
-    inputname = "real"
-    inputname = "example"
-    inputname = "small"
+    inputs = ["small", "example", "real"]
 
-    output1 = solve(1, inputname)
-    print(f"Problem 1: {output1}")
-
-    output2 = solve(2, inputname)
-    print(f"Problem 2: {output2}")
+    for filename in inputs:
+        print(f"Filename: {filename}")
+        output1 = solve(1, filename)
+        print(f"Problem 1: {output1}")
+        output2 = solve(2, filename)
+        print(f"Problem 2: {output2}")
+        print("-" * 40)
