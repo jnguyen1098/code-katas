@@ -15,6 +15,5 @@ inputname = "example"
 lines = open(inputname, "r").read().splitlines()
 
 for idx, line in enumerate(lines):
-    counter = Counter([int(chr) for chr in line])
-    print(counter)
+    print(line)
 print("linecount:", len(lines))
