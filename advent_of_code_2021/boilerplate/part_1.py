@@ -16,6 +16,23 @@ from ansi import *
 
 MOD = 1000000007
 
+class DIR:
+    NW, N, NE = (-1, -1), (-1,  0), (-1,  1)
+    W,     E = ( 0,  1), ( 0, -1)
+    SW, S, SE = ( 1, -1), ( 1,  0), ( 1,  1)
+    DIAG = (NW, NE, SE, SW)
+    HORZ = (E, W)
+    VERT = (N, S)
+    SURR = (*HORZ, *VERT, *DIAG)
+    ADJA = (*HORZ, *VERT)
+
+def point(old, new, rows, cols):
+    new_x = old[0] + new[0]
+    new_y = old[1] + new[1]
+    if new_x >= 0 and new_x < rows and new_y >= 0 and new_y < cols:
+        return (new_x, new_y)
+    return None
+
 def print_arr(arr, sep=""):
     print('\n'.join([sep.join([str(cell) for cell in row]) for row in arr]))
 
@@ -34,13 +51,25 @@ if __name__ == "__main__":
     inputname = "real"
     inputname = "example"
     inputname = "small"
-    inputname = "jason"
 
     lines = []
     gen = yield_line(inputname)
 
     for line in gen:
         lines.append(line)
+
+    lines = [
+        [" ", " ", " ", " ", " "],
+        [" ", " ", " ", " ", " "],
+        [" ", " ", " ", " ", " "],
+        [" ", " ", " ", " ", " "],
+        [" ", " ", " ", " ", " "],
+    ]
+
+    start = (0, 0)
+    for move in DIR.SURR:
+        if new_point := point(start, move, 5, 5):
+            lines[new_point[0]][new_point[1]] = "X"
 
     print_arr(lines, "|")
 
