@@ -26,6 +26,13 @@ class DIR:
     SURR = (*HORZ, *VERT, *DIAG)
     ADJA = (*HORZ, *VERT)
 
+def expect(actual, expected):
+    if actual != expected:
+        ret_msg = f"FAIL: {expected} but got {actual}"
+        ret_sta = False
+        return ret_sta, ret_msg
+    return True, "PASS"
+
 def point(old, new, rows, cols):
     new_x = old[0] + new[0]
     new_y = old[1] + new[1]

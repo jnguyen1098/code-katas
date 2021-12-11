@@ -25,13 +25,6 @@ def solve(prob, inputname):
         print("Invalid problem code")
         exit()
 
-def expect(actual, expected):
-    if actual != expected:
-        ret_msg = f"FAIL: {expected} but got {actual}"
-        ret_sta = False
-        return ret_sta, ret_msg
-    return True, "PASS"
-
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
     exp = [ [10, 20], [30, 40], [50, 60] ]
