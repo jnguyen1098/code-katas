@@ -43,7 +43,7 @@ class ANSI:
     @staticmethod
     def concat(*args: Any) -> str:
         """Return concatenated string."""
-        return "".join(args)
+        return "".join([str(thing) for thing in args])
 
     @staticmethod
     def colourize(string: str, col: str) -> str:
