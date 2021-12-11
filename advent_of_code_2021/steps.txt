@@ -2,7 +2,9 @@
 - open vscode
 - open code terminal
 - open run terminal
+- set zoom of terminal (3-4 notches)?
 - open input storage
   - one for code
   - one for real input
   - one for example input
+- code screenshot site
