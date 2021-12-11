@@ -73,7 +73,6 @@ class Grid:
 
 
 if __name__ == "__main__":
-    total = 0
     grid = Grid("real", -math.inf)
     print(grid)
     for i in range(1000000):
