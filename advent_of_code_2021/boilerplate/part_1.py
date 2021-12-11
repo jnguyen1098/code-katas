@@ -3,6 +3,7 @@
 import copy
 import sys
 import math
+import re
 
 sys.path.append("..")
 
@@ -18,17 +19,28 @@ MOD = 1000000007
 def rev_dict(input_dict):
     return {v: k for k, v in input_dict.items()}
 
-def print_arr(arr):
-    print('\n'.join([' '.join([str(cell) for cell in row]) for row in arr]))
+def print_arr(arr, sep=""):
+    print('\n'.join([sep.join([str(cell) for cell in row]) for row in arr]))
 
 introw = lambda text: list(map(int, text.strip().split()))
 intgrid = lambda text: list(map(int, [char for char in text.strip()]))
+parse = lambda pattern, text: re.match(pattern, text).groups()
 
-inputname = "real"
-inputname = "example"
+def yield_line(filename):
+    for line in open(filename, "r").read().splitlines():
+        yield line
 
-lines = open(inputname, "r").read().splitlines()
+if __name__ == "__main__":
+    inputname = "real"
+    inputname = "example"
+    inputname = "small"
 
-for idx, line in enumerate(lines):
-    print(idx, line)
-print("linecount:", len(lines))
+    lines = []
+    gen = yield_line(inputname)
+
+    for line in gen:
+        lines.append(line)
+
+    print_arr(lines)
+
+    print(f"{len(lines)} lines in the array")
