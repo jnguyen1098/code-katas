@@ -1,0 +1,8 @@
+- push next day boilerplate
+- open vscode
+- open code terminal
+- open run terminal
+- open input storage
+  - one for code
+  - one for real input
+  - one for example input
