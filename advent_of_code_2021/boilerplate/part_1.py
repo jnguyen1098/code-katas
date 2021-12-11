@@ -16,11 +16,10 @@ from ansi import *
 
 MOD = 1000000007
 
-def rev_dict(input_dict):
-    return {v: k for k, v in input_dict.items()}
-
 def print_arr(arr, sep=""):
     print('\n'.join([sep.join([str(cell) for cell in row]) for row in arr]))
+
+revdict = lambda dt: {v: k for k, v in dt.items()}
 
 introw = lambda text: list(map(int, text.strip().split()))
 intgrid = lambda text: list(map(int, [char for char in text.strip()]))
