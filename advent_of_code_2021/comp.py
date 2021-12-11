@@ -19,7 +19,7 @@ MOD = 1000000007
 class DIR:
     """Directions for graphs/grid problems."""
     NW, N, NE = (-1, -1), (-1,  0), (-1,  1)
-    W,     E = ( 0,  1), ( 0, -1)
+    W,     E  = ( 0, -1),           ( 0,  1)
     SW, S, SE = ( 1, -1), ( 1,  0), ( 1,  1)
     DIAG = (NW, NE, SE, SW)
     HORZ = (E, W)
