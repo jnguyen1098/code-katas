@@ -48,14 +48,23 @@ def print_grid(grid):
     print()
 
 
-def incr_all(grid, rows, cols, amt):
+def add_to_all_cells(grid, rows, cols, amt):
     for i in range(rows):
         for j in range(cols):
-            grid[i][j] += amount
+            grid[i][j] += amt
+
+def get_flash(grid, rows, cols):
+    fls = set()
+    for i in range(rows):
+        for j in range(cols):
+            if grid[i][j] > 9:
+                fls.add((i, j))
+    return fls
 
 def advance_and_get_flashes(grid, rows, cols):
-    incr_all(grid, rows, cols, 1)
-    return 0
+    add_to_all_cells(grid, rows, cols, 1)
+    fls = get_flash(grid, rows, cols)
+    return len(fls)
 
 total = 0
 print_grid(grid)
