@@ -17,19 +17,6 @@ if __name__ == "__main__":
     for line in gen:
         lines.append(line)
 
-    lines = [
-        [" ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " "],
-    ]
-
-    start = (0, 0)
-    for move in DIR.SURR:
-        if new_point := point(start, move, 5, 5):
-            lines[new_point[0]][new_point[1]] = "X"
-
-    print_arr(lines, "|")
+    print_arr(lines)
 
     print(f"{len(lines)} lines in the array")
