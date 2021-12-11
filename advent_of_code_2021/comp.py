@@ -35,7 +35,7 @@ def expect(actual, expected):
         return ret_sta, ret_msg
     return True, "PASS"
 
-def point(old, new, rows, cols):
+def get_point(old, new, rows, cols):
     """Translates a point given a displacement tuple."""
     new_x = old[0] + new[0]
     new_y = old[1] + new[1]
