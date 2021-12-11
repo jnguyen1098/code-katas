@@ -4,7 +4,7 @@ import sys
 import math
 
 from math import gcd, floor, sqrt, log
-from collections import defaultdict, deque
+from collections import defaultdict, deque, Counter
 from bisect import bisect_left, bisect_right
 
 MOD = 1000000007
@@ -15,5 +15,6 @@ inputname = "example"
 lines = open(inputname, "r").read().splitlines()
 
 for idx, line in enumerate(lines):
-    print(idx, line)
+    counter = Counter([int(chr) for chr in line])
+    print(counter)
 print("linecount:", len(lines))
