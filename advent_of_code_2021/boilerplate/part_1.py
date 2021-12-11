@@ -25,17 +25,22 @@ def solve(prob, inputname):
         print("Invalid problem code")
         exit()
 
+def expect(actual, expected):
+    if actual != expected:
+        ret_msg = f"FAIL: {expected} but got {actual}"
+        ret_sta = False
+        return ret_sta, ret_msg
+    return True, "PASS"
+
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
-    expect = [ [10, 20], [30, 40], [50, 60] ]
+    exp = [ [10, 20], [30, 40], [50, 60] ]
 
-    for filename, expected in zip(inputs, expect):
-        print(f"Filename: {filename}")
+    for filename, expected in zip(inputs, exp):
+        print(cya(rev(f"Filename: {filename}")))
         for tno in [1, 2]:
             output = solve(tno, filename)
-            passed = output == expected[tno - 1]
+            passed, msg = expect(output, expected[tno - 1])
             result = rev(grn("PASS") if passed else red("FAIL"))
-            print(f"Part {tno}: {output} {result}")
-            if not passed:
-                print(f"Expected {expected[tno - 1]} but got {output}")
-        print("-" * 40)
+            print(f"Part {tno}: {output} {grn(msg) if passed else red(msg)}")
+        print("\n" * 2)
