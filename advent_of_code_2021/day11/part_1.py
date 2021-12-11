@@ -76,8 +76,7 @@ if __name__ == "__main__":
     total = 0
     grid = Grid("real", -math.inf)
     print(grid)
-    for i in range(1000000):
-        if grid.advance_and_get_flashes() == grid.rows * grid.cols:
-            print(i + 1)
-            exit()
+    for i in range(100):
+        total += grid.advance_and_get_flashes()
         print(grid)
+    print(total)
