@@ -12,8 +12,18 @@ MOD = 1000000007
 inputname = "real"
 inputname = "example"
 
-lines = open(inputname, "r").read().splitlines()
+_lines = open(inputname, "r").read().splitlines()
+grid = [[int(char) for char in line] for line in _lines]
 
-for idx, line in enumerate(lines):
-    print(line)
-print("linecount:", len(lines))
+def print_grid(grid):
+    for i in grid:
+        print(i)
+    print()
+
+def advance(grid, rows, cols):
+    pass
+
+print_grid(grid)
+for i in range(2):
+    advance(grid, len(grid), len(grid[0]))
+    print_grid(grid)
