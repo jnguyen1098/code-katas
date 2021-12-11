@@ -185,3 +185,5 @@ def bwht(string: str) -> str:
     """Make text 'background white'."""
     return ANSI.colourize(string, ANSI.BWHT)
 
+print(bold(bblu("hello world")))
+print(dim(lgrn("hello world")))
