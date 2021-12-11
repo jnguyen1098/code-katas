@@ -27,11 +27,15 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
+    expect = [ [10, 20], [30, 40], [50, 60] ]
 
-    for filename in inputs:
+    for filename, expected in zip(inputs, expect):
         print(f"Filename: {filename}")
-        output1 = solve(1, filename)
-        print(f"Problem 1: {output1}")
-        output2 = solve(2, filename)
-        print(f"Problem 2: {output2}")
+        for tno in [1, 2]:
+            output = solve(tno, filename)
+            passed = output == expected[tno - 1]
+            result = rev(grn("PASS") if passed else red("FAIL"))
+            print(f"Part {tno}: {output} {result}")
+            if not passed:
+                print(f"Expected {expected[tno - 1]} but got {output}")
         print("-" * 40)
