@@ -43,7 +43,7 @@ class ANSI:
     @staticmethod
     def concat(*args: Any) -> str:
         """Return concatenated string."""
-        return str("".join(args))
+        return "".join(args)
 
     @staticmethod
     def colourize(string: str, col: str) -> str:
@@ -185,5 +185,3 @@ def bwht(string: str) -> str:
     """Make text 'background white'."""
     return ANSI.colourize(string, ANSI.BWHT)
 
-print(bold(bblu("hello world")))
-print(dim(lgrn("hello world")))
