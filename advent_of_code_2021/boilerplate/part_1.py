@@ -27,7 +27,7 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
-    exp = [ [10, 20], [30, 40], [50, 60] ]
+    exp = [ ["string of doom", 20], [30, 40], [50, 60] ]
 
     for filename, expected in zip(inputs, exp):
         print(cya(rev(f"Filename: {filename}")))

@@ -28,7 +28,7 @@ class DIR:
 
 def expect(actual, expected):
     if actual != expected:
-        ret_msg = f"FAIL: {expected} but got {actual}"
+        ret_msg = f"FAIL: Expected {expected} but got {actual}"
         ret_sta = False
         return ret_sta, ret_msg
     return True, "PASS"
