@@ -27,13 +27,13 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
-    exp = [ [10, 20], [30, 40], [50, 60], ]
+    expcts = [[10, 20, 30], [40, 50, 60]]
 
-    for filename, expected in zip(inputs, exp):
-        print(cya(rev(f"Filename: {filename}")))
-        for tno in [1, 2]:
-            output = solve(tno, filename)
-            passed, msg = expect(output, expected[tno - 1])
+    for idx, part in enumerate(expcts):
+        for filename, expected in zip(inputs, part):
+            print(cya(rev(f"Filename: {filename}")))
+            output = solve(idx + 1, filename)
+            passed, msg = expect(output, expected)
             result = rev(grn("PASS") if passed else red("FAIL"))
-            print(f"Part {tno}: {output} {grn(msg) if passed else red(msg)}")
+            print(f"Part {idx + 1}: {output} {grn(msg) if passed else red(msg)}\n")
         print("\n" * 2)
