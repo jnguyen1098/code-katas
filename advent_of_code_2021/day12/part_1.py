@@ -11,9 +11,9 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        lines.append(strsep(line, "-"))
 
-    print_arr(lines)
+    print_arr(lines, " ")
 
     print(f"{len(lines)} lines in the array")
 
