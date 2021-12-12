@@ -13,9 +13,12 @@ def solve(prob, inputname):
     for line in gen:
         lines.append(strsep(line, "-"))
 
-    print_arr(lines, " ")
+    start = defaultdict(list)
 
-    print(f"{len(lines)} lines in the array")
+    for left, right in lines:
+        start[left].append(right)
+
+    print(start)
 
     if prob == 1:
         return 1
