@@ -7,24 +7,7 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
-def dfs(graph, key, seen, path, counter):
-    if key == "end":
-        counter.data += 1
-        return counter.data
-    if not key.isupper():
-        seen.add(key)
-    for value in graph[key]:
-        if value not in seen:
-            path.append(value)
-            dfs(graph, value, seen, path, counter)
-            path.pop()
-            try:
-                seen.remove(value)
-            except:
-                pass
-    return counter.data
-
-def dfs2(graph, key, seen, path, counter, vip, paths):
+def dfs(graph, key, seen, path, counter, vip, paths):
     if key == "end":
         paths.add(str(json.dumps(path[:])))
         counter.data += 1
@@ -36,7 +19,7 @@ def dfs2(graph, key, seen, path, counter, vip, paths):
     for value in graph[key]:
         if value not in seen or seen[value] == 0 or (value == vip and seen[value] < 2):
             path.append(value)
-            dfs2(graph, value, seen, path, counter, vip, paths)
+            dfs(graph, value, seen, path, counter, vip, paths)
             path.pop()
             try:
                 seen[value] -= 1
@@ -60,14 +43,13 @@ def solve(prob, inputname):
         start[right].append(left)
 
     if prob == 1:
-        return dfs(start, "start", set(), ["start"], Pointer(0))
+        return dfs(start, "start", {}, ["start"], Pointer(0), None, set())
     elif prob == 2:
         count = 0
         seen = set()
         for key in start.keys():
             if key in ["start", "end"] or key.isupper(): continue
-            tmp = dfs2(start, "start", {}, ["start"], Pointer(0), key, seen)
-            count += tmp
+            count += dfs(start, "start", {}, ["start"], Pointer(0), key, seen)
         return len(seen)
     else:
         print("Invalid problem code")
