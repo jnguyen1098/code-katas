@@ -11,22 +11,14 @@ def dfs(graph, key, seen, path, counter, vip, paths):
     if key == "end":
         paths.add(str(json.dumps(path[:])))
         counter.data += 1
-        return counter.data
     if not key.isupper():
-        if key not in seen:
-            seen[key] = 0
         seen[key] += 1
     for value in graph[key]:
-        if value not in seen or seen[value] == 0 or (value == vip and seen[value] < 2):
+        if not seen[value] or (value == vip and seen[value] < 2):
             path.append(value)
             dfs(graph, value, seen, path, counter, vip, paths)
             path.pop()
-            try:
-                seen[value] -= 1
-                if seen[value] == 0:
-                    seen.pop(value)
-            except:
-                pass
+            seen[value] = max(0, seen[value] - 1)
     return counter.data
 
 def solve(prob, inputname):
@@ -43,13 +35,13 @@ def solve(prob, inputname):
         start[right].append(left)
 
     if prob == 1:
-        return dfs(start, "start", {}, ["start"], Pointer(0), None, set())
+        return dfs(start, "start", defaultdict(int), ["start"], Pointer(0), None, set())
     elif prob == 2:
         count = 0
         seen = set()
         for key in start.keys():
             if key in ["start", "end"] or key.isupper(): continue
-            count += dfs(start, "start", {}, ["start"], Pointer(0), key, seen)
+            count += dfs(start, "start", defaultdict(int), ["start"], Pointer(0), key, seen)
         return len(seen)
     else:
         print("Invalid problem code")
