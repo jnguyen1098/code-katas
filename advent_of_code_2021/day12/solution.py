@@ -7,34 +7,33 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
-class Container:
+class Pointer:
     def __init__(self):
-        self.count = 0
+        self.data = 0
 
-def dfs(graph, key, seen, path, container):
+def dfs(graph, key, seen, path, counter):
     if key == "end":
-#print("hit the end. final path", path)
-        container.count += 1
-        return container.count
+        counter.data += 1
+        return counter.data
     if not key.isupper():
         seen.add(key)
     for value in graph[key]:
         if value not in seen:
             path.append(value)
-            dfs(graph, value, seen, path, container)
+            dfs(graph, value, seen, path, counter)
             path.pop()
             try:
                 seen.remove(value)
             except:
                 pass
-    return container.count
+    return counter.data
 
-def dfs2(graph, key, seen, path, container, vip, paths):
+def dfs2(graph, key, seen, path, counter, vip, paths):
     if key == "end":
 #print("hit the end. final path", path)
         paths.add(str(json.dumps(path[:])))
-        container.count += 1
-        return container.count
+        counter.data += 1
+        return counter.data
     if not key.isupper():
         if key not in seen:
             seen[key] = 0
@@ -42,7 +41,7 @@ def dfs2(graph, key, seen, path, container, vip, paths):
     for value in graph[key]:
         if value not in seen or seen[value] == 0 or (value == vip and seen[value] < 2):
             path.append(value)
-            dfs2(graph, value, seen, path, container, vip, paths)
+            dfs2(graph, value, seen, path, counter, vip, paths)
             path.pop()
             try:
                 seen[value] -= 1
@@ -50,7 +49,7 @@ def dfs2(graph, key, seen, path, container, vip, paths):
                     seen.pop(value)
             except:
                 pass
-    return container.count
+    return counter.data
 
 def solve(prob, inputname):
     lines = []
@@ -66,13 +65,13 @@ def solve(prob, inputname):
         start[right].append(left)
 
     if prob == 1:
-        return dfs(start, "start", set(), ["start"], Container())
+        return dfs(start, "start", set(), ["start"], Pointer())
     elif prob == 2:
         count = 0
         seen = set()
         for key in start.keys():
             if key in ["start", "end"] or key.isupper(): continue
-            tmp = dfs2(start, "start", {}, ["start"], Container(), key, seen)
+            tmp = dfs2(start, "start", {}, ["start"], Pointer(), key, seen)
             count += tmp
         return len(seen)
     else:
