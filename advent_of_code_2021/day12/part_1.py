@@ -6,6 +6,16 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+def is_big(letter):
+    return letter.isupper()
+
+def dfs(graph, key, seen, path):
+    print(key)
+    seen.add(key)
+    for value in graph[key]:
+        if value not in seen:
+            dfs(graph, value, seen, path)
+
 def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
@@ -18,7 +28,7 @@ def solve(prob, inputname):
     for left, right in lines:
         start[left].append(right)
 
-    print(start)
+    dfs(start, "start", set(), [])
 
     if prob == 1:
         return 1
