@@ -28,6 +28,7 @@ def solve(prob, inputname):
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
     expcts = [[10, 20, 30], [40, 50, 60]]
+    shortc = True
 
     for idx, part in enumerate(expcts):
         for filename, expected in zip(inputs, part):
@@ -36,4 +37,5 @@ if __name__ == "__main__":
             passed, msg = expect(output, expected)
             result = rev(grn("PASS") if passed else red("FAIL"))
             print(f"Part {idx + 1}: {output} {grn(msg) if passed else red(msg)}\n")
+            if not passed and shortc: exit()
         print("\n" * 2)
