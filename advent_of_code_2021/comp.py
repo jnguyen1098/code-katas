@@ -6,6 +6,7 @@ import math
 import re
 
 sys.path.append("..")
+sys.setrecursionlimit(100000000)
 
 from math import ceil, floor, inf, log, sqrt
 from collections import defaultdict, deque
