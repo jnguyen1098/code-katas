@@ -51,7 +51,8 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
-    exp = [ [10, 20], [19, 40], [50, 60], ]
+    exp = [ [10, 36], [19, 40], [4970, 60], ]
+    short_circuit_file = True
 
     for filename, expected in zip(inputs, exp):
         print(cya(rev(f"Filename: {filename}")))
@@ -60,4 +61,5 @@ if __name__ == "__main__":
             passed, msg = expect(output, expected[tno - 1])
             result = rev(grn("PASS") if passed else red("FAIL"))
             print(f"Part {tno}: {output} {grn(msg) if passed else red(msg)}")
+            if not passed and short_circuit_file: exit()
         print("\n" * 2)
