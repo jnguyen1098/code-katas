@@ -28,6 +28,28 @@ def dfs(graph, key, seen, path, container):
                 pass
     return container.count
 
+def dfs2(graph, key, seen, path, container, vip):
+    if key == "end":
+        print("hit the end. final path", path)
+        container.count += 1
+        return container.count
+    if not key.isupper():
+        if key not in seen:
+            seen[key] = 0
+        seen[key] += 1
+    for value in graph[key]:
+        if value not in seen or seen[value] == 0:
+            path.append(value)
+            dfs2(graph, value, seen, path, container, vip)
+            path.pop()
+            try:
+                seen[value] -= 1
+                if seen[value] == 0:
+                    seen.pop(value)
+            except:
+                pass
+    return container.count
+
 def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
@@ -44,7 +66,12 @@ def solve(prob, inputname):
     if prob == 1:
         return dfs(start, "start", set(), ["start"], Container())
     elif prob == 2:
-        return 2
+        return dfs2(start, "start", {}, ["start"], Container(), None)
+        """
+        for key in start.keys():
+            if key in ["start", "end"] or key.isupper(): continue
+        return dfs2(start, "start", set(), ["start"], Container())
+        """
     else:
         print("Invalid problem code")
         exit()
