@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import sys
 sys.path.append("..")
 
@@ -12,7 +13,7 @@ class Container:
 
 def dfs(graph, key, seen, path, container):
     if key == "end":
-        print("hit the end. final path", path)
+#print("hit the end. final path", path)
         container.count += 1
         return container.count
     if not key.isupper():
@@ -28,9 +29,10 @@ def dfs(graph, key, seen, path, container):
                 pass
     return container.count
 
-def dfs2(graph, key, seen, path, container, vip):
+def dfs2(graph, key, seen, path, container, vip, paths):
     if key == "end":
-        print("hit the end. final path", path)
+#print("hit the end. final path", path)
+        paths.add(str(json.dumps(path[:])))
         container.count += 1
         return container.count
     if not key.isupper():
@@ -38,9 +40,9 @@ def dfs2(graph, key, seen, path, container, vip):
             seen[key] = 0
         seen[key] += 1
     for value in graph[key]:
-        if value not in seen or seen[value] == 0:
+        if value not in seen or seen[value] == 0 or (value == vip and seen[value] < 2):
             path.append(value)
-            dfs2(graph, value, seen, path, container, vip)
+            dfs2(graph, value, seen, path, container, vip, paths)
             path.pop()
             try:
                 seen[value] -= 1
@@ -66,19 +68,20 @@ def solve(prob, inputname):
     if prob == 1:
         return dfs(start, "start", set(), ["start"], Container())
     elif prob == 2:
-        return dfs2(start, "start", {}, ["start"], Container(), None)
-        """
+        count = 0
+        seen = set()
         for key in start.keys():
             if key in ["start", "end"] or key.isupper(): continue
-        return dfs2(start, "start", set(), ["start"], Container())
-        """
+            tmp = dfs2(start, "start", {}, ["start"], Container(), key, seen)
+            count += tmp
+        return len(seen)
     else:
         print("Invalid problem code")
         exit()
 
 if __name__ == "__main__":
     inputs = ["small", "example", "real"]
-    exp = [ [10, 36], [19, 40], [4970, 60], ]
+    exp = [ [10, 36], [19, 103], [4970, 137948], ]
     short_circuit_file = True
 
     for filename, expected in zip(inputs, exp):
