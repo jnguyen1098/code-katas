@@ -16,6 +16,9 @@ from ansi import *
 
 MOD = 1000000007
 
+class Pointer:
+    def __init__(self, data=None): self.data = data
+
 class DIR:
     """Directions for graphs/grid problems."""
     NW, N, NE = (-1, -1), (-1,  0), (-1,  1)

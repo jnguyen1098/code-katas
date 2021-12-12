@@ -7,10 +7,6 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
-class Pointer:
-    def __init__(self):
-        self.data = 0
-
 def dfs(graph, key, seen, path, counter):
     if key == "end":
         counter.data += 1
@@ -30,7 +26,6 @@ def dfs(graph, key, seen, path, counter):
 
 def dfs2(graph, key, seen, path, counter, vip, paths):
     if key == "end":
-#print("hit the end. final path", path)
         paths.add(str(json.dumps(path[:])))
         counter.data += 1
         return counter.data
@@ -65,13 +60,13 @@ def solve(prob, inputname):
         start[right].append(left)
 
     if prob == 1:
-        return dfs(start, "start", set(), ["start"], Pointer())
+        return dfs(start, "start", set(), ["start"], Pointer(0))
     elif prob == 2:
         count = 0
         seen = set()
         for key in start.keys():
             if key in ["start", "end"] or key.isupper(): continue
-            tmp = dfs2(start, "start", {}, ["start"], Pointer(), key, seen)
+            tmp = dfs2(start, "start", {}, ["start"], Pointer(0), key, seen)
             count += tmp
         return len(seen)
     else:
