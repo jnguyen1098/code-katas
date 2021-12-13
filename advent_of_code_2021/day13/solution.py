@@ -7,15 +7,20 @@ from ansi import *
 from comp import *
 
 def solve(prob, inputname):
-    lines = []
+    dots = []
+    folds = []
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        if line == "": break
+        dots.append(intsep(line, ","))
 
-    print_arr(lines)
+    for line in gen:
+        folds.append(parse(r"fold along \w+=(\d+)", line))
 
-    print(f"{len(lines)} lines in the array")
+    print_arr(dots, " ")
+    print()
+    print_arr(folds, " ")
 
     if prob == 1:
         return 1
