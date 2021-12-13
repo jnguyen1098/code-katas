@@ -6,6 +6,27 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+class Paper:
+    def __init__(self, dots, folds):
+        self.rows = max([dot[0] for dot in dots]) + 1
+        self.cols = max([dot[1] for dot in dots]) + 1
+        self.dots = dots
+        self.folds = folds
+        self.data = []
+        for row in range(self.cols):
+            self.data.append(["."] * self.rows)
+        for dot in self.dots:
+            self.draw(dot)
+
+    def draw(self, dot):
+        self.data[dot[1]][dot[0]] = "#"
+
+    def __str__(self):
+        rep = []
+        for row in self.data:
+            rep.append("".join(row))
+        return "\n".join(rep)
+
 def solve(prob, inputname):
     dots = []
     folds = []
@@ -21,6 +42,9 @@ def solve(prob, inputname):
     print_arr(dots, " ")
     print()
     print_arr(folds, " ")
+    print()
+    paper = Paper(dots, folds)
+    print(paper)
 
     if prob == 1:
         return 1
