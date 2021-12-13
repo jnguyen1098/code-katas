@@ -8,41 +8,24 @@ from comp import *
 
 class Paper:
     def __init__(self, dots, folds):
-        self.rows = max([dot[0] for dot in dots]) + 1
-        self.cols = max([dot[1] for dot in dots]) + 1
         self.dots = dots
         self.folds = folds
         self.data = []
-        for row in range(self.cols):
-            self.data.append(["."] * self.rows)
+        for row in range(max([dot[1] for dot in dots]) + 1):
+            self.data.append(["."] * (max([dot[0] for dot in dots]) + 1))
         for dot in self.dots:
-            self.draw_cm(dot, "#")
-
-    def draw_cm(self, dot, symbol):
-        self.data[dot[1]][dot[0]] = symbol
+            self.draw_rm((dot[1], dot[0]), "#")
 
     def draw_rm(self, dot, symbol):
         self.data[dot[0]][dot[1]] = symbol
 
-    def demo(self):
-        # Colour in the first row
-        for i in range(self.rows):
-            self.data[0][i] = "x"
-        # Colour in the first col
-        for i in range(self.cols):
-            self.data[i][0] = "o"
-
     def maintain_rows(self, x, y):
-        """Inclusive-Inclusive."""
-        self.data = copy.deepcopy(self.data[x : y + 1])
+        self.data = self.data[x : y + 1]
 
     def maintain_cols(self, x, y):
-        tmp_row = []
-        for i in range(len(self.data)):
-            tmp_row.append(self.data[i][x : y + 1])
-        self.data = tmp_row
+        self.data = [self.data[i][x : y + 1] for i in range(len(self.data))]
 
-    def fold(self, axis, disp):
+    def _fold(self, axis, disp):
         if axis == "y":
             for i in range(disp, len(self.data)):
                 for j in range(len(self.data[i])):
@@ -55,23 +38,21 @@ class Paper:
                     if self.data[i][j] == "#":
                         self.draw_rm((i, (disp - (j - disp))), "#")
             self.maintain_cols(0, disp - 1)
-        else:
-            print("Bad input", axis, disp)
-            exit()
+
+    def fold(self, times):
+        for i in range(times):
+            self._fold(self.folds[0][0], int(self.folds[0][1]))
+            self.folds.pop(0)
+        return self.count_dots()
 
     def count_dots(self):
         dot_count = 0
         for row in self.data:
-            for char in row:
-                if char == "#":
-                    dot_count += 1
+            dot_count += sum(map(lambda x: x == "#", row))
         return dot_count
 
     def __str__(self):
-        rep = []
-        for row in self.data:
-            rep.append("".join(row))
-        return "\n".join(rep)
+        return "\n".join(["".join(row) for row in self.data])
 
 def solve(prob, inputname):
     dots = []
@@ -85,25 +66,21 @@ def solve(prob, inputname):
     for line in gen:
         folds.append(parse(r"fold along (\w)+=(\d+)", line))
 
-    print_arr(dots, " ")
-    print()
-    print_arr(folds, " ")
-    print()
     paper = Paper(dots, folds)
-    print(paper, "\n")
 
     if prob == 1:
-        paper.fold(paper.folds[0][0], int(paper.folds[0][1]))
-        return paper.count_dots()
+        return paper.fold(1)
     elif prob == 2:
-        return 2
+        paper.fold(len(paper.folds))
+        print(paper)
+        return 0
     else:
         print("Invalid problem code")
         exit()
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[17, 30], [50, 60]]
+    expcts = [[17, 621], [0, 0]]
     shortc = True
 
     for idx, part in enumerate(expcts):
