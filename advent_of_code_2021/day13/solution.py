@@ -36,13 +36,24 @@ class Paper:
         """Inclusive-Inclusive."""
         self.data = copy.deepcopy(self.data[x : y + 1])
 
+    def maintain_cols(self, x, y):
+        tmp_row = []
+        for i in range(len(self.data)):
+            tmp_row.append(self.data[i][x : y + 1])
+        self.data = tmp_row
+
     def fold(self, axis, disp):
-        print("rows after", axis, disp)
-        for i in range(disp, len(self.data)):
-            for j in range(len(self.data[i])):
-                if self.data[i][j] == "#":
-                    self.draw_rm((disp - (i - disp), j), "#")
-        self.maintain_rows(0, disp - 1)
+        if axis == "y":
+            for i in range(disp, len(self.data)):
+                for j in range(len(self.data[i])):
+                    if self.data[i][j] == "#":
+                        self.draw_rm((disp - (i - disp), j), "#")
+            self.maintain_rows(0, disp - 1)
+        elif axis == "x":
+            self.maintain_cols(0, disp - 1)
+        else:
+            print("Bad input", axis, disp)
+            exit()
 
     def count_dots(self):
         dot_count = 0
@@ -75,15 +86,12 @@ def solve(prob, inputname):
     print_arr(folds, " ")
     print()
     paper = Paper(dots, folds)
-    """
     print(paper, "\n")
-    """
 
     if prob == 1:
         paper.fold(paper.folds[0][0], int(paper.folds[0][1]))
-        """
         print(paper, "\n")
-        """
+        paper.fold(paper.folds[1][0], int(paper.folds[1][1]))
         return paper.count_dots()
     elif prob == 2:
         return 2
@@ -103,5 +111,6 @@ if __name__ == "__main__":
             passed, msg = expect(output, expected)
             result = rev(grn("PASS") if passed else red("FAIL"))
             print(f"Part {idx + 1}: {output} {grn(msg) if passed else red(msg)}\n")
+            exit()
             if not passed and shortc: exit()
         print("\n" * 2)
