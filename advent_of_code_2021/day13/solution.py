@@ -21,6 +21,14 @@ class Paper:
     def draw(self, dot):
         self.data[dot[1]][dot[0]] = "#"
 
+    def demo(self):
+        # Colour in the first row
+        for i in range(self.rows):
+            self.data[0][i] = "x"
+        # Colour in the first col
+        for i in range(self.cols):
+            self.data[i][0] = "o"
+
     def fold(self, axis, disp):
         pass
 
@@ -59,6 +67,7 @@ def solve(prob, inputname):
 
     if prob == 1:
         paper.fold(paper.folds[0][0], paper.folds[0][1])
+        print(paper, "\n")
         return paper.count_dots()
     elif prob == 2:
         return 2
