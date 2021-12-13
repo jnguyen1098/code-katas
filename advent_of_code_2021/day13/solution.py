@@ -21,6 +21,17 @@ class Paper:
     def draw(self, dot):
         self.data[dot[1]][dot[0]] = "#"
 
+    def fold(self, axis, disp):
+        pass
+
+    def count_dots(self):
+        dot_count = 0
+        for row in self.data:
+            for char in row:
+                if char == "#":
+                    dot_count += 1
+        return dot_count
+
     def __str__(self):
         rep = []
         for row in self.data:
@@ -37,17 +48,18 @@ def solve(prob, inputname):
         dots.append(intsep(line, ","))
 
     for line in gen:
-        folds.append(parse(r"fold along \w+=(\d+)", line))
+        folds.append(parse(r"fold along (\w)+=(\d+)", line))
 
     print_arr(dots, " ")
     print()
     print_arr(folds, " ")
     print()
     paper = Paper(dots, folds)
-    print(paper)
+    print(paper, "\n")
 
     if prob == 1:
-        return 1
+        paper.fold(paper.folds[0][0], paper.folds[0][1])
+        return paper.count_dots()
     elif prob == 2:
         return 2
     else:
@@ -56,7 +68,7 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[20, 30], [50, 60]]
+    expcts = [[17, 30], [50, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
