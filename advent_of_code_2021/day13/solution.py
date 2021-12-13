@@ -16,10 +16,13 @@ class Paper:
         for row in range(self.cols):
             self.data.append(["."] * self.rows)
         for dot in self.dots:
-            self.draw(dot)
+            self.draw_cm(dot, "#")
 
-    def draw(self, dot):
-        self.data[dot[1]][dot[0]] = "#"
+    def draw_cm(self, dot, symbol):
+        self.data[dot[1]][dot[0]] = symbol
+
+    def draw_rm(self, dot, symbol):
+        self.data[dot[0]][dot[1]] = symbol
 
     def demo(self):
         # Colour in the first row
@@ -29,8 +32,17 @@ class Paper:
         for i in range(self.cols):
             self.data[i][0] = "o"
 
+    def maintain_rows(self, x, y):
+        """Inclusive-Inclusive."""
+        self.data = copy.deepcopy(self.data[x : y + 1])
+
     def fold(self, axis, disp):
-        pass
+        print("rows after", axis, disp)
+        for i in range(disp, len(self.data)):
+            for j in range(len(self.data[i])):
+                if self.data[i][j] == "#":
+                    self.draw_rm((disp - (i - disp), j), "#")
+        self.maintain_rows(0, disp - 1)
 
     def count_dots(self):
         dot_count = 0
@@ -63,11 +75,15 @@ def solve(prob, inputname):
     print_arr(folds, " ")
     print()
     paper = Paper(dots, folds)
+    """
     print(paper, "\n")
+    """
 
     if prob == 1:
-        paper.fold(paper.folds[0][0], paper.folds[0][1])
+        paper.fold(paper.folds[0][0], int(paper.folds[0][1]))
+        """
         print(paper, "\n")
+        """
         return paper.count_dots()
     elif prob == 2:
         return 2
