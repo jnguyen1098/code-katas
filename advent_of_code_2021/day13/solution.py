@@ -50,6 +50,10 @@ class Paper:
                         self.draw_rm((disp - (i - disp), j), "#")
             self.maintain_rows(0, disp - 1)
         elif axis == "x":
+            for i in range(len(self.data)):
+                for j in range(disp, len(self.data[i])):
+                    if self.data[i][j] == "#":
+                        self.draw_rm((i, (disp - (j - disp))), "#")
             self.maintain_cols(0, disp - 1)
         else:
             print("Bad input", axis, disp)
@@ -90,8 +94,6 @@ def solve(prob, inputname):
 
     if prob == 1:
         paper.fold(paper.folds[0][0], int(paper.folds[0][1]))
-        print(paper, "\n")
-        paper.fold(paper.folds[1][0], int(paper.folds[1][1]))
         return paper.count_dots()
     elif prob == 2:
         return 2
@@ -111,6 +113,5 @@ if __name__ == "__main__":
             passed, msg = expect(output, expected)
             result = rev(grn("PASS") if passed else red("FAIL"))
             print(f"Part {idx + 1}: {output} {grn(msg) if passed else red(msg)}\n")
-            exit()
             if not passed and shortc: exit()
         print("\n" * 2)
