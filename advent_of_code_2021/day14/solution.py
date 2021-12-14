@@ -31,40 +31,45 @@ def solve(prob, inputname):
     times = 10 if prob == 1 else 40
 
     from collections import Counter
-    leftovers = []
+    leftovers = defaultdict(int)
     letters = defaultdict(int)
+
     for letter in template:
         letters[letter] += 1
+
     for i in range(times):
-        keys = list(counts.keys()) + leftovers[:]
-        print(f"{i} = {len(keys) + 1}")
+        keys = Counter(list(counts.keys()))
+        keys.update(leftovers)
+#        print(f"{i} = {len(keys) + 1}")
 #        print("iterating over", list(counts.keys()), "and", leftovers[:], f"len {len(keys)}")
         leftovers.clear()
 
-        for key in keys:
+        for key, count in keys.items():
             pat = f"{key[0]}{key[1]}"
-            counts[pat] -= 1
+            counts[pat] -= count
             if counts[pat] < 1:
                 counts.pop(pat)
 
-        while keys:
-            key = keys.pop(0)
+        for key, count in keys.items():
             pat = f"{key[0]}{key[1]}"
             new = recipes[pat]
             nl, nr = f"{key[0]}{new}", f"{new}{key[1]}"
-#            print(f"tile: {pat} -> {new} : {nl} & {nr}")
-
-            if nl in counts and counts[nl] > 0:
-#                print(f"duplicate {nl}. appending.")
-                leftovers.append(nl)
-            if nr in counts and counts[nr] > 0:
-#                print(f"duplicate {nr}. appending.")
-                leftovers.append(nr)
-
-            counts[nl] += 1
-            counts[nr] += 1
-#            print("adding", new)
-            letters[new] += 1
+            for i in range(count):
+#                print(f"tile: {pat} -> {new} : {nl} & {nr}")
+    
+                if nl in counts:
+#                    print(f"duplicate {nl}. appending.")
+                    leftovers[nl] += 1
+                    
+                    
+                if nr in counts:
+#                    print(f"duplicate {nr}. appending.")
+                    leftovers[nr] += 1
+    
+                counts[nl] += 1
+                counts[nr] += 1
+#                print("adding", new)
+                letters[new] += 1
 
     print("fuck off", letters)
     print(counts)
