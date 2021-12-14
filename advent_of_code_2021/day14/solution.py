@@ -32,32 +32,43 @@ def solve(prob, inputname):
 
     from collections import Counter
     leftovers = []
+    letters = defaultdict(int)
+    for letter in template:
+        letters[letter] += 1
     for i in range(times):
-        print(i, len(template))
-        i = 0
         keys = list(counts.keys()) + leftovers[:]
+        print(f"{i} = {len(keys) + 1}")
+#        print("iterating over", list(counts.keys()), "and", leftovers[:], f"len {len(keys)}")
         leftovers.clear()
-        print("iterating over", keys)
+
+        for key in keys:
+            pat = f"{key[0]}{key[1]}"
+            counts[pat] -= 1
+            if counts[pat] < 1:
+                counts.pop(pat)
+
         while keys:
             key = keys.pop(0)
             pat = f"{key[0]}{key[1]}"
             new = recipes[pat]
             nl, nr = f"{key[0]}{new}", f"{new}{key[1]}"
+#            print(f"tile: {pat} -> {new} : {nl} & {nr}")
 
-            counts[pat] -= 1
-            if counts[pat] == 0:
-                counts.pop(pat)
-
-            if nl in counts:
+            if nl in counts and counts[nl] > 0:
+#                print(f"duplicate {nl}. appending.")
                 leftovers.append(nl)
-            if nr in counts:
+            if nr in counts and counts[nr] > 0:
+#                print(f"duplicate {nr}. appending.")
                 leftovers.append(nr)
 
             counts[nl] += 1
             counts[nr] += 1
+#            print("adding", new)
+            letters[new] += 1
 
+    print("fuck off", letters)
     print(counts)
-    counter = Counter(counts)
+    counter = Counter(letters)
     listcnt = sorted([(freq, letter) for letter, freq in counter.items()])
     return int(listcnt.pop(-1)[0]) - int(listcnt.pop(0)[0])
 
