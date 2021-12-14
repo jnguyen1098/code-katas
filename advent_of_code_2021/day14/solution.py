@@ -40,7 +40,7 @@ def solve(prob, inputname):
     for i in range(times):
         keys = Counter(list(counts.keys()))
         keys.update(leftovers)
-#        print(f"{i} = {len(keys) + 1}")
+        print(f"{i} = {sum(keys.values())}")
 #        print("iterating over", list(counts.keys()), "and", leftovers[:], f"len {len(keys)}")
         leftovers.clear()
 
