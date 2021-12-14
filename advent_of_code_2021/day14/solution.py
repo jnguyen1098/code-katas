@@ -69,7 +69,7 @@ def solve(prob, inputname):
                 counts[nl] += 1
                 counts[nr] += 1
 #                print("adding", new)
-                letters[new] += 1
+            letters[new] += count
 
     print("fuck off", letters)
     print(counts)
