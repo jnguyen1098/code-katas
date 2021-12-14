@@ -31,21 +31,28 @@ def solve(prob, inputname):
     times = 10 if prob == 1 else 40
 
     from collections import Counter
+    leftovers = []
     for i in range(times):
         print(i, len(template))
         i = 0
-        keys = list(counts.keys())
+        keys = list(counts.keys()) + leftovers[:]
+        leftovers.clear()
         print("iterating over", keys)
         while keys:
             key = keys.pop(0)
             l, r = key[0], key[1]
-            print("hello", l, r)
-            new = recipes[f"{l}{r}"]
-            counts[f"{l}{r}"] -= 1
-            if counts[f"{l}{r}"] == 0:
-                counts.pop(f"{l}{r}")
-            counts[f"{l}{new}"] += 1
-            counts[f"{new}{r}"] += 1
+            pat = f"{l}{r}"
+            new = recipes[pat]
+            nl, nr = f"{l}{new}", f"{new}{r}"
+            counts[pat] -= 1
+            if counts[pat] == 0:
+                counts.pop(pat)
+            if nl in counts:
+                leftovers.append(nl)
+            if nr in counts:
+                leftovers.append(nr)
+            counts[nl] += 1
+            counts[nr] += 1
 
     print(counts)
     counter = Counter(counts)
