@@ -22,7 +22,8 @@ def solve(prob, inputname):
     for line in lines:
         recipes[f"{line[0]}{line[1]}"] = line[2]
 
-    for i in range(5):
+    from collections import Counter
+    for i in range(10):
         i = 0
         while i < len(template) - 1:
             l, r = template[i], template[i + 1]
@@ -31,8 +32,11 @@ def solve(prob, inputname):
             i += 1
             i += 1
 
-    print(len(template))
-    print(template)
+    counter = Counter(template)
+    listcnt = sorted([(freq, letter) for letter, freq in counter.items()])
+    return int(listcnt.pop(-1)[0]) - int(listcnt.pop(0)[0])
+
+    print(listcnt)
     print(recipes)
 
     print(f"{len(lines)} lines in the array")
@@ -47,7 +51,7 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[20, 30], [50, 60]]
+    expcts = [[1588, 30], [50, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
