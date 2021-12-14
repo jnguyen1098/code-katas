@@ -60,14 +60,18 @@ def solve(prob, inputname):
                 if nl in counts:
 #                    print(f"duplicate {nl}. appending.")
                     leftovers[nl] += 1
+                else:
+                    counts[nl] = 1
                     
                     
                 if nr in counts:
 #                    print(f"duplicate {nr}. appending.")
                     leftovers[nr] += 1
+                else:
+                    counts[nr] = 1
     
-                counts[nl] += 1
-                counts[nr] += 1
+            counts[nl] += count - 1
+            counts[nr] += count - 1
 #                print("adding", new)
             letters[new] += count
 
