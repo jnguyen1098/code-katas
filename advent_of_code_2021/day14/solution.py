@@ -11,7 +11,11 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        if line == "": break
+        lines.append(list(line))
+
+    for line in gen:
+        lines.append(parse(r"(\w\w) -> (\w)", line))
 
     print_arr(lines)
 
@@ -26,8 +30,8 @@ def solve(prob, inputname):
         exit()
 
 if __name__ == "__main__":
-    inputs = ["small", "example", "real"]
-    expcts = [[10, 20, 30], [40, 50, 60]]
+    inputs = ["example", "real"]
+    expcts = [[20, 30], [50, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
