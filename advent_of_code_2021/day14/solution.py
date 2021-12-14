@@ -22,6 +22,16 @@ def solve(prob, inputname):
     for line in lines:
         recipes[f"{line[0]}{line[1]}"] = line[2]
 
+    for i in range(5):
+        i = 0
+        while i < len(template) - 1:
+            l, r = template[i], template[i + 1]
+            pat = f"{l}{r}"
+            template.insert(i + 1, recipes[pat])
+            i += 1
+            i += 1
+
+    print(len(template))
     print(template)
     print(recipes)
 
