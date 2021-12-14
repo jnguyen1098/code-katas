@@ -40,17 +40,19 @@ def solve(prob, inputname):
         print("iterating over", keys)
         while keys:
             key = keys.pop(0)
-            l, r = key[0], key[1]
-            pat = f"{l}{r}"
+            pat = f"{key[0]}{key[1]}"
             new = recipes[pat]
-            nl, nr = f"{l}{new}", f"{new}{r}"
+            nl, nr = f"{key[0]}{new}", f"{new}{key[1]}"
+
             counts[pat] -= 1
             if counts[pat] == 0:
                 counts.pop(pat)
+
             if nl in counts:
                 leftovers.append(nl)
             if nr in counts:
                 leftovers.append(nr)
+
             counts[nl] += 1
             counts[nr] += 1
 
