@@ -37,7 +37,12 @@ def solve(prob, inputname):
     for letter in template:
         letters[letter] += 1
 
+    import time
+    record = time.time()
     for i in range(times):
+        now = time.time()
+        print("\n", now - record)
+        record = now
         keys = Counter(list(counts.keys()))
         keys.update(leftovers)
         print(f"{i} = {sum(keys.values())}")
