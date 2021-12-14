@@ -22,6 +22,12 @@ def solve(prob, inputname):
     for line in lines:
         recipes[f"{line[0]}{line[1]}"] = line[2]
 
+    counts = defaultdict(int)
+
+    for i in range(len(template) - 1):
+        l, r = template[i], template[i + 1]
+        counts[f"{l}{r}"] += 1
+
     times = 10 if prob == 1 else 40
 
     from collections import Counter
@@ -32,8 +38,7 @@ def solve(prob, inputname):
             l, r = template[i], template[i + 1]
             pat = f"{l}{r}"
             template.insert(i + 1, recipes[pat])
-            i += 1
-            i += 1
+            i += 2
 
     counter = Counter(template)
     listcnt = sorted([(freq, letter) for letter, freq in counter.items()])
