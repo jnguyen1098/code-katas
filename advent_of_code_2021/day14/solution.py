@@ -23,7 +23,8 @@ def solve(prob, inputname):
         recipes[f"{line[0]}{line[1]}"] = line[2]
 
     from collections import Counter
-    for i in range(10):
+    for i in range(40):
+        print(i)
         i = 0
         while i < len(template) - 1:
             l, r = template[i], template[i + 1]
