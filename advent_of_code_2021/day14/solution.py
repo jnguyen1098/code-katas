@@ -22,9 +22,11 @@ def solve(prob, inputname):
     for line in lines:
         recipes[f"{line[0]}{line[1]}"] = line[2]
 
+    times = 10 if prob == 1 else 40
+
     from collections import Counter
-    for i in range(40):
-        print(i)
+    for i in range(times):
+        print(i, len(template))
         i = 0
         while i < len(template) - 1:
             l, r = template[i], template[i + 1]
@@ -40,19 +42,9 @@ def solve(prob, inputname):
     print(listcnt)
     print(recipes)
 
-    print(f"{len(lines)} lines in the array")
-
-    if prob == 1:
-        return 1
-    elif prob == 2:
-        return 2
-    else:
-        print("Invalid problem code")
-        exit()
-
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[1588, 30], [50, 60]]
+    expcts = [[1588, 2447], [50, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
