@@ -34,13 +34,21 @@ def solve(prob, inputname):
     for i in range(times):
         print(i, len(template))
         i = 0
-        while i < len(template) - 1:
-            l, r = template[i], template[i + 1]
-            pat = f"{l}{r}"
-            template.insert(i + 1, recipes[pat])
-            i += 2
+        keys = list(counts.keys())
+        print("iterating over", keys)
+        while keys:
+            key = keys.pop(0)
+            l, r = key[0], key[1]
+            print("hello", l, r)
+            new = recipes[f"{l}{r}"]
+            counts[f"{l}{r}"] -= 1
+            if counts[f"{l}{r}"] == 0:
+                counts.pop(f"{l}{r}")
+            counts[f"{l}{new}"] += 1
+            counts[f"{new}{r}"] += 1
 
-    counter = Counter(template)
+    print(counts)
+    counter = Counter(counts)
     listcnt = sorted([(freq, letter) for letter, freq in counter.items()])
     return int(listcnt.pop(-1)[0]) - int(listcnt.pop(0)[0])
 
