@@ -44,7 +44,7 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[1588, 2447], [50, 60]]
+    expcts = [[1588, 2447], [2188189693529, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
