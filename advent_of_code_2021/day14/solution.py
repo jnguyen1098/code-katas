@@ -12,12 +12,18 @@ def solve(prob, inputname):
 
     for line in gen:
         if line == "": break
-        lines.append(list(line))
+        template = list(line)
 
     for line in gen:
-        lines.append(parse(r"(\w\w) -> (\w)", line))
+        lines.append(parse(r"(\w)(\w) -> (\w)", line))
 
-    print_arr(lines)
+    recipes = {}
+
+    for line in lines:
+        recipes[f"{line[0]}{line[1]}"] = line[2]
+
+    print(template)
+    print(recipes)
 
     print(f"{len(lines)} lines in the array")
 
