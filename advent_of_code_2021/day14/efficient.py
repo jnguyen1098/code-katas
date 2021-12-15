@@ -50,9 +50,6 @@ def solve(prob, inputname):
             tiles[nl] += value
             tiles[nr] += value
 
-    print("\ndone everything")
-    print("letter frequencies", freqs)
-    print("tile counts", tiles)
     counter = Counter(freqs)
     listcnt = sorted([(freq, letter) for letter, freq in counter.items()])
     return int(listcnt.pop(-1)[0]) - int(listcnt.pop(0)[0])
@@ -62,7 +59,7 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[1588, 2447], [2188189693529, 60]]
+    expcts = [[1588, 2447], [2188189693529, 3018019237563]]
     shortc = True
 
     for idx, part in enumerate(expcts):
