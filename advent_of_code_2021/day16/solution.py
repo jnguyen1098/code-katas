@@ -55,17 +55,19 @@ def solve(prob, inputname):
     print(packet)
 
     if prob == 1:
-        return 1
+        return 0
     elif prob == 2:
-        return 2
+        return 0
     else:
         print("Invalid problem code")
         exit()
 
 if __name__ == "__main__":
-    inputs = ["literalpacket", "real"]
-    expcts = [[20, 30], [50, 60]]
-    shortc = True
+    # literal should be 6, 4, 2021
+    # operator should be 1 6 0 27 10 20
+    inputs = ["literalpacket", "operator"]
+    expcts = [[1, 1], [1, 1]]
+    shortc = False
 
     for idx, part in enumerate(expcts):
         for filename, expected in zip(inputs, part):
