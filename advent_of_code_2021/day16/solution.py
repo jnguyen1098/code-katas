@@ -11,7 +11,6 @@ def bin_to_int(bnum):
 
 def parse_literal(stream, it):
     bin_chunks = []
-    it += 6 # THIS SKIPS THE VERSION AND THE TYPE ID
     while True:
         byte = stream[it : it + 5]
         if len(byte) < 5:
@@ -20,7 +19,8 @@ def parse_literal(stream, it):
         it += 5 
         if byte[0] == "0":
             while it != len(stream) and stream[it] == "0":
-                it += 1
+                break
+                it += 1 # TODO: lmao
             break
     value = bin_to_int("".join(bin_chunks))
     return value, it
@@ -44,7 +44,7 @@ class Packet:
                 it = 7 + 15
                 while bitlen > 0:
                     consumed = 0
-                    value, new_it = parse_literal(stream, it)
+                    value, new_it = parse_literal(stream, it + 6)
                     print(stream[it : new_it - 1], value)
                     bitlen += (it - new_it + 1)
                     it = new_it - 1
@@ -52,6 +52,12 @@ class Packet:
             elif stream[6] == "1":
                 subcnt = bin_to_int(stream[7 : 7 + 11])
                 print(subcnt, "(1) number of subs")
+                it = 7 + 11
+                while subcnt:
+                    value, new_it = parse_literal(stream, it + 6)
+                    print(stream[it : new_it], value)
+                    it = new_it
+                    subcnt -= 1
             else:
                 print(rev(red(f"fatal error: length type id is {stream[6]}")))
                 exit()
@@ -90,9 +96,10 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     # literal should be 6, 4, 2021
-    # operator should be 1 6 0 27 10 20
-    inputs = ["literalpacket", "operator"]
-    expcts = [[1, 1], [1, 1]]
+    # operator0 should be ver=1 type=6 lent=0 bits=27 literal=10 literal=20
+    # operator1 should be ver=7 type=3 lent=1 lits=3 literal=1 literal=2 literal=3
+    inputs = ["literalpacket", "operator0", "operator1"]
+    expcts = [[1, 1, 1], [1, 1, 1]]
     shortc = False
 
     for idx, part in enumerate(expcts):
