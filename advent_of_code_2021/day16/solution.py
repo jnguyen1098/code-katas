@@ -9,7 +9,7 @@ from comp import *
 def bin_to_int(bnum):
     return int(bnum, 2)
 
-def parse_literal(stream, it):
+def parse_literal(stream, it, pad=False):
     bin_chunks = []
     while True:
         byte = stream[it : it + 5]
@@ -18,12 +18,14 @@ def parse_literal(stream, it):
         bin_chunks.append(byte[1:])
         it += 5 
         if byte[0] == "0":
-            while it != len(stream) and stream[it] == "0":
-                break
+            while pad and it != len(stream) and stream[it] == "0":
                 it += 1 # TODO: lmao
             break
     value = bin_to_int("".join(bin_chunks))
     return value, it
+
+def get_version(stream, it=0):
+    return bin_to_int(stream[it:it+3])
 
 class Packet:
     def __init__(self, stream):
@@ -31,6 +33,8 @@ class Packet:
         self.version = bin_to_int(stream[0:3])
         self.typeid = bin_to_int(stream[3:6])
         self.value = -1
+
+        self.versum = self.version
     
         # Literal
         if self.typeid == 4:
@@ -44,7 +48,8 @@ class Packet:
                 it = 7 + 15
                 while bitlen > 0:
                     consumed = 0
-                    value, new_it = parse_literal(stream, it + 6)
+                    self.versum += get_version(stream, it)
+                    value, new_it = parse_literal(stream, it + 6, pad=True)
                     print(stream[it : new_it - 1], value)
                     bitlen += (it - new_it + 1)
                     it = new_it - 1
@@ -54,7 +59,8 @@ class Packet:
                 print(subcnt, "(1) number of subs")
                 it = 7 + 11
                 while subcnt:
-                    value, new_it = parse_literal(stream, it + 6)
+                    self.versum += get_version(stream, it)
+                    value, new_it = parse_literal(stream, it + 6, pad=False)
                     print(stream[it : new_it], value)
                     it = new_it
                     subcnt -= 1
@@ -66,7 +72,8 @@ class Packet:
         return f"Version: {self.version}\n" +\
             f"Type ID: {self.typeid}\n" +\
             f"  Value: {self.value}\n" +\
-            f" Stream: {self.stream}\n"
+            f" Stream: {self.stream}\n" +\
+            f" Versum: {self.versum}\n"
 
 def solve(prob, inputname):
     lines = []
@@ -98,8 +105,8 @@ if __name__ == "__main__":
     # literal should be 6, 4, 2021
     # operator0 should be ver=1 type=6 lent=0 bits=27 literal=10 literal=20
     # operator1 should be ver=7 type=3 lent=1 lits=3 literal=1 literal=2 literal=3
-    inputs = ["literalpacket", "operator0", "operator1"]
-    expcts = [[1, 1, 1], [1, 1, 1]]
+    inputs = ["literalpacket", "operator0", "operator1", "real"]
+    expcts = [[1, 1, 1, 1], [1, 1, 1, 1]]
     shortc = False
 
     for idx, part in enumerate(expcts):
