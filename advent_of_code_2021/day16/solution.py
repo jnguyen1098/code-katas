@@ -13,12 +13,15 @@ def solve(prob, inputname):
     for line in gen:
         lines.append(re.findall("\w\w", line)[:])
 
-    data = lines[0]
+    _data = lines[0]
+    _stream = []
 
-    for datum in data:
-        print(format(int(datum, 16), "b").zfill(8))
+    for datum in _data:
+        _stream.append(format(int(datum, 16), "b").zfill(8))
 
-    print(f"{len(lines)} lines in the array")
+    stream = "".join(_stream)
+
+    print(stream)
 
     if prob == 1:
         return 1
