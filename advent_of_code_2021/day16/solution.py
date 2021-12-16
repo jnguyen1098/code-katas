@@ -9,6 +9,22 @@ from comp import *
 def bin_to_int(bnum):
     return int(bnum, 2)
 
+def parse_literal(stream, it):
+    bin_chunks = []
+    it += 6 # THIS SKIPS THE VERSION AND THE TYPE ID
+    while True:
+        byte = stream[it : it + 5]
+        if len(byte) < 5:
+            break
+        bin_chunks.append(byte[1:])
+        it += 5 
+        if byte[0] == "0":
+            while it != len(stream) and stream[it] == "0":
+                it += 1
+            break
+    value = bin_to_int("".join(bin_chunks))
+    return value, it
+
 class Packet:
     def __init__(self, stream):
         self.stream = stream
@@ -18,25 +34,20 @@ class Packet:
     
         # Literal
         if self.typeid == 4:
-            it = 6
-            bin_chunks = []
-            while True:
-                byte = stream[it : it + 5]
-                if len(byte) < 5:
-                    break
-                bin_chunks.append(byte[1:])
-                it += 5 
-                if byte[0] == "0":
-                    while it != len(stream) and stream[it] == "0":
-                        it += 1
-                    break
-            self.value = bin_to_int("".join(bin_chunks))
+            self.value, it = parse_literal(stream, 6)
         # Operator
         else:
             # the next 15 bits are a number representing total length in bits of the subs
             if stream[6] == "0":
                 bitlen = bin_to_int(stream[7 : 7 + 15])
                 print(bitlen, "(0) bit length of the subs")
+                it = 7 + 15
+                while bitlen > 0:
+                    consumed = 0
+                    value, new_it = parse_literal(stream, it)
+                    print(stream[it : new_it - 1], value)
+                    bitlen += (it - new_it + 1)
+                    it = new_it - 1
             # the next 11 bits represent the number of sub-packets immediately following
             elif stream[6] == "1":
                 subcnt = bin_to_int(stream[7 : 7 + 11])
