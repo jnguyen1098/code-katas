@@ -28,7 +28,7 @@ class Packet:
                     it += 1
                 break
 
-        self.value = "".join(bin_chunks)
+        self.value = bin_to_int("".join(bin_chunks))
 
     def __str__(self):
         return f"Version: {self.version}\n" +\
