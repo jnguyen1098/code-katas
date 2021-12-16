@@ -10,3 +10,7 @@ def stream_to_hex_array(stream):
 
 def number_to_binary(num, pad=0):
     return format(num, "b").zfill(pad)
+
+def read(string, l, r):
+    assert l <= r, f"invalid read(), l ({l}) > r ({r})"
+    return r - l + 1
