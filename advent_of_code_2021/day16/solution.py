@@ -9,9 +9,32 @@ from comp import *
 def bin_to_int(bnum):
     return int(bnum, 2)
 
-def get(stream):
-    for char in stream:
-        yield char
+class Packet:
+    def __init__(self, stream):
+        self.stream = stream
+        self.version = bin_to_int(stream[0:3])
+        self.typeid = bin_to_int(stream[3:6])
+    
+        it = 6
+        bin_chunks = []
+        while True:
+            byte = stream[it : it + 5]
+            if len(byte) < 5:
+                break
+            bin_chunks.append(byte[1:])
+            it += 5 
+            if byte[0] == "0":
+                while it != len(stream) and stream[it] == "0":
+                    it += 1
+                break
+
+        self.value = "".join(bin_chunks)
+
+    def __str__(self):
+        return f"Version: {self.version}\n" +\
+            f"Type ID: {self.typeid}\n" +\
+            f"  Value: {self.value}\n" +\
+            f" Stream: {self.stream}\n"
 
 def solve(prob, inputname):
     lines = []
@@ -28,26 +51,8 @@ def solve(prob, inputname):
 
     stream = "".join(_stream)
 
-    print(stream)
-
-    print(f"version is {stream[0:3]} or {bin_to_int(stream[0:3])}")
-    print(f"typeid  is {stream[3:6]} or {bin_to_int(stream[3:6])}")
-
-    it = 6
-    bin_chunks = []
-    while True:
-        byte = stream[it : it + 5]
-        if len(byte) < 5:
-            break
-        bin_chunks.append(byte[1:])
-        it += 5 
-        if byte[0] == "0":
-            while it != len(stream) and stream[it] == "0":
-                it += 1
-            break
-
-    value = "".join(bin_chunks)
-    print(value, bin_to_int(value))
+    packet = Packet(stream)
+    print(packet)
 
     if prob == 1:
         return 1
