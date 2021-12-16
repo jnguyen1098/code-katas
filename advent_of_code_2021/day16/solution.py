@@ -6,6 +6,13 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+def bin_to_int(bnum):
+    return int(bnum, 2)
+
+def get(stream):
+    for char in stream:
+        yield char
+
 def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
@@ -22,6 +29,18 @@ def solve(prob, inputname):
     stream = "".join(_stream)
 
     print(stream)
+
+    print(f"version is {stream[0:3]} or {bin_to_int(stream[0:3])}")
+    print(f"typeid  is {stream[3:6]} or {bin_to_int(stream[3:6])}")
+
+    it = 6
+    while True:
+        if len(stream[it : it + 5]) < 5:
+            break
+        print(stream[it : it + 5])
+        it += 5 
+
+    exit()
 
     if prob == 1:
         return 1
