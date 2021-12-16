@@ -18,5 +18,13 @@ class TestAllMethods(unittest.TestCase):
         result = stream_to_hex_array(stream)
         self.assertEqual(result, stream_arr)
 
+    def test_number_to_binary(self):
+        self.assertEqual(number_to_binary(12, 8), "00001100")
+        self.assertEqual(number_to_binary(12), "1100")
+        self.assertEqual(number_to_binary(12, 0), "1100")
+        self.assertEqual(number_to_binary(255, 0), "11111111")
+        self.assertEqual(number_to_binary(0, 0), "0")
+        self.assertEqual(number_to_binary(0, 8), "00000000")
+
 if __name__ == "__main__":
     unittest.main()
