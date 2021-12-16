@@ -33,8 +33,17 @@ class Packet:
             self.value = bin_to_int("".join(bin_chunks))
         # Operator
         else:
-            pass
-
+            # the next 15 bits are a number representing total length in bits of the subs
+            if stream[6] == "0":
+                bitlen = bin_to_int(stream[7 : 7 + 15])
+                print(bitlen, "(0) bit length of the subs")
+            # the next 11 bits represent the number of sub-packets immediately following
+            elif stream[6] == "1":
+                subcnt = bin_to_int(stream[7 : 7 + 11])
+                print(subcnt, "(1) number of subs")
+            else:
+                print(rev(red(f"fatal error: length type id is {stream[6]}")))
+                exit()
 
     def __str__(self):
         return f"Version: {self.version}\n" +\
