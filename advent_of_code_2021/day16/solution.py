@@ -34,16 +34,20 @@ def solve(prob, inputname):
     print(f"typeid  is {stream[3:6]} or {bin_to_int(stream[3:6])}")
 
     it = 6
+    bin_chunks = []
     while True:
         byte = stream[it : it + 5]
         if len(byte) < 5:
             break
-        print(byte)
+        bin_chunks.append(byte[1:])
         it += 5 
         if byte[0] == "0":
             while it != len(stream) and stream[it] == "0":
                 it += 1
             break
+
+    value = "".join(bin_chunks)
+    print(value, bin_to_int(value))
 
     if prob == 1:
         return 1
