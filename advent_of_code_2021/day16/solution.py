@@ -14,21 +14,27 @@ class Packet:
         self.stream = stream
         self.version = bin_to_int(stream[0:3])
         self.typeid = bin_to_int(stream[3:6])
+        self.value = -1
     
-        it = 6
-        bin_chunks = []
-        while True:
-            byte = stream[it : it + 5]
-            if len(byte) < 5:
-                break
-            bin_chunks.append(byte[1:])
-            it += 5 
-            if byte[0] == "0":
-                while it != len(stream) and stream[it] == "0":
-                    it += 1
-                break
+        # Literal
+        if self.typeid == 4:
+            it = 6
+            bin_chunks = []
+            while True:
+                byte = stream[it : it + 5]
+                if len(byte) < 5:
+                    break
+                bin_chunks.append(byte[1:])
+                it += 5 
+                if byte[0] == "0":
+                    while it != len(stream) and stream[it] == "0":
+                        it += 1
+                    break
+            self.value = bin_to_int("".join(bin_chunks))
+        # Operator
+        else:
+            pass
 
-        self.value = bin_to_int("".join(bin_chunks))
 
     def __str__(self):
         return f"Version: {self.version}\n" +\
