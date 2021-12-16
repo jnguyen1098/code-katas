@@ -35,12 +35,15 @@ def solve(prob, inputname):
 
     it = 6
     while True:
-        if len(stream[it : it + 5]) < 5:
+        byte = stream[it : it + 5]
+        if len(byte) < 5:
             break
-        print(stream[it : it + 5])
+        print(byte)
         it += 5 
-
-    exit()
+        if byte[0] == "0":
+            while it != len(stream) and stream[it] == "0":
+                it += 1
+            break
 
     if prob == 1:
         return 1
