@@ -13,7 +13,10 @@ def solve(prob, inputname):
     for line in gen:
         lines.append(re.findall("\w\w", line)[:])
 
-    print_arr(lines, " ")
+    data = lines[0]
+
+    for datum in data:
+        print(format(int(datum, 16), "b").zfill(8))
 
     print(f"{len(lines)} lines in the array")
 
