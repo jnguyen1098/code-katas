@@ -63,7 +63,7 @@ def solve(prob, inputname):
         exit()
 
 if __name__ == "__main__":
-    inputs = ["example", "real"]
+    inputs = ["literalpacket", "real"]
     expcts = [[20, 30], [50, 60]]
     shortc = True
 
