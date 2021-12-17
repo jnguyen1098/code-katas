@@ -66,17 +66,22 @@ def solve(prob, inputname):
     print(f"x range is [{x_l}, {x_r}]")
     print(f"y range is [{y_l}, {y_r}]")
 
+    if prob == 1: return -1
+
     # x is <-->
     # y is ^
     #      |
     #      v
     global_highest_y = -math.inf
-    x_range = 250
-    y_range = 154
+    x_range = 100
+    y_range_l = -50
+    y_range = 50
     reached = False
 
+    vals = 0
+
     for i in range(x_range):
-        for j in range(y_range):
+        for j in range(y_range_l, y_range):
             x_vel = i
             y_vel = j
             point = Point(x_vel, y_vel)
@@ -90,8 +95,9 @@ def solve(prob, inputname):
                 if within(point.x, point.y, int(x_l), int(x_r), int(y_l), int(y_r)):
                     reached = True
                     global_highest_y = max(global_highest_y, highest_y)
+                    vals += 1
                     break
-                elif point.x > int(x_r) or point.y < int(y_r):
+                elif point.x > int(x_r) or point.y < int(y_l):
                     #print(point.x, point.y, x_r, y_r)
                     #print("this point is past the zone. breaking")
                     break
@@ -104,7 +110,7 @@ def solve(prob, inputname):
     if prob == 1:
         return global_highest_y
     elif prob == 2:
-        return 2
+        return vals
     else:
         print("Invalid problem code")
         exit()
@@ -115,8 +121,8 @@ if __name__ == "__main__":
     expcts = [[10, 20, 30], [40, 50, 60]]
     """
     inputs = ["example", "real"]
-    expcts = [[45, 30], [50, 60]]
-    shortc = True
+    expcts = [[45, 11781], [112, 60]]
+    shortc = False
 
     for idx, part in enumerate(expcts):
         for filename, expected in zip(inputs, part):
