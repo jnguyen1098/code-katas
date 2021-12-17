@@ -25,9 +25,11 @@ def solve(prob, inputname):
     for line in gen:
         lines.append(parse(r"target area: x=([^,]+), y=(.*)", line))
 
-    print_arr(lines, "    ")
+    x_l, x_r = lines[0][0].split("..")
+    y_l, y_r = lines[0][1].split("..")
 
-    print(f"{len(lines)} lines in the array")
+    print(f"x range is [{x_l}, {x_r}]")
+    print(f"y range is [{y_l}, {y_r}]")
 
     if prob == 1:
         return 1
