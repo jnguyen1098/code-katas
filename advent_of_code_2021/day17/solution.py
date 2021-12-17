@@ -73,9 +73,9 @@ def solve(prob, inputname):
     #      |
     #      v
     global_highest_y = -math.inf
-    x_range = 100
-    y_range_l = -50
-    y_range = 50
+    x_range = 82
+    y_range_l = -76
+    y_range = 154
     reached = False
 
     vals = 0
