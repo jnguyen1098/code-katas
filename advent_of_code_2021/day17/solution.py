@@ -6,31 +6,6 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
-class Grid:
-    def __init__(self, rows, cols):
-        self.rows = rows
-        self.cols = cols
-        self.data = []
-        for i in range(rows):
-            self.data.append(["."] * cols)
-
-    def draw(self, x, y, symb):
-        if self.data[x][y] != ".":
-            print(f"{self.data[x][y]} is not a dot")
-            exit(1)
-        self.data[x][y] = symb
-
-    def draw_rect(self, rel_x, rel_y, row_start, row_end, col_start, col_end):
-        for i in range(row_start, row_end + 1):
-            for j in range(col_start, col_end + 1):
-                self.draw(i, j, "T")
-
-    def __str__(self):
-        result = []
-        for row in self.data:
-            result.append("".join(row))
-        return "\n".join(result)
-
 class Point:
     def __init__(self, x_vel, y_vel):
         self.x = 0
@@ -63,34 +38,18 @@ def solve(prob, inputname):
     x_l, x_r = lines[0][0].split("..")
     y_l, y_r = lines[0][1].split("..")
 
-    print(f"x range is [{x_l}, {x_r}]")
-    print(f"y range is [{y_l}, {y_r}]")
-
-    if prob == 1: return -1
-
-    # x is <-->
-    # y is ^
-    #      |
-    #      v
     global_highest_y = -math.inf
-    x_range = 82
-    y_range_l = -76
-    y_range = 154
     reached = False
 
     vals = 0
 
-    for i in range(x_range):
-        for j in range(y_range_l, y_range):
-            x_vel = i
-            y_vel = j
-            point = Point(x_vel, y_vel)
+    for i in range(300):
+        for j in range(-300, 300):
+            point = Point(i, j)
             highest_y = -math.inf
         
-            #print("start", point)
             while True:
                 point.step()
-                #print(point)
                 highest_y = max(highest_y, point.y)
                 if within(point.x, point.y, int(x_l), int(x_r), int(y_l), int(y_r)):
                     reached = True
@@ -98,8 +57,6 @@ def solve(prob, inputname):
                     vals += 1
                     break
                 elif point.x > int(x_r) or point.y < int(y_l):
-                    #print(point.x, point.y, x_r, y_r)
-                    #print("this point is past the zone. breaking")
                     break
 
     if prob == 1:
@@ -111,12 +68,8 @@ def solve(prob, inputname):
         exit()
 
 if __name__ == "__main__":
-    """
-    inputs = ["small", "example", "real"]
-    expcts = [[10, 20, 30], [40, 50, 60]]
-    """
     inputs = ["example", "real"]
-    expcts = [[45, 11781], [112, 60]]
+    expcts = [[45, 11781], [112, 4531]]
     shortc = False
 
     for idx, part in enumerate(expcts):
