@@ -20,11 +20,31 @@ class Grid:
             exit(1)
         self.data[x][y] = symb
 
+    def draw_rect(self, rel_x, rel_y, row_start, row_end, col_start, col_end):
+        for i in range(row_start, row_end + 1):
+            for j in range(col_start, col_end + 1):
+                self.draw(i, j, "T")
+
     def __str__(self):
         result = []
         for row in self.data:
             result.append("".join(row))
         return "\n".join(result)
+
+class Point:
+    def __init__(self, x_vel, y_vel):
+        self.x = 0
+        self.y = 0
+        self.x_vel = x_vel
+        self.y_vel = y_vel
+    def get_next(self):
+        self.x += self.x_vel
+        self.y += self.y_vel
+        if self.x_vel > 0:
+            self.x_vel -= 1
+        elif self.x_vel < 0:
+            self.x_vel += 1
+        self.y_vel -= 1
 
 def solve(prob, inputname):
     lines = []
@@ -35,9 +55,6 @@ def solve(prob, inputname):
 
     x_l, x_r = lines[0][0].split("..")
     y_l, y_r = lines[0][1].split("..")
-
-    lmao = Grid(14, 31)
-    print(lmao)
 
     print(f"x range is [{x_l}, {x_r}]")
     print(f"y range is [{y_l}, {y_r}]")
