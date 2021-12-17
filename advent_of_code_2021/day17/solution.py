@@ -14,9 +14,17 @@ class Grid:
         for i in range(rows):
             self.data.append(["."] * cols)
 
-    def print(self):
+    def draw(self, x, y, symb):
+        if self.data[x][y] != ".":
+            print(f"{self.data[x][y]} is not a dot")
+            exit(1)
+        self.data[x][y] = symb
+
+    def __str__(self):
+        result = []
         for row in self.data:
-            print(row)
+            result.append("".join(row))
+        return "\n".join(result)
 
 def solve(prob, inputname):
     lines = []
@@ -27,6 +35,9 @@ def solve(prob, inputname):
 
     x_l, x_r = lines[0][0].split("..")
     y_l, y_r = lines[0][1].split("..")
+
+    lmao = Grid(14, 31)
+    print(lmao)
 
     print(f"x range is [{x_l}, {x_r}]")
     print(f"y range is [{y_l}, {y_r}]")
