@@ -70,10 +70,9 @@ def solve(prob, inputname):
     # y is ^
     #      |
     #      v
-    highest_y = -math.inf
-    x_range = 100
-    y_range = 100
-    times = 100
+    global_highest_y = -math.inf
+    x_range = 250
+    y_range = 154
     reached = False
 
     for i in range(x_range):
@@ -84,22 +83,26 @@ def solve(prob, inputname):
             highest_y = -math.inf
         
             #print("start", point)
-            for i in range(times):
+            while True:
                 point.step()
-                highest_y = max(highest_y, point.y)
                 #print(point)
+                highest_y = max(highest_y, point.y)
                 if within(point.x, point.y, int(x_l), int(x_r), int(y_l), int(y_r)):
                     reached = True
-                    print(f"within! highest y is {highest_y}")
+                    global_highest_y = max(global_highest_y, highest_y)
+                    break
+                elif point.x > int(x_r) or point.y < int(y_r):
+                    #print(point.x, point.y, x_r, y_r)
+                    #print("this point is past the zone. breaking")
                     break
 
     if reached:
-        print("highest ever is", highest_y)
+        print("highest ever is", global_highest_y)
     else:
         print("nothing ever hit lol")
 
     if prob == 1:
-        return highest_y
+        return global_highest_y
     elif prob == 2:
         return 2
     else:
