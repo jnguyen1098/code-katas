@@ -66,14 +66,22 @@ def solve(prob, inputname):
     print(f"x range is [{x_l}, {x_r}]")
     print(f"y range is [{y_l}, {y_r}]")
 
-    point = Point(7, 2)
+    point = Point(6, 9)
+    times = 100
+    highest_y = -math.inf
 
     print("start", point)
-    for i in range(7):
+    for i in range(times):
         point.step()
+        highest_y = max(highest_y, point.y)
         print(point)
         if within(point.x, point.y, int(x_l), int(x_r), int(y_l), int(y_r)):
             print("within!")
+            print(f"highest y is {highest_y}")
+            break
+
+    if i == times - 1:
+        print("never within")
 
     if prob == 1:
         return 1
