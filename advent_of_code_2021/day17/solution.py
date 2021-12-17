@@ -6,14 +6,26 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+class Grid:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.data = []
+        for i in range(rows):
+            self.data.append(["."] * cols)
+
+    def print(self):
+        for row in self.data:
+            print(row)
+
 def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        lines.append(parse(r"target area: x=([^,]+), y=(.*)", line))
 
-    print_arr(lines)
+    print_arr(lines, "    ")
 
     print(f"{len(lines)} lines in the array")
 
