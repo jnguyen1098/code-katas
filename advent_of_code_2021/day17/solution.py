@@ -71,13 +71,16 @@ def solve(prob, inputname):
     #      |
     #      v
     highest_y = -math.inf
+    x_range = 100
+    y_range = 100
+    times = 100
+    reached = False
 
-    for i in range(10):
-        for j in range(10):
+    for i in range(x_range):
+        for j in range(y_range):
             x_vel = i
             y_vel = j
             point = Point(x_vel, y_vel)
-            times = 100
             highest_y = -math.inf
         
             #print("start", point)
@@ -86,13 +89,17 @@ def solve(prob, inputname):
                 highest_y = max(highest_y, point.y)
                 #print(point)
                 if within(point.x, point.y, int(x_l), int(x_r), int(y_l), int(y_r)):
+                    reached = True
                     print(f"within! highest y is {highest_y}")
                     break
 
-    print("highest ever is", highest_y)
+    if reached:
+        print("highest ever is", highest_y)
+    else:
+        print("nothing ever hit lol")
 
     if prob == 1:
-        return 1
+        return highest_y
     elif prob == 2:
         return 2
     else:
@@ -105,7 +112,7 @@ if __name__ == "__main__":
     expcts = [[10, 20, 30], [40, 50, 60]]
     """
     inputs = ["example", "real"]
-    expcts = [[20, 30], [50, 60]]
+    expcts = [[45, 30], [50, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
