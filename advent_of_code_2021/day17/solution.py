@@ -102,11 +102,6 @@ def solve(prob, inputname):
                     #print("this point is past the zone. breaking")
                     break
 
-    if reached:
-        print("highest ever is", global_highest_y)
-    else:
-        print("nothing ever hit lol")
-
     if prob == 1:
         return global_highest_y
     elif prob == 2:
