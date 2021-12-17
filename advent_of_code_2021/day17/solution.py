@@ -37,7 +37,7 @@ class Point:
         self.y = 0
         self.x_vel = x_vel
         self.y_vel = y_vel
-    def get_next(self):
+    def step(self):
         self.x += self.x_vel
         self.y += self.y_vel
         if self.x_vel > 0:
@@ -45,6 +45,13 @@ class Point:
         elif self.x_vel < 0:
             self.x_vel += 1
         self.y_vel -= 1
+    def __str__(self):
+        return "\n".join(
+            [f"x={self.x}", f"y={self.y}", f"x_vel={self.x_vel}", f"y_vel={self.y_vel}", ""]
+        )
+
+def within(x, y, x_l, x_r, y_l, y_r):
+    return x_l <= x <= x_r and y_l <= y <= y_r
 
 def solve(prob, inputname):
     lines = []
@@ -58,6 +65,15 @@ def solve(prob, inputname):
 
     print(f"x range is [{x_l}, {x_r}]")
     print(f"y range is [{y_l}, {y_r}]")
+
+    point = Point(7, 2)
+
+    print("start", point)
+    for i in range(7):
+        point.step()
+        print(point)
+        if within(point.x, point.y, int(x_l), int(x_r), int(y_l), int(y_r)):
+            print("within!")
 
     if prob == 1:
         return 1
