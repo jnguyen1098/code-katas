@@ -177,7 +177,7 @@ class TestAll(unittest.TestCase):
         ]
         self.assertEqual(
             pipeline(list_of_token_lists),
-			tokenize("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
+            tokenize("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
         )
 
     def test_get_magnitude(self):
