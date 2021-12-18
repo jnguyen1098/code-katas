@@ -55,6 +55,30 @@ class TestAll(unittest.TestCase):
         self.assertEqual(replace_range(test, 6, 6, "LMAO"), ["[", 1, ",", 2, ",", 3, "LMAO"])
         self.assertEqual(replace_range(test, 5, 6, "LMAO"), ["[", 1, ",", 2, ",", "LMAO"])
 
+    def test_first_left_num(self):
+        self.assertIsNone(
+            get_first_left_num(
+                tokenize("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"), 5
+            )
+        )
+        self.assertEqual(
+            get_first_left_num(
+                tokenize("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"), 6
+            ), 5
+        )
+
+    def test_first_right_num(self):
+        self.assertIsNone(
+            get_first_right_num(
+                tokenize("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]"), 30
+            )
+        )
+        self.assertEqual(
+            get_first_right_num(
+                tokenize("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]"), 19
+            ), 22
+        )
+
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
         self.assertEqual(test.l, 1)

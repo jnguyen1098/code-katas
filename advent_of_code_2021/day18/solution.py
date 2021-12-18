@@ -60,6 +60,22 @@ def replace_range(tokens, l, r, replacement):
     tmp.insert(l, replacement)
     return tmp
 
+def get_first_left_num(tokens, i):
+    i -= 1
+    while i >= 0:
+        if isinstance(tokens[i], int):
+            return i
+        i -= 1
+    return None
+
+def get_first_right_num(tokens, i):
+    i += 1
+    while i < len(tokens):
+        if isinstance(tokens[i], int):
+            return i
+        i += 1
+    return None
+
 def explode(tokens):
     pass
 
