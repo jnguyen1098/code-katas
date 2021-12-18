@@ -5,10 +5,10 @@ from solution import *
 
 class TestAll(unittest.TestCase):
 
-    def test_str_to_pair(self):
-        self.assertEqual(str_to_pair("[1,2]"), [1, 2])
-        self.assertEqual(str_to_pair("[1,[2,3]]"), [1, [2,3]])
-        self.assertEqual(str_to_pair("[[4,[[[]]],6],[2,3]]"), [[4,[[[]]],6],[2,3]])
+    def test_get_pair(self):
+        self.assertEqual(get_pair("[1,2]"), [1, 2])
+        self.assertEqual(get_pair("[1,[2,3]]"), [1, [2,3]])
+        self.assertEqual(get_pair("[[4,[[[]]],6],[2,3]]"), [[4,[[[]]],6],[2,3]])
 
     def test_peek(self):
         self.assertIsNone(peek("hello", 4))
@@ -78,6 +78,10 @@ class TestAll(unittest.TestCase):
                 tokenize("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]"), 19
             ), 22
         )
+
+    def test_needs_to_explode(self):
+        self.assertTrue(needs_to_explode(tokenize("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")))
+        self.assertFalse(needs_to_explode(tokenize("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")))
 
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)

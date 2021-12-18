@@ -7,7 +7,7 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
-def str_to_pair(string):
+def get_pair(string):
     arr = json.loads(string)
     return [arr[0], arr[1]]
 
@@ -75,6 +75,9 @@ def get_first_right_num(tokens, i):
             return i
         i += 1
     return None
+
+def needs_to_explode(tokens):
+    return get_explode_idxs(tokens) is not None
 
 def explode(tokens):
     pass
