@@ -59,5 +59,6 @@ intgrid = lambda text: list(map(int, [char for char in text.strip()]))
 parse = lambda pattern, text: re.match(pattern, text).groups()
 
 def yield_line(filename):
-    for line in open(filename, "r").read().splitlines():
-        yield line
+    with open(filename, "r") as file_p:
+        for line in file_p.read().splitlines():
+            yield line
