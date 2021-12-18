@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 
+import json
 import sys
 sys.path.append("..")
 
 from ansi import *
 from comp import *
 
+class SnailNum:
+    def __init__(self, string):
+        tmp = json.loads(string)
+        self.l = tmp[0]
+        self.r = tmp[1]
+
+    def __str__(self):
+        return f"[ {self.l} , {self.r} ]"
+
 def solve(prob, inputname):
-    lines = []
-    gen = yield_line(inputname)
+    numbers = [line for line in yield_line(inputname)]
 
-    for line in gen:
-        lines.append(line)
+    snail_numbers = [SnailNum(num) for num in numbers]
 
-    print_arr(lines)
-
-    print(f"{len(lines)} lines in the array")
+    for snail in snail_numbers:
+        print(snail)
 
     if prob == 1:
         return 1
@@ -26,8 +33,8 @@ def solve(prob, inputname):
         exit()
 
 if __name__ == "__main__":
-    inputs = ["small", "example", "real"]
-    expcts = [[10, 20, 30], [40, 50, 60]]
+    inputs = ["add_test", "example", "real"]
+    expcts = [[[[1, 2], [[3, 4], 5]], 20, 30], [40, 50, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
