@@ -55,6 +55,11 @@ def remove_range(tokens, l, r):
             result.append(tokens[i])
     return result
 
+def replace_range(tokens, l, r, replacement):
+    tmp = remove_range(tokens, l, r)
+    tmp.insert(l, replacement)
+    return tmp
+
 def explode(tokens):
     pass
 
