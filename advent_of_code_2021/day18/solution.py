@@ -158,12 +158,12 @@ def get_magnitude(tokens):
     return magnitude
 
 def get_largest_magnitude(list_of_token_lists):
-    mag = -math.inf
+    mg = -math.inf
     for i in range(len(list_of_token_lists)):
         for j in range(len(list_of_token_lists)):
-            mag = max(mag, get_magnitude(add_lines(list_of_token_lists[i], list_of_token_lists[j])))
+            mg = max(mag, get_magnitude(add_lines(list_of_token_lists[i], list_of_token_lists[j])))
 
-    return mag
+    return mg
 
 def solve(prob, inputname):
     lines = [tokenize(line) for line in yield_line(inputname)]
