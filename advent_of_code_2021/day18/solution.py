@@ -17,7 +17,7 @@ class SnailNum:
         return f"[ {self.l} , {self.r} ]"
 
     def __add__(self, other):
-        return str([json.loads(str(self)), json.loads(str(other))])
+        return SnailNum(str([json.loads(str(self)), json.loads(str(other))]))
 
 def solve(prob, inputname):
     numbers = [line for line in yield_line(inputname)]
@@ -27,7 +27,12 @@ def solve(prob, inputname):
     for snail in snail_numbers:
         print(snail)
 
-    print(snail_numbers[0] + snail_numbers[1])
+    base = snail_numbers[0]
+
+    for i in range(1, len(snail_numbers)):
+        base += snail_numbers[i]
+
+    print(f"after adding: {base}")
 
     if prob == 1:
         return 1
