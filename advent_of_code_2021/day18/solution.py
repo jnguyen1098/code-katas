@@ -40,12 +40,7 @@ def solve(prob, inputname):
         exit()
 
 if __name__ == "__main__":
-    inputs = ["add_test", "example", "real"]
+    inputs = ["real"]
 
     for i in [1, 2]:
-        print(red(rev(f"Part {i}\n")))
-        for filename in inputs:
-            print("    " + cya(rev(f"Filename: {filename}")))
-            output = solve(i, filename)
-            print(f"        Output: {output}")
-            print("\n" * 2)
+        print(red(rev(f"Part {i}")) + f": {solve(i, 'input')}\n")
