@@ -184,9 +184,14 @@ class TestAll(unittest.TestCase):
         self.assertEqual(get_magnitude(tokenize("[9,1]")), 29)
         self.assertEqual(get_magnitude(tokenize("[1,9]")), 21)
         self.assertEqual(get_magnitude(tokenize("[[1,2],[[3,4],5]]")), 143)
+        self.assertEqual(
+            get_magnitude(tokenize("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")), 3488
+        )
 
     def test_solve(self):
+        self.assertEqual(solve(1, "example"), 4140)
         self.assertEqual(solve(1, "input"), 3869)
+        self.assertEqual(solve(2, "example"), 3993)
         self.assertEqual(solve(2, "input"), 4671)
 
 if __name__ == "__main__":
