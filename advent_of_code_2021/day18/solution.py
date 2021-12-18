@@ -139,8 +139,8 @@ def pipeline(list_of_token_lists):
         result = add_lines(result, list_of_token_lists[i])
     return result
 
-def get_magnitude(tokens, l, r):
-    pair = get_pair("".join([str(tok) for tok in tokens[l : r + 1]]))
+def get_magnitude(tokens):
+    pair = get_pair("".join([str(tok) for tok in tokens]))
     l, r = pair[0], pair[1]
 
     magnitude = 0
@@ -148,12 +148,12 @@ def get_magnitude(tokens, l, r):
     if isinstance(l, int):
         magnitude += 3 * l
     else:
-        pass
+        magnitude += 3 * get_magnitude(tokenize(json.dumps(l)))
 
     if isinstance(r, int):
         magnitude += 2 * r
     else:
-        pass
+        magnitude += 2 * get_magnitude(tokenize(json.dumps(r)))
 
     return magnitude
 
