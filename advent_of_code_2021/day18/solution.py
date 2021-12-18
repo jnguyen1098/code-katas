@@ -12,10 +12,7 @@ def get_pair(string):
     return [arr[0], arr[1]]
 
 def get_pair_from_idx(tokens, l, r):
-    tmp = []
-    for i in range(l, r + 1):
-        tmp.append(str(tokens[i]))
-    return get_pair("".join(tmp))
+    return get_pair("".join([str(tokens[i]) for i in range(l, r + 1)]))
 
 def peek(string, i):
     return string[i + 1] if i + 1 < len(string) else None
@@ -39,7 +36,6 @@ def tokenize(string):
 def get_explode_idxs(tokens):
     bal = 0
     l, r = None, None
-
     for idx, item in enumerate(tokens):
         if item == "[":   bal += 1
         elif item == "]": bal -= 1
@@ -55,48 +51,33 @@ def remove_token(tokens, idx):
     return [token for token in tokens if token != tokens[idx]]
 
 def remove_range(tokens, l, r):
-    result = []
-    for i in range(len(tokens)):
-        if not (l <= i <= r):
-            result.append(tokens[i])
-    return result
+    return [tokens[i] for i in range(len(tokens)) if not l <= i <= r]
 
 def replace_range(tokens, l, r, replacement):
-    tmp = remove_range(tokens, l, r)
-    tmp.insert(l, replacement)
-    return tmp
+    return tokens[:l] + [replacement] + tokens[r + 1:]
 
 def get_first_left_num(tokens, i):
-    i -= 1
-    while i >= 0:
-        if isinstance(tokens[i], int):
-            return i
-        i -= 1
+    for idx in range(i - 1, -1, -1):
+        if isinstance(tokens[idx], int):
+            return idx
     return None
 
 def get_first_right_num(tokens, i):
-    i += 1
-    while i < len(tokens):
-        if isinstance(tokens[i], int):
-            return i
-        i += 1
+    for idx in range(i + 1, len(tokens)):
+        if isinstance(tokens[idx], int):
+            return idx
     return None
 
 def needs_to_explode(tokens):
     return get_explode_idxs(tokens) is not None
 
 def explode(tokens):
-    if not needs_to_explode(tokens):
-        return tokens
-
     explode_l, explode_r = get_explode_idxs(tokens)
-
     pair = get_pair_from_idx(tokens, explode_l, explode_r)
     if l_idx := get_first_left_num(tokens, explode_l):
         tokens[l_idx] += pair[0]
     if r_idx := get_first_right_num(tokens, explode_r):
         tokens[r_idx] += pair[1]
-
     return replace_range(tokens, explode_l, explode_r, 0)
 
 def needs_to_split(tokens):
@@ -106,8 +87,6 @@ def needs_to_split(tokens):
     return False
 
 def get_split_idx(tokens):
-    if not needs_to_split(tokens):
-        return None
     for idx, token in enumerate(tokens):
         if isinstance(token, int) and token > 9:
             return idx
@@ -118,8 +97,6 @@ def split_int(num):
     return num // 2, num // 2 + 1
 
 def split(tokens):
-    if not needs_to_split(tokens):
-        return tokens
     spl_i = get_split_idx(tokens)
     spl_l, spl_r = split_int(tokens[spl_i])
     return tokens[0 : spl_i] + ["[", spl_l, ",", spl_r, "]"] + tokens[spl_i + 1:]
@@ -144,12 +121,9 @@ def pipeline(list_of_token_lists):
 
 def get_magnitude(tokens):
     pair = get_pair("".join([str(tok) for tok in tokens]))
-    l, r = pair[0], pair[1]
-
-    magnitude = 0
+    magnitude, l, r = 0, pair[0], pair[1]
     magnitude += 3 * (l if isinstance(l, int) else get_magnitude(tokenize(json.dumps(l))))
     magnitude += 2 * (r if isinstance(r, int) else get_magnitude(tokenize(json.dumps(r))))
-
     return magnitude
 
 def get_largest_magnitude(list_of_token_lists):
@@ -162,7 +136,6 @@ def get_largest_magnitude(list_of_token_lists):
 
 def solve(prob, inputname):
     lines = [tokenize(line) for line in yield_line(inputname)]
-
     if prob == 1:
         return get_magnitude(pipeline(lines))
     elif prob == 2:
