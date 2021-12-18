@@ -90,7 +90,11 @@ def explode(tokens):
         return tokens
     explode_l, explode_r = get_explode_idxs(tokens)
     pair = get_pair_from_idx(tokens, explode_l, explode_r)
-    print(pair)
+    if l_idx := get_first_left_num(tokens, explode_l):
+        tokens[l_idx] += pair[0]
+    if r_idx := get_first_right_num(tokens, explode_r):
+        tokens[r_idx] += pair[1]
+    return replace_range(tokens, explode_l, explode_r, 0)
 
 class SnailNum:
     def __init__(self, left, right):
