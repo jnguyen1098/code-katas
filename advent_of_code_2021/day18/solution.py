@@ -13,9 +13,8 @@ def str_to_pair(string):
 
 class SnailNum:
     def __init__(self, left, right):
-        tmp = json.loads(string)
-        self.l = tmp[0]
-        self.r = tmp[1]
+        if isinstance(left, SnailNum):
+            print("this is a snailnum")
 
     def __str__(self):
         return ""
@@ -28,17 +27,9 @@ class SnailNum:
 def solve(prob, inputname):
     numbers = [line for line in yield_line(inputname)]
 
-    snail_numbers = [SnailNum(num) for num in numbers]
-
-    for snail in snail_numbers:
-        print(snail)
+    snail_numbers = [SnailNum(num, 1) for num in numbers]
 
     base = snail_numbers[0]
-
-    for i in range(1, len(snail_numbers)):
-        base += snail_numbers[i]
-
-    print(f"after adding: {base}")
 
     if prob == 1:
         return 1
@@ -50,15 +41,11 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["add_test", "example", "real"]
-    expcts = [[[[1, 2], [[3, 4], 5]], 20, 30], [40, 50, 60]]
-    shortc = True
 
-    for idx, part in enumerate(expcts):
-        for filename, expected in zip(inputs, part):
-            print(cya(rev(f"Filename: {filename}")))
-            output = solve(idx + 1, filename)
-            passed, msg = expect(output, expected)
-            result = rev(grn("PASS") if passed else red("FAIL"))
-            print(f"Part {idx + 1}: {output} {grn(msg) if passed else red(msg)}\n")
-            if not passed and shortc: exit()
-        print("\n" * 2)
+    for i in [1, 2]:
+        print(red(rev(f"Part {i}\n")))
+        for filename in inputs:
+            print("    " + cya(rev(f"Filename: {filename}")))
+            output = solve(i, filename)
+            print(f"        Output: {output}")
+            print("\n" * 2)
