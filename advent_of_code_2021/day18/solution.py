@@ -18,16 +18,18 @@ def tokenize(string):
     tokens = []
     num = None
     for idx, char in enumerate(string):
-        if char in ["[", "]", ","]:
+        if char.isspace():
+            continue
+        elif char in ["[", "]", ","]:
             tokens.append(char)
         else:
+            if num is None:
+                num = 0
+            num *= 10
+            num += int(char)
             if peek(string, idx) is None or not peek(string, idx).isdigit():
                 tokens.append(num)
-            else:
-                if num is None:
-                    num = 0
-                num *= 10
-                num += int(char)
+                num = None
     return tokens
 
 class SnailNum:

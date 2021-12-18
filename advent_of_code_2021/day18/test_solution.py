@@ -20,6 +20,10 @@ class TestAll(unittest.TestCase):
         self.assertEqual(tokenize("]"), ["]"])
         self.assertEqual(tokenize(","), [","])
         self.assertEqual(tokenize("[,]"), ["[", ",", "]"])
+        self.assertEqual(tokenize("[3]"), ["[", 3, "]"])
+        self.assertEqual(tokenize("  [ 3 ]  "), ["[", 3, "]"])
+        self.assertEqual(tokenize("[3,4]"), ["[", 3, ",", 4, "]"])
+        self.assertEqual(tokenize("[303,434]"), ["[", 303, ",", 434, "]"])
 
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
