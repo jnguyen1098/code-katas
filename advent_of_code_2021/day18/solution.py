@@ -131,7 +131,6 @@ def get_largest_magnitude(list_of_token_lists):
     for i in range(len(list_of_token_lists)):
         for j in range(len(list_of_token_lists)):
             mg = max(mg, get_magnitude(add_lines(list_of_token_lists[i], list_of_token_lists[j])))
-
     return mg
 
 def solve(prob, inputname):
