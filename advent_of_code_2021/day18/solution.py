@@ -7,16 +7,22 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+def str_to_pair(string):
+    arr = json.loads(string)
+    return [arr[0], arr[1]]
+
 class SnailNum:
-    def __init__(self, string):
+    def __init__(self, left, right):
         tmp = json.loads(string)
         self.l = tmp[0]
         self.r = tmp[1]
 
     def __str__(self):
+        return ""
         return f"[ {self.l} , {self.r} ]"
 
     def __add__(self, other):
+        return 0
         return SnailNum(str([json.loads(str(self)), json.loads(str(other))]))
 
 def solve(prob, inputname):
