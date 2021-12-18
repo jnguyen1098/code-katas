@@ -34,6 +34,13 @@ class TestAll(unittest.TestCase):
         self.assertEqual(get_explode_idxs("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]"), (16, 20))
         self.assertEqual(get_explode_idxs("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"), (22, 26))
 
+    def test_remove_token(self):
+        self.assertEqual(remove_token(tokenize("[3,4]"), 0), tokenize("3,4]"))
+        self.assertEqual(remove_token(tokenize("[3,4]"), 1), tokenize("[,4]"))
+        self.assertEqual(remove_token(tokenize("[3,4]"), 2), ["[", 3, 4, "]"])
+        self.assertEqual(remove_token(tokenize("[3,4]"), 3), tokenize("[3,]"))
+        self.assertEqual(remove_token(tokenize("[3,4]"), 4), tokenize("[3,4"))
+
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
         self.assertEqual(test.l, 1)
