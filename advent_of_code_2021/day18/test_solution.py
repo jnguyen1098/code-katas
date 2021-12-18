@@ -41,6 +41,12 @@ class TestAll(unittest.TestCase):
         self.assertEqual(remove_token(tokenize("[3,4]"), 3), tokenize("[3,]"))
         self.assertEqual(remove_token(tokenize("[3,4]"), 4), tokenize("[3,4"))
 
+    def test_remove_range(self):
+        self.assertEqual(remove_range(tokenize("[1,2,3]"), 0, 6), [])
+        self.assertEqual(remove_range(tokenize("[1,2,3]"), 0, 0), tokenize("1,2,3]"))
+        self.assertEqual(remove_range(tokenize("[1,2,3]"), 6, 6), tokenize("[1,2,3"))
+        self.assertEqual(remove_range(tokenize("[1,2,3]"), 2, 4), ["[", 1, 3, "]"])
+
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
         self.assertEqual(test.l, 1)

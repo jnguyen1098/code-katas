@@ -48,6 +48,13 @@ def get_explode_idxs(tokens):
 def remove_token(tokens, idx):
     return [token for token in tokens if token != tokens[idx]]
 
+def remove_range(tokens, l, r):
+    result = []
+    for i in range(len(tokens)):
+        if not (l <= i <= r):
+            result.append(tokens[i])
+    return result
+
 def explode(tokens):
     pass
 
