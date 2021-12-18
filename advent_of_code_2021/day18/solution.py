@@ -121,11 +121,23 @@ def split(tokens):
     spl_l, spl_r = split_int(tokens[spl_i])
     return tokens[0 : spl_i] + ["[", spl_l, ",", spl_r, "]"] + tokens[spl_i + 1:]
 
-def add_tokens(tokens1, tokens2):
+def concat_tokens(tokens1, tokens2):
     return ["["] + tokens1 + [","] + tokens2 + ["]"]
 
+def add_lines(tokens1, tokens2):
+    cat = concat_tokens(tokens1, tokens2)
+    while needs_to_explode(cat) or needs_to_split(cat):
+        if needs_to_explode(cat):
+            cat = explode(cat)
+        elif needs_to_split(cat):
+            cat = split(cat)
+    return cat
+
 def solve(prob, inputname):
-    numbers = [line for line in yield_line(inputname)]
+    lines = [tokenize(line) for line in yield_line(inputname)]
+
+    for line in lines:
+        print(line)
 
     if prob == 1:
         return 1

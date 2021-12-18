@@ -122,15 +122,30 @@ class TestAll(unittest.TestCase):
             tokenize("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]")
         )
 
-    def test_add_tokens(self):
+    def test_concat_tokens(self):
         self.assertEqual(
-            add_tokens(tokenize("[1,1]"), tokenize("[2,2]")),
+            concat_tokens(tokenize("[1,1]"), tokenize("[2,2]")),
             tokenize("[[1,1],[2,2]]")
         )
         self.assertEqual(
-            add_tokens(tokenize("[[[[4,3],4],4],[7,[[8,4],9]]]"), tokenize("[1,1]")),
+            concat_tokens(tokenize("[[[[4,3],4],4],[7,[[8,4],9]]]"), tokenize("[1,1]")),
             tokenize("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")
         )
+
+    def test_add_lines_basic(self):
+        result = tokenize("[1,1]")
+        result = add_lines(result, tokenize("[2,2]"))
+        result = add_lines(result, tokenize("[3,3]"))
+        result = add_lines(result, tokenize("[4,4]"))
+        self.assertEqual(result, tokenize("[[[[1,1],[2,2]],[3,3]],[4,4]]"))
+
+    def test_add_lines_harder(self):
+        result = tokenize("[1,1]")
+        result = add_lines(result, tokenize("[2,2]"))
+        result = add_lines(result, tokenize("[3,3]"))
+        result = add_lines(result, tokenize("[4,4]"))
+        result = add_lines(result, tokenize("[5,5]"))
+        self.assertEqual(result, tokenize("[[[[3,0],[5,3]],[4,4]],[5,5]]"))
 
 if __name__ == "__main__":
     unittest.main()
