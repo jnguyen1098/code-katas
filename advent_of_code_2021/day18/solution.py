@@ -88,12 +88,15 @@ def needs_to_explode(tokens):
 def explode(tokens):
     if not needs_to_explode(tokens):
         return tokens
+
     explode_l, explode_r = get_explode_idxs(tokens)
+
     pair = get_pair_from_idx(tokens, explode_l, explode_r)
     if l_idx := get_first_left_num(tokens, explode_l):
         tokens[l_idx] += pair[0]
     if r_idx := get_first_right_num(tokens, explode_r):
         tokens[r_idx] += pair[1]
+
     return replace_range(tokens, explode_l, explode_r, 0)
 
 def needs_to_split(tokens):
@@ -144,16 +147,8 @@ def get_magnitude(tokens):
     l, r = pair[0], pair[1]
 
     magnitude = 0
-    
-    if isinstance(l, int):
-        magnitude += 3 * l
-    else:
-        magnitude += 3 * get_magnitude(tokenize(json.dumps(l)))
-
-    if isinstance(r, int):
-        magnitude += 2 * r
-    else:
-        magnitude += 2 * get_magnitude(tokenize(json.dumps(r)))
+    magnitude += 3 * (l if isinstance(l, int) else get_magnitude(tokenize(json.dumps(l))))
+    magnitude += 2 * (r if isinstance(r, int) else get_magnitude(tokenize(json.dumps(r))))
 
     return magnitude
 
