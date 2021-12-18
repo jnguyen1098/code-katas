@@ -11,6 +11,12 @@ def get_pair(string):
     arr = json.loads(string)
     return [arr[0], arr[1]]
 
+def get_pair_from_idx(tokens, l, r):
+    tmp = []
+    for i in range(l, r + 1):
+        tmp.append(str(tokens[i]))
+    return get_pair("".join(tmp))
+
 def peek(string, i):
     return string[i + 1] if i + 1 < len(string) else None
 
@@ -80,7 +86,9 @@ def needs_to_explode(tokens):
     return get_explode_idxs(tokens) is not None
 
 def explode(tokens):
-    pass
+    if not needs_to_explode(tokens):
+        return tokens
+    explode_l, explode_r = get_explode_idxs(tokens)
 
 class SnailNum:
     def __init__(self, left, right):
