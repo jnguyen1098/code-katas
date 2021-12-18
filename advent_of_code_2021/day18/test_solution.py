@@ -147,5 +147,20 @@ class TestAll(unittest.TestCase):
         result = add_lines(result, tokenize("[5,5]"))
         self.assertEqual(result, tokenize("[[[[3,0],[5,3]],[4,4]],[5,5]]"))
 
+    def test_insane(self):
+        result = tokenize("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]")
+        result = add_lines(result, tokenize("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"))
+        result = add_lines(result, tokenize("[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]"))
+        result = add_lines(result, tokenize("[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]"))
+        result = add_lines(result, tokenize("[7,[5,[[3,8],[1,4]]]]"))
+        result = add_lines(result, tokenize("[[2,[2,2]],[8,[8,1]]]"))
+        result = add_lines(result, tokenize("[2,9]"))
+        result = add_lines(result, tokenize("[1,[[[9,3],9],[[9,0],[0,7]]]]"))
+        result = add_lines(result, tokenize("[[[5,[7,4]],7],1]"))
+        result = add_lines(result, tokenize("[[[[4,2],2],6],[8,7]]"))
+        self.assertEqual(
+            result, tokenize("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
+        )
+
 if __name__ == "__main__":
     unittest.main()
