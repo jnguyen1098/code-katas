@@ -102,9 +102,18 @@ def needs_to_split(tokens):
             return True
     return False
 
+def get_split_idx(tokens):
+    if not needs_to_split(tokens):
+        return None
+    for idx, token in enumerate(tokens):
+        if isinstance(token, int) and token > 9:
+            return idx
+    assert False, "This should never be reached"
+
 def split(tokens):
     if not needs_to_split(tokens):
         return tokens
+
 
 class SnailNum:
     def __init__(self, left, right):

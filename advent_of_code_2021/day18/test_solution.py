@@ -105,6 +105,9 @@ class TestAll(unittest.TestCase):
         self.assertTrue(needs_to_split(tokenize("[[[[0,7],4],[15,[0,13]]],[1,1]]")))
         self.assertFalse(needs_to_split(tokenize("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]")))
 
+    def test_get_split_idx(self):
+        self.assertEqual(get_split_idx(tokenize("[[[[0,7],4],[15,[0,13]]],[1,1]]")), 13)
+
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
         self.assertEqual(test.l, 1)
