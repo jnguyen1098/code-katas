@@ -117,6 +117,10 @@ class TestAll(unittest.TestCase):
             split(tokenize("[[[[0,7],4],[15,[0,13]]],[1,1]]")),
             tokenize("[[[[0,7],4],[[7,8],[0,13]]],[1,1]]")
         )
+        self.assertEqual(
+            split(tokenize("[[[[0,7],4],[[7,8],[0,13]]],[1,1]]")),
+            tokenize("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]")
+        )
 
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
