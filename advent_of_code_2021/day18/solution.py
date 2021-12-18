@@ -121,12 +121,11 @@ def split(tokens):
     spl_l, spl_r = split_int(tokens[spl_i])
     return tokens[0 : spl_i] + ["[", spl_l, ",", spl_r, "]"] + tokens[spl_i + 1:]
 
+def add_tokens(tokens1, tokens2):
+    return ["["] + tokens1 + [","] + tokens2 + ["]"]
+
 def solve(prob, inputname):
     numbers = [line for line in yield_line(inputname)]
-
-    snail_numbers = [SnailNum(num, 1) for num in numbers]
-
-    base = snail_numbers[0]
 
     if prob == 1:
         return 1

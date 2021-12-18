@@ -122,19 +122,11 @@ class TestAll(unittest.TestCase):
             tokenize("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]")
         )
 
-    def test_snailnum_init_all_ints(self):
-        test = SnailNum(1, 2)
-        self.assertEqual(test.l, 1)
-        self.assertEqual(test.r, 2)
-
-    def test_snailnum_init_all_snail(self):
-        snail1 = SnailNum(1, 2)
-        snail1_copy = SnailNum(1, 2)
-        snail2 = SnailNum(3, 4)
-        snail2_copy = SnailNum(3, 4)
-        test = SnailNum(snail1, snail2)
-        self.assertEqual(test.l, snail1_copy)
-        self.assertEqual(test.r, snail2_copy)
+    def test_add_tokens(self):
+        self.assertEqual(
+            add_tokens(tokenize("[1,1]"), tokenize("[2,2]")),
+            tokenize("[[1,1],[2,2]]")
+        )
 
 if __name__ == "__main__":
     unittest.main()
