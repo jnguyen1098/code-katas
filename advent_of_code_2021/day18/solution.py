@@ -110,10 +110,14 @@ def get_split_idx(tokens):
             return idx
     assert False, "This should never be reached"
 
+def split_int(num):
+    if num % 2 == 0: return num // 2, num // 2
+    return num // 2, num // 2 + 1
+
 def split(tokens):
     if not needs_to_split(tokens):
         return tokens
-
+    split_idx = get_split_idx(tokens)
 
 class SnailNum:
     def __init__(self, left, right):
