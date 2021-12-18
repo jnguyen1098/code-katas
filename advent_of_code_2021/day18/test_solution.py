@@ -127,6 +127,10 @@ class TestAll(unittest.TestCase):
             add_tokens(tokenize("[1,1]"), tokenize("[2,2]")),
             tokenize("[[1,1],[2,2]]")
         )
+        self.assertEqual(
+            add_tokens(tokenize("[[[[4,3],4],4],[7,[[8,4],9]]]"), tokenize("[1,1]")),
+            tokenize("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")
+        )
 
 if __name__ == "__main__":
     unittest.main()
