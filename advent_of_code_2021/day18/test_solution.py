@@ -5,6 +5,33 @@ from solution import *
 
 class TestAll(unittest.TestCase):
 
+    def test_loads(self):
+        self.assertEqual(loads(None), [])
+        self.assertEqual(loads(""), [])
+        self.assertEqual(loads("[]"), [])
+        self.assertEqual(loads("[[]]"), [[]])
+        self.assertEqual(loads("[[[]]]"), [[[]]])
+        self.assertEqual(loads("[[[],[[]]]]"), [[[],[[]]]])
+        self.assertEqual(loads("[1]"), [1])
+        self.assertEqual(loads("[1,2]"), [1, 2])
+        self.assertEqual(
+            loads("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"),
+            [[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]
+        )
+
+    def test_dumps(self):
+        self.assertEqual(dumps(None), "[]")
+        self.assertEqual(dumps([]), "[]")
+        self.assertEqual(dumps([[]]), "[[]]")
+        self.assertEqual(dumps([[[]]]), "[[[]]]")
+        self.assertEqual(dumps([[[],[[]]]]), "[[[],[[]]]]")
+        self.assertEqual(dumps([1]), "[1]")
+        self.assertEqual(dumps([1,2]), "[1,2]")
+        self.assertEqual(
+            dumps([[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]),
+            "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
+        )
+
     def test_get_pair(self):
         self.assertEqual(get_pair("[1,2]"), [1, 2])
         self.assertEqual(get_pair("[1,[2,3]]"), [1, [2,3]])
