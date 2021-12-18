@@ -40,7 +40,5 @@ def solve(prob, inputname):
         exit()
 
 if __name__ == "__main__":
-    inputs = ["real"]
-
-    for i in [1, 2]:
-        print(red(rev(f"Part {i}")) + f": {solve(i, 'input')}\n")
+    print(red(rev(f"Part 1")) + f": {solve(1, 'input')}\n")
+    print(red(rev(f"Part 2")) + f": {solve(2, 'input')}\n")
