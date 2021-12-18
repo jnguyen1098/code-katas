@@ -10,6 +10,11 @@ class TestAll(unittest.TestCase):
         self.assertEqual(str_to_pair("[1,[2,3]]"), [1, [2,3]])
         self.assertEqual(str_to_pair("[[4,[[[]]],6],[2,3]]"), [[4,[[[]]],6],[2,3]])
 
+    def test_peek(self):
+        self.assertIsNone(peek("hello", 4))
+        self.assertEqual(peek("hello", 3), "o")
+        self.assertEqual(peek("hello", 0), "e")
+
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
         self.assertEqual(test.l, 1)

@@ -11,6 +11,12 @@ def str_to_pair(string):
     arr = json.loads(string)
     return [arr[0], arr[1]]
 
+def peek(string, i):
+    return string[i + 1] if i + 1 < len(string) else None
+
+def tokenize(string):
+    pass
+
 class SnailNum:
     def __init__(self, left, right):
         self.l = left
