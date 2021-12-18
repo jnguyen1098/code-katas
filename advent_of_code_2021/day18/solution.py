@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
 
-import json
 import sys
 sys.path.append("..")
 
 from ansi import *
 from comp import *
 
+def loads(string):  # didn't know if json.loads was cheating so I implemented it
+    if not string or string == "[]": return []
+    bal = 0
+    string_chars = list(string[1:-1])
+    for idx, char in enumerate(string_chars):
+        bal += 1 if char == "[" else -1 if char == "]" else 0
+        if bal == 0 and char == ",":
+            string_chars[idx] = "*"
+    tokens = "".join(string_chars).split("*")
+    return [int(token) if token.isdigit() else loads(token) for token in tokens]
+
+def dumps(arr):  # didn't know if json.dumps was cheating so I implemented it
+    if not arr: return "[]"
+    result = ["["]
+    for item in arr:
+        result += ([str(item) if isinstance(item, int) else dumps(item), ","])
+    return "".join(result[:-1] + ["]"])
+
 def get_pair(string):
-    arr = json.loads(string)
+    # arr = json.loads(string)
+    arr = loads(string)
     return [arr[0], arr[1]]
 
 def get_pair_from_idx(tokens, l, r):
@@ -121,8 +139,10 @@ def pipeline(list_of_token_lists):
 def get_magnitude(tokens):
     pair = get_pair("".join([str(tok) for tok in tokens]))
     magnitude, l, r = 0, pair[0], pair[1]
-    magnitude += 3 * (l if isinstance(l, int) else get_magnitude(tokenize(json.dumps(l))))
-    magnitude += 2 * (r if isinstance(r, int) else get_magnitude(tokenize(json.dumps(r))))
+    # magnitude += 3 * (l if isinstance(l, int) else get_magnitude(tokenize(json.dumps(l))))
+    # magnitude += 2 * (r if isinstance(r, int) else get_magnitude(tokenize(json.dumps(r))))
+    magnitude += 3 * (l if isinstance(l, int) else get_magnitude(tokenize(dumps(l))))
+    magnitude += 2 * (r if isinstance(r, int) else get_magnitude(tokenize(dumps(r))))
     return magnitude
 
 def get_largest_magnitude(list_of_token_lists):
