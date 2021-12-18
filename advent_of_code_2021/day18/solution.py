@@ -30,6 +30,24 @@ def tokenize(string):
                 num = 0
     return tokens
 
+def explode(string):
+    pass
+
+def get_explode_idxs(tokens):
+    bal = 0
+    l, r = None, None
+
+    for idx, item in enumerate(tokens):
+        if item == "[":   bal += 1
+        elif item == "]": bal -= 1
+        if bal == 5:
+            if l is None:
+                l = idx
+            else:
+                r = idx
+        elif l and r:
+            return l, r + 1
+
 class SnailNum:
     def __init__(self, left, right):
         self.l = left
