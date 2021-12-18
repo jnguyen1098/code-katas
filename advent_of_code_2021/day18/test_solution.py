@@ -182,6 +182,7 @@ class TestAll(unittest.TestCase):
 
     def test_get_magnitude(self):
         self.assertEqual(get_magnitude(tokenize("[9,1]"), 0, 4), 29)
+        self.assertEqual(get_magnitude(tokenize("[1,9]"), 0, 4), 21)
 
 if __name__ == "__main__":
     unittest.main()
