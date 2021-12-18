@@ -160,13 +160,8 @@ def get_magnitude(tokens):
 def solve(prob, inputname):
     lines = [tokenize(line) for line in yield_line(inputname)]
 
-    """
-    for line in lines:
-        print(line)
-    """
-
     if prob == 1:
-        return 1
+        return get_magnitude(pipeline(lines))
     elif prob == 2:
         return 2
     else:
