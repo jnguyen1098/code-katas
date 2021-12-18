@@ -76,16 +76,16 @@ class TestAll(unittest.TestCase):
             ), 22
         )
 
-    def test_needs_to_explode(self):
-        self.assertTrue(needs_to_explode(tokenize("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")))
-        self.assertFalse(needs_to_explode(tokenize("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")))
-
     def test_get_pair_from_idx(self):
         self.assertEqual(get_pair_from_idx(tokenize("[[1,9]"), 1, 5), [1, 9])
         self.assertEqual(get_pair_from_idx(tokenize("[[1,23]"), 1, 5), [1, 23])
         self.assertEqual(
             get_pair_from_idx(tokenize("[[[[0,7],4],[71,[[8,40]"), 16, 20), [8, 40]
         )
+
+    def test_needs_to_explode(self):
+        self.assertTrue(needs_to_explode(tokenize("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")))
+        self.assertFalse(needs_to_explode(tokenize("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")))
 
     def test_explode(self):
         self.assertEqual(
@@ -100,6 +100,10 @@ class TestAll(unittest.TestCase):
             explode(tokenize("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]")),
             tokenize("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")
         )
+
+    def test_needs_to_split(self):
+        self.assertTrue(needs_to_split(tokenize("[[[[0,7],4],[15,[0,13]]],[1,1]]")))
+        self.assertFalse(needs_to_split(tokenize("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]")))
 
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)

@@ -96,6 +96,16 @@ def explode(tokens):
         tokens[r_idx] += pair[1]
     return replace_range(tokens, explode_l, explode_r, 0)
 
+def needs_to_split(tokens):
+    for token in tokens:
+        if isinstance(token, int) and token > 9:
+            return True
+    return False
+
+def split(tokens):
+    if not needs_to_split(tokens):
+        return tokens
+
 class SnailNum:
     def __init__(self, left, right):
         self.l = left
