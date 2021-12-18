@@ -185,5 +185,9 @@ class TestAll(unittest.TestCase):
         self.assertEqual(get_magnitude(tokenize("[1,9]")), 21)
         self.assertEqual(get_magnitude(tokenize("[[1,2],[[3,4],5]]")), 143)
 
+    def test_solve(self):
+        self.assertEqual(solve(1, "input"), 3869)
+        self.assertEqual(solve(2, "input"), 4671)
+
 if __name__ == "__main__":
     unittest.main()
