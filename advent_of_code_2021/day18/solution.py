@@ -133,6 +133,12 @@ def add_lines(tokens1, tokens2):
             cat = split(cat)
     return cat
 
+def pipeline(list_of_token_lists):
+    result = list_of_token_lists[0]
+    for i in range(1, len(list_of_token_lists)):
+        result = add_lines(result, list_of_token_lists[i])
+    return result
+
 def solve(prob, inputname):
     lines = [tokenize(line) for line in yield_line(inputname)]
 

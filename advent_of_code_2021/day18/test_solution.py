@@ -162,5 +162,23 @@ class TestAll(unittest.TestCase):
             result, tokenize("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
         )
 
+    def test_pipeline(self):
+        list_of_token_lists = [
+            tokenize("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]"),
+            tokenize("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"),
+            tokenize("[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]"),
+            tokenize("[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]"),
+            tokenize("[7,[5,[[3,8],[1,4]]]]"),
+            tokenize("[[2,[2,2]],[8,[8,1]]]"),
+            tokenize("[2,9]"),
+            tokenize("[1,[[[9,3],9],[[9,0],[0,7]]]]"),
+            tokenize("[[[5,[7,4]],7],1]"),
+            tokenize("[[[[4,2],2],6],[8,7]]"),
+        ]
+        self.assertEqual(
+            pipeline(list_of_token_lists),
+			tokenize("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
+        )
+
 if __name__ == "__main__":
     unittest.main()
