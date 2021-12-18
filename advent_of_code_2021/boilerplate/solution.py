@@ -15,7 +15,7 @@ def solve(prob, inputname):
 
     print_arr(lines)
 
-    print(f"{len(lines)} lines in the array")
+    print(f"{len(lines)} in the array")
 
     if prob == 1:
         return 1
@@ -24,18 +24,3 @@ def solve(prob, inputname):
     else:
         print("Invalid problem code")
         exit()
-
-if __name__ == "__main__":
-    inputs = ["small", "example", "real"]
-    expcts = [[10, 20, 30], [40, 50, 60]]
-    shortc = True
-
-    for idx, part in enumerate(expcts):
-        for filename, expected in zip(inputs, part):
-            print(cya(rev(f"Filename: {filename}")))
-            output = solve(idx + 1, filename)
-            passed, msg = expect(output, expected)
-            result = rev(grn("PASS") if passed else red("FAIL"))
-            print(f"Part {idx + 1}: {output} {grn(msg) if passed else red(msg)}\n")
-            if not passed and shortc: exit()
-        print("\n" * 2)
