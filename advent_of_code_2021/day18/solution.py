@@ -117,7 +117,9 @@ def split_int(num):
 def split(tokens):
     if not needs_to_split(tokens):
         return tokens
-    split_idx = get_split_idx(tokens)
+    spl_i = get_split_idx(tokens)
+    spl_l, spl_r = split_int(tokens[spl_i])
+    return tokens[0 : spl_i] + ["[", spl_l, ",", spl_r, "]"] + tokens[spl_i + 1:]
 
 class SnailNum:
     def __init__(self, left, right):
