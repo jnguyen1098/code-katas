@@ -157,13 +157,21 @@ def get_magnitude(tokens):
 
     return magnitude
 
+def get_largest_magnitude(list_of_token_lists):
+    mag = -math.inf
+    for i in range(len(list_of_token_lists)):
+        for j in range(len(list_of_token_lists)):
+            mag = max(mag, get_magnitude(add_lines(list_of_token_lists[i], list_of_token_lists[j])))
+
+    return mag
+
 def solve(prob, inputname):
     lines = [tokenize(line) for line in yield_line(inputname)]
 
     if prob == 1:
         return get_magnitude(pipeline(lines))
     elif prob == 2:
-        return 2
+        return get_largest_magnitude(lines)
     else:
         print("Invalid problem code")
         exit()
