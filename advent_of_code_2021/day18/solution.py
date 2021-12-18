@@ -139,6 +139,24 @@ def pipeline(list_of_token_lists):
         result = add_lines(result, list_of_token_lists[i])
     return result
 
+def get_magnitude(tokens, l, r):
+    pair = get_pair("".join([str(tok) for tok in tokens[l : r + 1]]))
+    l, r = pair[0], pair[1]
+
+    magnitude = 0
+    
+    if isinstance(l, int):
+        magnitude += 3 * l
+    else:
+        pass
+
+    if isinstance(r, int):
+        magnitude += 2 * r
+    else:
+        pass
+
+    return magnitude
+
 def solve(prob, inputname):
     lines = [tokenize(line) for line in yield_line(inputname)]
 

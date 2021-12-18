@@ -180,5 +180,8 @@ class TestAll(unittest.TestCase):
 			tokenize("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
         )
 
+    def test_get_magnitude(self):
+        self.assertEqual(get_magnitude(tokenize("[9,1]"), 0, 4), 29)
+
 if __name__ == "__main__":
     unittest.main()
