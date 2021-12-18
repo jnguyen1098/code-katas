@@ -32,6 +32,7 @@ class TestAll(unittest.TestCase):
     def test_get_explode_idxs(self):
         self.assertEqual(get_explode_idxs("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"), (4, 8))
         self.assertEqual(get_explode_idxs("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]"), (16, 20))
+        self.assertEqual(get_explode_idxs("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"), (22, 26))
 
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
