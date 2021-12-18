@@ -89,6 +89,8 @@ def explode(tokens):
     if not needs_to_explode(tokens):
         return tokens
     explode_l, explode_r = get_explode_idxs(tokens)
+    pair = get_pair_from_idx(tokens, explode_l, explode_r)
+    print(pair)
 
 class SnailNum:
     def __init__(self, left, right):
