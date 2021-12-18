@@ -15,7 +15,20 @@ def peek(string, i):
     return string[i + 1] if i + 1 < len(string) else None
 
 def tokenize(string):
-    pass
+    tokens = []
+    num = None
+    for idx, char in enumerate(string):
+        if char in ["[", "]", ","]:
+            tokens.append(char)
+        else:
+            if peek(string, idx) is None or not peek(string, idx).isdigit():
+                tokens.append(num)
+            else:
+                if num is None:
+                    num = 0
+                num *= 10
+                num += int(char)
+    return tokens
 
 class SnailNum:
     def __init__(self, left, right):

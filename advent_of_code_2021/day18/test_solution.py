@@ -15,6 +15,12 @@ class TestAll(unittest.TestCase):
         self.assertEqual(peek("hello", 3), "o")
         self.assertEqual(peek("hello", 0), "e")
 
+    def test_tokenize(self):
+        self.assertEqual(tokenize("["), ["["])
+        self.assertEqual(tokenize("]"), ["]"])
+        self.assertEqual(tokenize(","), [","])
+        self.assertEqual(tokenize("[,]"), ["[", ",", "]"])
+
     def test_snailnum_init_all_ints(self):
         test = SnailNum(1, 2)
         self.assertEqual(test.l, 1)
