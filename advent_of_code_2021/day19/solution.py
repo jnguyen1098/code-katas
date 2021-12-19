@@ -19,10 +19,11 @@ def solve(prob, inputname):
                 scanners.append(scanner[:])
             scanner.clear()
         else:
-            scanner += [int(thing) for thing in line.split(",")]
+            scanner.append([int(thing) for thing in line.split(",")])
 
     for scanner in scanners:
         print(scanner)
+        print()
 
     if prob == 1:
         return 1
