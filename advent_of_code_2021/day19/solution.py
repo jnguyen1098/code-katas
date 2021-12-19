@@ -7,15 +7,22 @@ from ansi import *
 from comp import *
 
 def solve(prob, inputname):
-    lines = []
-    gen = yield_line(inputname)
 
-    for line in gen:
-        lines.append(line)
+    scanners = []
+    scanner = []
 
-    print_arr(lines)
+    for line in yield_line(inputname):
+        if line.startswith("---"):
+            continue
+        elif line == "":
+            if scanner:
+                scanners.append(scanner[:])
+            scanner.clear()
+        else:
+            scanner += [int(thing) for thing in line.split(",")]
 
-    print(f"{len(lines)} in the array")
+    for scanner in scanners:
+        print(scanner)
 
     if prob == 1:
         return 1
