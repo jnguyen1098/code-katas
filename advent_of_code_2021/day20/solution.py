@@ -36,19 +36,25 @@ def solve(prob, inputname):
     for i in range(5):
         lines.append(["."] * 15)
 
+    kernel = None
+
     for idx, line in enumerate(gen):
-        if idx == 0: print("kernel", line)
+        if idx == 0: kernel = line[:]
         elif idx == 1: continue
         else:
-            lines.append((["."] * 5) + [line] + (["."] * 5))
+            lines.append((["."] * 5) + list(line) + (["."] * 5))
 
     for i in range(5):
         lines.append(["."] * 15)
 
-    start_x = 5
-    start_y = 5
-
     print_arr(lines)
+    print()
+
+    for i in range(len(lines)):
+        for j in range(len(lines[i])):
+            cnt = count(lines, i, j, len(lines), len(lines[i]))
+            output[i][j] = kernel[cnt]
+
     print()
     print_arr(output)
 

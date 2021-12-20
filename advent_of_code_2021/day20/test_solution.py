@@ -22,10 +22,7 @@ class TestAll(unittest.TestCase):
                 "##..#",
                 "..#..",
                 "..###",
-            ],
-            2, 2,
-            5,
-            5
+            ], 2, 2, 5, 5
         ), 34)
 
     def test_solve(self):
