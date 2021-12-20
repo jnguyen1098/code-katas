@@ -50,6 +50,8 @@ def solve(prob, inputname):
     print_arr(lines)
     print()
 
+    output2 = copy.deepcopy(output)
+
     for i in range(len(lines)):
         for j in range(len(lines[i])):
             cnt = count(lines, i, j, len(lines), len(lines[i]))
@@ -58,10 +60,21 @@ def solve(prob, inputname):
     print()
     print_arr(output)
 
-    print(f"{len(lines)} in the array")
+    for i in range(len(output)):
+        for j in range(len(output[i])):
+            cnt = count(output, i, j, len(output), len(output[i]))
+            output2[i][j] = kernel[cnt]
+
+    print()
+    print_arr(output2)
+
+    final_cnt = 0
+    for i in range(len(output2)):
+        for j in range(len(output2[0])):
+            final_cnt += 1 if output2[i][j] == "#" else 0
 
     if prob == 1:
-        return 1
+        return final_cnt
     elif prob == 2:
         return 2
     else:
