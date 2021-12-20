@@ -7,12 +7,13 @@ from ansi import *
 from comp import *
 
 def solve(prob, inputname):
+    print("file", inputname)
     lines = []
     gen = yield_line(inputname)
 
     for idx, line in enumerate(gen):
         if idx == 0: print("kernel", line)
-        if idx == 1: continue
+        elif idx == 1: continue
         else:
             lines.append(line)
 
