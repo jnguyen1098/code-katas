@@ -33,13 +33,14 @@ def solve(prob, inputname):
     next(tmp_gen)
     next(tmp_gen)
     dim = len(next(tmp_gen))
-    new_len = dim + 5 + 5
+    expansion = 5
+    new_len = dim + (expansion * 2)
 
     output = []
     for i in range(new_len):
         output.append(["."] * new_len)
 
-    for i in range(5):
+    for i in range(expansion):
         lines.append(["."] * new_len)
 
     kernel = None
@@ -48,27 +49,29 @@ def solve(prob, inputname):
         if idx == 0: kernel = line[:]
         elif idx == 1: continue
         else:
-            lines.append((["."] * 5) + list(line) + (["."] * 5))
+            lines.append((["."] * expansion) + list(line) + (["."] * expansion))
 
-    for i in range(5):
+    for i in range(expansion):
         lines.append(["."] * new_len)
 
     print_arr(lines)
     print()
 
     output2 = copy.deepcopy(output)
+    assert len(lines) == len(lines[0]) and len(lines) == new_len
 
-    for i in range(4, len(lines) - 4):
-        for j in range(4, len(lines[i]) - 4):
-            cnt = count(lines, i, j, len(lines), len(lines[i]))
+    print(f"first iteration bounds are [{expansion}, {new_len - expansion})")
+    for i in range(expansion - 1, new_len - expansion + 1):
+        for j in range(expansion - 1, new_len - expansion + 1):
+            cnt = count(lines, i, j, new_len, new_len)
             output[i][j] = kernel[cnt]
 
     print("first output")
     print_arr(output)
 
-    for i in range(3, len(output) - 3):
-        for j in range(3, len(output[i]) - 3):
-            cnt = count(output, i, j, len(output), len(output[i]))
+    for i in range(expansion - 2, new_len - expansion + 2):
+        for j in range(expansion - 2, new_len - expansion + 2):
+            cnt = count(output, i, j, new_len, new_len)
             output2[i][j] = kernel[cnt]
 
     print("second output")
