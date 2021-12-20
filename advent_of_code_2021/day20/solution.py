@@ -29,12 +29,18 @@ def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
 
+    tmp_gen = yield_line(inputname)
+    next(tmp_gen)
+    next(tmp_gen)
+    dim = len(next(tmp_gen))
+    new_len = dim + 5 + 5
+
     output = []
-    for i in range(15):
-        output.append(["."] * 15)
+    for i in range(new_len):
+        output.append(["."] * new_len)
 
     for i in range(5):
-        lines.append(["."] * 15)
+        lines.append(["."] * new_len)
 
     kernel = None
 
@@ -45,27 +51,27 @@ def solve(prob, inputname):
             lines.append((["."] * 5) + list(line) + (["."] * 5))
 
     for i in range(5):
-        lines.append(["."] * 15)
+        lines.append(["."] * new_len)
 
     print_arr(lines)
     print()
 
     output2 = copy.deepcopy(output)
 
-    for i in range(len(lines)):
-        for j in range(len(lines[i])):
+    for i in range(dim - 1, len(lines) - dim + 1):
+        for j in range(dim - 1, len(lines[i]) - dim + 1):
             cnt = count(lines, i, j, len(lines), len(lines[i]))
             output[i][j] = kernel[cnt]
 
-    print()
+    print("first output")
     print_arr(output)
 
-    for i in range(len(output)):
-        for j in range(len(output[i])):
+    for i in range(dim - 2, len(output) - dim + 2):
+        for j in range(dim - 2, len(output[i]) - dim + 2):
             cnt = count(output, i, j, len(output), len(output[i]))
             output2[i][j] = kernel[cnt]
 
-    print()
+    print("second output")
     print_arr(output2)
 
     final_cnt = 0
