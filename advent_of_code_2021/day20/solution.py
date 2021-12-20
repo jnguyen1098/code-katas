@@ -6,6 +6,12 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+def image_to_bin(string):
+    return string.replace(".", "0").replace("#", "1")
+
+def bin_to_int(string):
+    return int(string, 2)
+
 def solve(prob, inputname):
     print("file", inputname)
     lines = []
