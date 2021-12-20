@@ -20,11 +20,17 @@ def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
 
+    for i in range(10):
+        lines.append(["."] * 15)
+
     for idx, line in enumerate(gen):
         if idx == 0: print("kernel", line)
         elif idx == 1: continue
         else:
-            lines.append(line)
+            lines.append((["."] * 5) + [line] + (["."] * 5))
+
+    for i in range(10):
+        lines.append(["."] * 15)
 
     print_arr(lines)
 
