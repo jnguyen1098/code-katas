@@ -58,16 +58,16 @@ def solve(prob, inputname):
 
     output2 = copy.deepcopy(output)
 
-    for i in range(dim - 1, len(lines) - dim + 1):
-        for j in range(dim - 1, len(lines[i]) - dim + 1):
+    for i in range(4, len(lines) - 4):
+        for j in range(4, len(lines[i]) - 4):
             cnt = count(lines, i, j, len(lines), len(lines[i]))
             output[i][j] = kernel[cnt]
 
     print("first output")
     print_arr(output)
 
-    for i in range(dim - 2, len(output) - dim + 2):
-        for j in range(dim - 2, len(output[i]) - dim + 2):
+    for i in range(3, len(output) - 3):
+        for j in range(3, len(output[i]) - 3):
             cnt = count(output, i, j, len(output), len(output[i]))
             output2[i][j] = kernel[cnt]
 
