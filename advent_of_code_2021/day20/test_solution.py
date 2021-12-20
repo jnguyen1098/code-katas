@@ -25,6 +25,35 @@ class TestAll(unittest.TestCase):
             ], 2, 2, 5, 5
         ), 34)
 
+    def test_relevant(self):
+        image = [
+            "..........",
+            "..........",
+            "..........",
+            "..######..",
+            "..#....#..",
+            "..#....#..",
+            "..######..",
+            "..........",
+            "..........",
+            "..........",
+        ]
+        for i in range(1, 9):
+            self.assertTrue(relevant(image, 2, i, 10, 10))
+            self.assertTrue(relevant(image, 7, i, 10, 10))
+
+        for i in range(1, 9):
+            self.assertFalse(relevant(image, 1, i, 10, 10))
+            self.assertFalse(relevant(image, 8, i, 10, 10))
+
+        for i in range(2, 8):
+            self.assertTrue(relevant(image, i, 1, 10, 10))
+            self.assertTrue(relevant(image, i, 8, 10, 10))
+
+        for i in range(2, 8):
+            self.assertFalse(relevant(image, i, 0, 10, 10))
+            self.assertFalse(relevant(image, i, 9, 10, 10))
+
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 35)
         self.assertEqual(solve(1, "input"), 1)

@@ -24,6 +24,15 @@ def count(image, x, y, rows, cols):
             binmask.append(image[thing[0]][thing[1]])
     return image_to_int("".join(binmask))
 
+def relevant(image, x, y, rows, cols):
+    for point in (
+        (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)
+    ):
+        if thing := get_point((x, y), point, rows, cols):
+            if image[thing[0]][thing[1]] == "#":
+                return True
+    return False
+
 def solve(prob, inputname):
     print("file", inputname)
     lines = []
@@ -64,7 +73,8 @@ def solve(prob, inputname):
     for i in range(expansion - 1, new_len - expansion + 1):
         for j in range(expansion - 1, new_len - expansion + 1):
             cnt = count(lines, i, j, new_len, new_len)
-            output[i][j] = kernel[cnt]
+            if relevant(lines, i, j, new_len, new_len):
+                output[i][j] = kernel[cnt]
 
     print("first output")
     print_arr(output)
@@ -72,7 +82,8 @@ def solve(prob, inputname):
     for i in range(expansion - 2, new_len - expansion + 2):
         for j in range(expansion - 2, new_len - expansion + 2):
             cnt = count(output, i, j, new_len, new_len)
-            output2[i][j] = kernel[cnt]
+            if relevant(output, i, j, new_len, new_len):
+                output2[i][j] = kernel[cnt]
 
     print("second output")
     print_arr(output2)
