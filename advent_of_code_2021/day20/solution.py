@@ -12,6 +12,9 @@ def image_to_bin(string):
 def bin_to_int(string):
     return int(string, 2)
 
+def image_to_int(string):
+    return bin_to_int(image_to_bin(string))
+
 def solve(prob, inputname):
     print("file", inputname)
     lines = []
