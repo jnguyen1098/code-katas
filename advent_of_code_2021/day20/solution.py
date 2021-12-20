@@ -10,8 +10,11 @@ def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
 
-    for line in gen:
-        lines.append(line)
+    for idx, line in enumerate(gen):
+        if idx == 0: print("kernel", line)
+        if idx == 1: continue
+        else:
+            lines.append(line)
 
     print_arr(lines)
 
