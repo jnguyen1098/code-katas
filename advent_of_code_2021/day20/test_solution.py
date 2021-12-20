@@ -14,6 +14,20 @@ class TestAll(unittest.TestCase):
     def test_image_to_int(self):
         self.assertEqual(image_to_int("...#...#."), 34)
 
+    def test_binmask(self):
+        self.assertEqual(count(
+            [
+                "#..#.",
+                "#....",
+                "##..#",
+                "..#..",
+                "..###",
+            ],
+            2, 2,
+            5,
+            5
+        ), 34)
+
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 35)
         self.assertEqual(solve(1, "input"), 1)

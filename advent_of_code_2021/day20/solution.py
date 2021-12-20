@@ -15,12 +15,25 @@ def bin_to_int(string):
 def image_to_int(string):
     return bin_to_int(image_to_bin(string))
 
+def count(image, x, y, rows, cols):
+    binmask = []
+    for point in (
+        (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)
+    ):
+        if thing := get_point((x, y), point, rows, cols):
+            binmask.append(image[thing[0]][thing[1]])
+    return image_to_int("".join(binmask))
+
 def solve(prob, inputname):
     print("file", inputname)
     lines = []
     gen = yield_line(inputname)
 
-    for i in range(10):
+    output = []
+    for i in range(15):
+        output.append(["."] * 15)
+
+    for i in range(5):
         lines.append(["."] * 15)
 
     for idx, line in enumerate(gen):
@@ -29,10 +42,15 @@ def solve(prob, inputname):
         else:
             lines.append((["."] * 5) + [line] + (["."] * 5))
 
-    for i in range(10):
+    for i in range(5):
         lines.append(["."] * 15)
 
+    start_x = 5
+    start_y = 5
+
     print_arr(lines)
+    print()
+    print_arr(output)
 
     print(f"{len(lines)} in the array")
 
