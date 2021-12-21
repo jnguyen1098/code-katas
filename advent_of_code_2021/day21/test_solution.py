@@ -12,6 +12,18 @@ class TestAll(unittest.TestCase):
             thing.append(roll(pointer))
         self.assertEqual(thing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
+    def test_serialize(self):
+        self.assertEqual(encode(1, 2, 3, 4, 1), "1,2|3,4|1")
+        self.assertEqual(encode(1, 2, 3, 4, 2), "1,2|3,4|2")
+        self.assertEqual(encode(9999, 888, 77, 6, 1), "9999,W|77,6|1")
+        self.assertEqual(encode(9999, 888, 77, 6, 2), "9999,W|77,6|2")
+        self.assertEqual(encode(9999, 1, 77, 10, 1), "9999,1|77,W|1")
+        self.assertEqual(encode(9999, 1, 77, 10, 2), "9999,1|77,W|2")
+
+    def test_deserialize(self):
+        self.assertEqual(decode("1,2|3,4|1"), (1, 2, 3, 4, 1))
+        self.assertEqual(decode("9999,888|77,6|1"), (9999, 888, 77, 6, 1))
+
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 739785)
         self.assertEqual(solve(1, "input"), 752247)
