@@ -11,6 +11,10 @@ def roll(pointer):
     pointer.data += 1
     return result
 
+def get_position(curr, advance):
+    if (curr + advance) % 10 == 0: return 10
+    return (curr + advance) % 10
+
 def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
@@ -40,26 +44,34 @@ def solve(prob, inputname):
             losing_score = score_1 * rolls
             break
         elif player_1s_turn:
-            if (player_1 + combined) % 10 == 0:
-                player_1 = 10
-            else:
-                player_1 = ((player_1 + combined) % 10)
+            player_1 = get_position(player_1, combined)
             score_1 += player_1
         else:
-            if (player_2 + combined) % 10 == 0:
-                player_2 = 10
-            else:
-                player_2 = ((player_2 + combined) % 10)
+            player_2 = get_position(player_2, combined)
             score_2 += player_2
         player_1s_turn = not player_1s_turn
         rolls += 3
 
-    dominant_wins = 0
+    rolls = [3, 4, 5,
+             4, 5, 6,
+             5, 6, 7,
+             4, 5, 6,
+             5, 6, 7,
+             6, 7, 8,
+             5, 6, 7,
+             6, 7, 8,
+             7, 8, 9]
+
+    def go(player_1_score, player_2_score, player_1_pos, player_2_pos, whose_turn, p1_wins, p2_wins):
+        pass
 
     if prob == 1:
         return losing_score
     elif prob == 2:
-        return dominant_wins
+        """
+        return p1_wins if p1_wins > p2_wins else p2_wins
+        """
+        return -1
     else:
         print("Invalid problem code")
         exit()
