@@ -25,21 +25,22 @@ def decode(serialized):
 def solve(prob, inputname):
 
     player_1, player_2 = [int(line[line.index(":") + 2:]) for line in yield_line(inputname)]
+    PLAYER_ONE, PLAYER_TWO = (0, 1)
 
     if prob == 1:
-        score = [0, 0]
-        position = [player_1, player_2]
-        die = 0
+        score_of = [0, 0]
+        position_of = [player_1, player_2]
+        curr_die_val = 0
         rolls = 0
         current_player = 0
-        while score[0] < 1000 and score[1] < 1000:
-            roll = (3 * die) + 6  # (die + 1) + (die + 2) + (die + 3)  ;-)
-            die += 3
-            position[current_player] = get_position(position[current_player], roll)
-            score[current_player] += position[current_player]
+        while score_of[PLAYER_ONE] < 1000 and score_of[PLAYER_TWO] < 1000:
+            roll = (3 * curr_die_val) + 6  # (die + 1) + (die + 2) + (die + 3)  ;-)
+            curr_die_val += 3
+            position_of[current_player] = get_position(position_of[current_player], roll)
+            score_of[current_player] += position_of[current_player]
             current_player = not current_player
             rolls += 3
-        return rolls * min(score)
+        return rolls * min(score_of)
 
     if prob == 2:
 
