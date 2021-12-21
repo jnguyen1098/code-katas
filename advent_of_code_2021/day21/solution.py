@@ -6,6 +6,11 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+def roll(pointer):
+    result = pointer.data % 100
+    pointer.data += 1
+    return result
+
 def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
@@ -15,6 +20,8 @@ def solve(prob, inputname):
 
     player_1 = lines[0]
     player_2 = lines[1]
+
+    result = Pointer(1)
 
     print(player_1, player_2)
 
