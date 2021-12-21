@@ -42,7 +42,7 @@ def solve(prob, inputname):
     next(tmp_gen)
     next(tmp_gen)
     dim = len(next(tmp_gen))
-    expansion = 5
+    expansion = 5 + (0 if prob == 1 else 200)
     new_len = dim + (expansion * 2)
 
 
@@ -67,7 +67,8 @@ def solve(prob, inputname):
 
     assert len(lines) == len(lines[0]) and len(lines) == new_len
 
-    for _ in range(2):
+    for it in range(2 if prob == 1 else 50):
+        print("iteration", it, file=sys.stderr)
         output = []
         for i in range(new_len):
             output.append(["."] * new_len)
@@ -80,8 +81,8 @@ def solve(prob, inputname):
         print_arr(output)
 
     final_cnt = 0
-    for i in range(1, new_len - 1):
-        for j in range(1, new_len - 1):
+    for i in range(50, new_len - 50):
+        for j in range(50, new_len - 50):
             final_cnt += 1 if output[i][j] == "#" else 0
 
     return final_cnt
