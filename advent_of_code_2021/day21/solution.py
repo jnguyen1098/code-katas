@@ -9,8 +9,7 @@ from comp import *
 from collections import Counter
 
 def get_position(curr, advance):
-    if (curr + advance) % 10 == 0: return 10
-    return (curr + advance) % 10
+    return (curr + advance - 1) % 10 + 1
 
 def encode(pos1, sco1, pos2, sco2, turn):
     return f"{pos1},{sco1}|{pos2},{sco2}|{turn}"
@@ -28,29 +27,19 @@ def solve(prob, inputname):
     player_1, player_2 = [int(line[line.index(":") + 2:]) for line in yield_line(inputname)]
 
     if prob == 1:
-        score_1, score_2 = 0, 0
-    
+        score = [0, 0]
+        position = [player_1, player_2]
         die = 0
         rolls = 0
-        player_1s_turn = True
-        while True:
-            combined = (die + 1) + (die + 2) + (die + 3)
+        current_player = 0
+        while score[0] < 1000 and score[1] < 1000:
+            roll = (3 * die) + 6  # (die + 1) + (die + 2) + (die + 3)  ;-)
             die += 3
-            if score_1 >= 1000:
-                losing_score = score_2 * rolls
-                break
-            elif score_2 >= 1000:
-                losing_score = score_1 * rolls
-                break
-            elif player_1s_turn:
-                player_1 = get_position(player_1, combined)
-                score_1 += player_1
-            else:
-                player_2 = get_position(player_2, combined)
-                score_2 += player_2
-            player_1s_turn = not player_1s_turn
+            position[current_player] = get_position(position[current_player], roll)
+            score[current_player] += position[current_player]
+            current_player = not current_player
             rolls += 3
-        return losing_score
+        return rolls * min(score)
 
     if prob == 2:
 
