@@ -29,15 +29,15 @@ def normal_game(player_1, player_2):
     score_of_player = [0, 0]
     curr_die_val = 0
     rolls = 0
-    curr = 0
+    curr_player = 0
 
     while score_of_player[ONE] < 1000 and score_of_player[TWO] < 1000:
 
-        roll = (3 * curr_die_val) + 6  # (die + 1) + (die + 2) + (die + 3)  ;-)
-        position_of_player[curr] = get_next_position(position_of_player[curr], roll)
-        score_of_player[curr] += position_of_player[curr]
+        next_roll = (3 * curr_die_val) + 6  # (die + 1) + (die + 2) + (die + 3)  ;-)
+        position_of_player[curr_player] = get_next_position(position_of_player[curr_player], next_roll)
+        score_of_player[curr_player] += position_of_player[curr_player]
 
-        curr = ~curr
+        curr_player = ~curr_player
         curr_die_val += 3
         rolls += 3
 
