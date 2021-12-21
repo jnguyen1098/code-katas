@@ -54,48 +54,39 @@ def solve(prob, inputname):
                 score_2 += player_2
             player_1s_turn = not player_1s_turn
             rolls += 3
-
+        return losing_score
 
     if prob == 2:
-        class Game:
-            def __init__(self, player_1_start, player_2_start):
-                self.pos1 = player_1_start
-                self.pos2 = player_2_start
-    
-                self.sco1 = 0
-                self.sco2 = 0
-    
-                self.turn = 1
-    
-                self.win1 = 0
-                self.win2 = 0
-    
-                rolls = [3, 4, 5,
-                         4, 5, 6,
-                         5, 6, 7,
-                         4, 5, 6,
-                         5, 6, 7,
-                         6, 7, 8,
-                         5, 6, 7,
-                         6, 7, 8,
-                         7, 8, 9]
-    
-                self.roll_freqs = Counter(rolls)
-                for outcome, freq in self.roll_freqs.items():
-                    print(f"roll  {outcome}     occurs {freq} times")
-    
-                print(f"player 1 starts {self.pos1}")
-                print(f"player 2 starts {self.pos2}")
-    
-        game = Game(player_1, player_2)
 
-    if prob == 1:
-        return losing_score
-    elif prob == 2:
-        """
-        return p1_wins if p1_wins > p2_wins else p2_wins
-        """
-        return -1
-    else:
-        print("Invalid problem code")
-        exit()
+        pos1 = player_1
+        pos2 = player_2
+        sco1 = 0
+        sco2 = 0
+        turn = 1
+        win1 = 0
+        win2 = 0
+
+        rolls = [3, 4, 5,
+                 4, 5, 6,
+                 5, 6, 7,
+                 4, 5, 6,
+                 5, 6, 7,
+                 6, 7, 8,
+                 5, 6, 7,
+                 6, 7, 8,
+                 7, 8, 9]
+    
+        print(rolls)
+        roll_freqs = Counter(rolls)
+        for outcome, freq in roll_freqs.items():
+            print(f"roll  {outcome}     occurs {freq} times")
+
+        print(f"player 1 starts {pos1}")
+        print(f"player 2 starts {pos2}")
+
+        limit = 6
+
+        print("player 1 wins", win1, "times")
+        print("player 2 wins", win2, "times")
+
+        return 69
