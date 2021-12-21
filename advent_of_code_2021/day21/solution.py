@@ -11,9 +11,12 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line[line.index(":"):])
+        lines.append(int(line[line.index(":") + 2:]))
 
-    print_arr(lines)
+    player_1 = lines[0]
+    player_2 = lines[1]
+
+    print(player_1, player_2)
 
     print(f"{len(lines)} in the array")
 
