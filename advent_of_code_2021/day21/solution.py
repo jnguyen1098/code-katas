@@ -30,9 +30,8 @@ def decode(serialized):
 
 def solve(prob, inputname):
     lines = []
-    gen = yield_line(inputname)
 
-    for line in gen:
+    for line in yield_line(inputname):
         lines.append(int(line[line.index(":") + 2:]))
 
     player_1 = lines[0]
