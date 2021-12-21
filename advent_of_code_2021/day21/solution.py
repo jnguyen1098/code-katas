@@ -26,8 +26,6 @@ def solve(prob, inputname):
 
     pointer = Pointer(1)
 
-    print(player_1, player_2)
-
     rolls = 0
     player_1s_turn = True
     while True:
@@ -47,21 +45,21 @@ def solve(prob, inputname):
             else:
                 player_1 = ((player_1 + combined) % 10)
             score_1 += player_1
-            print(f"player 1 rolls {res1}+{res2}+{res3} and moves to space {player_1} and is now at score {score_1}")
         else:
             if (player_2 + combined) % 10 == 0:
                 player_2 = 10
             else:
                 player_2 = ((player_2 + combined) % 10)
             score_2 += player_2
-            print(f"player 2 rolls {res1}+{res2}+{res3} and moves to space {player_2} and is now at score {score_2}")
         player_1s_turn = not player_1s_turn
         rolls += 3
+
+    dominant_wins = 0
 
     if prob == 1:
         return losing_score
     elif prob == 2:
-        return 2
+        return dominant_wins
     else:
         print("Invalid problem code")
         exit()
