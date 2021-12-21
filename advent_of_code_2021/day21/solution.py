@@ -183,8 +183,8 @@ def solve(prob, inputname):
             tree[state] = (p1_wins, p2_wins)
             return tree[state]
 
-        p1_wins, p2_wins = get_wins("10,0|8,0|1", level=1)
+        p1_wins, p2_wins = get_wins(f"{player_1},0|{player_2},0|1", level=1)
         print(f"Player 1 won {p1_wins} times")
         print(f"Player 2 won {p2_wins} times")
 
-        return 69
+        return max(p1_wins, p2_wins)
