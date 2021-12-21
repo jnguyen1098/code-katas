@@ -6,6 +6,8 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+from collections import Counter
+
 def roll(pointer):
     result = pointer.data % 100
     pointer.data += 1
@@ -52,18 +54,38 @@ def solve(prob, inputname):
         player_1s_turn = not player_1s_turn
         rolls += 3
 
-    rolls = [3, 4, 5,
-             4, 5, 6,
-             5, 6, 7,
-             4, 5, 6,
-             5, 6, 7,
-             6, 7, 8,
-             5, 6, 7,
-             6, 7, 8,
-             7, 8, 9]
 
-    def go(player_1_score, player_2_score, player_1_pos, player_2_pos, whose_turn, p1_wins, p2_wins):
-        pass
+    class Game:
+        def __init__(self, player_1_start, player_2_start):
+            self.pos1 = player_1_start
+            self.pos2 = player_2_start
+
+            self.sco1 = 0
+            self.sco2 = 0
+
+            self.turn = 1
+
+            self.win1 = 0
+            self.win2 = 0
+
+            rolls = [3, 4, 5,
+                     4, 5, 6,
+                     5, 6, 7,
+                     4, 5, 6,
+                     5, 6, 7,
+                     6, 7, 8,
+                     5, 6, 7,
+                     6, 7, 8,
+                     7, 8, 9]
+
+            self.roll_freqs = Counter(rolls)
+            for outcome, freq in self.roll_freqs.items():
+                print(f"roll  {outcome}     occurs {freq} times")
+
+            print(f"player 1 starts {self.pos1}")
+            print(f"player 2 starts {self.pos2}")
+
+    game = Game(player_1, player_2)
 
     if prob == 1:
         return losing_score
