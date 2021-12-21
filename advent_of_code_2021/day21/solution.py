@@ -18,6 +18,7 @@ def get_position(curr, advance):
     return (curr + advance) % 10
 
 def encode(pos1, sco1, pos2, sco2, turn):
+    return f"{pos1},{sco1}|{pos2},{sco2}|{turn}"
     return f"{pos1},{sco1 if sco1 < 10 else 'W'}|{pos2},{sco2 if sco2 < 10 else 'W'}|{turn}"
 
 def decode(serialized):
@@ -141,7 +142,7 @@ def solve(prob, inputname):
                     print(f"{indent(level)}P1 rolled {roll}. Pos {p1} -> {new_p1}. Score {s1} -> {new_s1}")
                     print(f"{indent(level + 1)}New state is {new_state}")
                     """
-                    if new_s1 >= 10:
+                    if new_s1 >= 21:
                         """
                         print(f"{indent(level + 2)}Because p1 has score {new_s1}, they win this node")
                         """
@@ -161,7 +162,7 @@ def solve(prob, inputname):
                     print(f"{indent(level)}P2 rolled {roll}. Pos {p2} -> {new_p2}. Score {s2} -> {new_s2}")
                     print(f"{indent(level + 1)}New state is {new_state}")
                     """
-                    if new_s2 >= 10:
+                    if new_s2 >= 21:
                         """
                         print(f"{indent(level + 2)}Because p2 has score {new_s2}, they win this node")
                         """
@@ -182,7 +183,7 @@ def solve(prob, inputname):
             tree[state] = (p1_wins, p2_wins)
             return tree[state]
 
-        p1_wins, p2_wins = get_wins("4,0|8,0|1", level=1)
+        p1_wins, p2_wins = get_wins("10,0|8,0|1", level=1)
         print(f"Player 1 won {p1_wins} times")
         print(f"Player 2 won {p2_wins} times")
 
