@@ -11,7 +11,7 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        lines.append(line[line.index(":"):])
 
     print_arr(lines)
 
