@@ -5,13 +5,6 @@ from solution import *
 
 class TestAll(unittest.TestCase):
 
-    def test_roll(self):
-        thing = []
-        pointer = Pointer(1)
-        for i in range(10):
-            thing.append(roll(pointer))
-        self.assertEqual(thing, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-
     def test_serialize(self):
         self.assertEqual(encode(1, 2, 3, 4, 1), "1,2|3,4|1")
         self.assertEqual(encode(1, 2, 3, 4, 2), "1,2|3,4|2")

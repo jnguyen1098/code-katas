@@ -8,11 +8,6 @@ from comp import *
 
 from collections import Counter
 
-def roll(pointer):
-    result = pointer.data % 100
-    pointer.data += 1
-    return result
-
 def get_position(curr, advance):
     if (curr + advance) % 10 == 0: return 10
     return (curr + advance) % 10
@@ -29,27 +24,18 @@ def decode(serialized):
     return int(p1[0]), int(p1[1]), int(p2[0]), int(p2[1]), int(turn)
 
 def solve(prob, inputname):
-    lines = []
 
-    for line in yield_line(inputname):
-        lines.append(int(line[line.index(":") + 2:]))
-
-    player_1 = lines[0]
-    player_2 = lines[1]
+    player_1, player_2 = [int(line[line.index(":") + 2:]) for line in yield_line(inputname)]
 
     if prob == 1:
-        score_1 = 0
-        score_2 = 0
+        score_1, score_2 = 0, 0
     
-        pointer = Pointer(1)
-    
+        die = 0
         rolls = 0
         player_1s_turn = True
         while True:
-            res1 = roll(pointer)
-            res2 = roll(pointer)
-            res3 = roll(pointer)
-            combined = res1 + res2 + res3
+            combined = (die + 1) + (die + 2) + (die + 3)
+            die += 3
             if score_1 >= 1000:
                 losing_score = score_2 * rolls
                 break
