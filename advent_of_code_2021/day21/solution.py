@@ -53,10 +53,10 @@ def solve(prob, inputname):
 
         rolls = {3: 1,  4: 3,  5: 6,  6: 7,  7: 6,  8: 3,  9: 1}
     
-        tree = {}
+        win_cache = {}
 
         def get_wins(state, level):
-            if memo := tree.get(state):
+            if memo := win_cache.get(state):
                 return memo
             p1, s1, p2, s2, turn = decode(state)
             p1_wins = 0
@@ -82,8 +82,8 @@ def solve(prob, inputname):
                         incr1, incr2 = get_wins(new_state, level + 1)
                         p1_wins += incr1 * freq
                         p2_wins += incr2 * freq
-            tree[state] = (p1_wins, p2_wins)
-            return tree[state]
+            win_cache[state] = (p1_wins, p2_wins)
+            return win_cache[state]
 
         p1_wins, p2_wins = get_wins(f"{player_1},0|{player_2},0|1", level=1)
         print(f"Player 1 won {p1_wins} times")
