@@ -44,7 +44,7 @@ def get_losing_score(player_1, player_2):
 
     return rolls * min(score_of_player)
 
-def get_universal_outcomes(state, win_cache={}):
+def get_universes(state, win_cache={}):
     if memo := win_cache.get(state):
         return memo
     p1, s1, p2, s2, turn = decode(state)
@@ -58,7 +58,7 @@ def get_universal_outcomes(state, win_cache={}):
             if new_s1 >= 21:
                 p1_wins += freq
             else:
-                incr1, incr2 = get_universal_outcomes(new_state)
+                incr1, incr2 = get_universes(new_state)
                 p1_wins += incr1 * freq
                 p2_wins += incr2 * freq
         elif turn == 2:
@@ -68,7 +68,7 @@ def get_universal_outcomes(state, win_cache={}):
             if new_s2 >= 21:
                 p2_wins += freq
             else:
-                incr1, incr2 = get_universal_outcomes(new_state)
+                incr1, incr2 = get_universes(new_state)
                 p1_wins += incr1 * freq
                 p2_wins += incr2 * freq
     win_cache[state] = (p1_wins, p2_wins)
@@ -76,13 +76,9 @@ def get_universal_outcomes(state, win_cache={}):
 
 def solve(prob, inputname):
 
-    player_1, player_2 = [int(line[line.index(":") + 2:]) for line in yield_line(inputname)]
+    position_for_player = [int(line[line.index(":") + 2:]) for line in yield_line(inputname)]
 
-    if prob == 1: return get_losing_score(player_1, player_2)
-
+    if prob == 1:
+        return get_losing_score(position_for_player[ONE], position_for_player[TWO])
     if prob == 2:
-        p1_wins, p2_wins = get_universal_outcomes(f"{player_1},0|{player_2},0|1", {})
-        print(f"Player 1 won {p1_wins} times")
-        print(f"Player 2 won {p2_wins} times")
-
-        return max(p1_wins, p2_wins)
+        return max(get_universes(f"{position_for_player[ONE]},0|{position_for_player[TWO]},0|1", {}))
