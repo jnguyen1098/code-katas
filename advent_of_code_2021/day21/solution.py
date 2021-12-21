@@ -8,7 +8,9 @@ from comp import *
 
 from collections import Counter
 
-def get_position(curr, advance):
+ONE, TWO = (0, 1)
+
+def get_next_position(curr, advance):
     return (curr + advance - 1) % 10 + 1
 
 def encode(pos1, sco1, pos2, sco2, turn):
@@ -23,20 +25,23 @@ def decode(serialized):
     return int(p1[0]), int(p1[1]), int(p2[0]), int(p2[1]), int(turn)
 
 def normal_game(player_1, player_2):
-    PLAYER_ONE, PLAYER_TWO = (0, 1)
-    score_of = [0, 0]
-    position_of = [player_1, player_2]
+    position_of_player = [player_1, player_2]
+    score_of_player = [0, 0]
     curr_die_val = 0
     rolls = 0
-    current_player = 0
-    while score_of[PLAYER_ONE] < 1000 and score_of[PLAYER_TWO] < 1000:
+    curr = 0
+
+    while score_of_player[ONE] < 1000 and score_of_player[TWO] < 1000:
+
         roll = (3 * curr_die_val) + 6  # (die + 1) + (die + 2) + (die + 3)  ;-)
+        position_of_player[curr] = get_next_position(position_of_player[curr], roll)
+        score_of_player[curr] += position_of_player[curr]
+
+        curr = ~curr
         curr_die_val += 3
-        position_of[current_player] = get_position(position_of[current_player], roll)
-        score_of[current_player] += position_of[current_player]
-        current_player = ~current_player
         rolls += 3
-    return rolls * min(score_of)
+
+    return rolls * min(score_of_player)
 
 def solve(prob, inputname):
 
@@ -74,7 +79,7 @@ def solve(prob, inputname):
             p2_wins = 0
             for roll in rolls:
                 if turn == 1:
-                    new_p1 = get_position(p1, roll)
+                    new_p1 = get_next_position(p1, roll)
                     new_s1 = s1 + new_p1
                     new_state = encode(new_p1, new_s1, p2, s2, 2)
                     if new_s1 >= 21:
@@ -84,7 +89,7 @@ def solve(prob, inputname):
                         p1_wins += incr1
                         p2_wins += incr2
                 elif turn == 2:
-                    new_p2 = get_position(p2, roll)
+                    new_p2 = get_next_position(p2, roll)
                     new_s2 = s2 + new_p2
                     new_state = encode(p1, s1, new_p2, new_s2, 1)
                     if new_s2 >= 21:
