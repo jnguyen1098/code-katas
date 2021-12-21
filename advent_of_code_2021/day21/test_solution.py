@@ -15,11 +15,10 @@ class TestAll(unittest.TestCase):
     def test_serialize(self):
         self.assertEqual(encode(1, 2, 3, 4, 1), "1,2|3,4|1")
         self.assertEqual(encode(1, 2, 3, 4, 2), "1,2|3,4|2")
-        return
-        self.assertEqual(encode(9999, 888, 77, 6, 1), "9999,W|77,6|1")
-        self.assertEqual(encode(9999, 888, 77, 6, 2), "9999,W|77,6|2")
-        self.assertEqual(encode(9999, 1, 77, 10, 1), "9999,1|77,W|1")
-        self.assertEqual(encode(9999, 1, 77, 10, 2), "9999,1|77,W|2")
+        self.assertEqual(encode(9999, 888, 77, 6, 1), "9999,888|77,6|1")
+        self.assertEqual(encode(9999, 888, 77, 6, 2), "9999,888|77,6|2")
+        self.assertEqual(encode(9999, 1, 77, 10, 1), "9999,1|77,10|1")
+        self.assertEqual(encode(9999, 1, 77, 10, 2), "9999,1|77,10|2")
 
     def test_deserialize(self):
         self.assertEqual(decode("1,2|3,4|1"), (1, 2, 3, 4, 1))
