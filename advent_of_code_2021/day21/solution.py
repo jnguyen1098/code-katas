@@ -7,6 +7,7 @@ from ansi import *
 from comp import *
 
 from collections import Counter
+from functools import lru_cache
 
 ONE, TWO = (0, 1)
 ROLL_DISTRIBUTION = {3: 1,  4: 3,  5: 6,  6: 7,  7: 6,  8: 3,  9: 1}
@@ -50,10 +51,9 @@ Explores the game tree until it reaches a game over, then increments the respect
 
 Game is won when there is a score of 21 or over.
 """
-def get_universes(state, win_cache={}):
 
-    if memo := win_cache.get(state):
-        return memo
+@lru_cache(None)
+def get_universes(state):
 
     curr_player = 1
     win_count_for_player = [0, 0]
@@ -74,8 +74,7 @@ def get_universes(state, win_cache={}):
             win_count_for_player[ONE] += incr1 * freq
             win_count_for_player[TWO] += incr2 * freq
 
-    win_cache[state] = win_count_for_player
-    return win_cache[state]
+    return win_count_for_player
 
 def solve(prob, inputname):
 
@@ -84,4 +83,4 @@ def solve(prob, inputname):
     if prob == 1:
         return get_losing_score(position_for_player[ONE], position_for_player[TWO])
     if prob == 2:
-        return max(get_universes(f"{position_for_player[ONE]},{position_for_player[TWO]}|0,0|{ONE}", {}))
+        return max(get_universes(f"{position_for_player[ONE]},{position_for_player[TWO]}|0,0|{ONE}"))
