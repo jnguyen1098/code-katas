@@ -57,8 +57,9 @@ def get_universes(state, win_cache={}):
 
     for roll, freq in ROLL_DISTRIBUTION.items():
         new_pos = get_next_position(position_of_player[current_player], roll)
+        new_sco = score_of_player[current_player] + new_pos
 
-        if (new_sco := score_of_player[current_player] + new_pos) >= 21:
+        if new_sco >= 21:
             win_count_for_player[current_player] += freq
 
         elif current_player == ONE:
