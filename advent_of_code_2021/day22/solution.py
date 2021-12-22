@@ -34,6 +34,12 @@ class Cube:
 def get_area(cube):
     return (cube.xr - cube.xl + 1) * (cube.yr - cube.yl + 1) * (cube.zr - cube.zl + 1)
 
+def get_cube_intersect(cube1, cube2):
+    xl, xr = max(cube1.xl, cube2.xl), min(cube1.xr, cube2.xr)
+    yl, yr = max(cube1.yl, cube2.yl), min(cube1.yr, cube2.yr)
+    zl, zr = max(cube1.zl, cube2.zl), min(cube1.zr, cube2.zr)
+    return Cube(xl, xr, yl, yr, zl, zr)
+
 def get_intersection(cube1, cube2):
     x_overlap = list(range(max(cube1.xl, cube2.xl), min(cube1.xr, cube2.xr) + 1))
     y_overlap = list(range(max(cube1.yl, cube2.yl), min(cube1.yr, cube2.yr) + 1))
@@ -79,15 +85,6 @@ def solve(prob, inputname):
     room = set()
     cubes = []
 
-    """
-    ON
-        ON  - only increment by the new cubes (new_cube - intersection(new_cube, old_cube))
-        OFF - decrement all
-
-    OFF
-        ON  - increment all
-        OFF - only decrement by the new cubes (new_cube - intersection(new_cube, old_cube))
-    """
 
     for line in lines:
         operation = line[-1]
@@ -102,14 +99,47 @@ def solve(prob, inputname):
                 room.discard(cube)
         """
 
+    bal = get_area(cubes[0][1])
+
+    if cubes[0][0] == "off":
+        print("why...")
+        exit()
+
+    """ get_intersection(cube1, cube2) """
+    """ left is the new cube """
     if prob == 2:
-        for cube in cubes:
-            print(cube)
+        for i in range(1, len(cubes)):
+            for j in range(i):
+                left = cubes[i][1]
+                right = cubes[j][1]
+                print("compare", cubes[i], cubes[j])
+                if cubes[i][0] == "on":
+                    if cubes[j][0] == "on":
+                        bal += ( get_area(left) - get_area(get_intersection(left, right)) )
+                    elif cubes[j][0] == "off":
+                        bal += ( get_area(right) - get_area(get_intersection(left, right)) )
+                elif cubes[i][0] == "off":
+                    if cubes[j][0] == "on":
+                        bal -= ( get_intersection(left, right) )
+                    elif cubes[j][0] == "off":
+                        bal -= ( get_area(left) - get_area(get_intersection(left, right)) )
+                print()
+    """
+    ON
+        ON  - only increment by the new cubes (new_cube - intersection(new_cube, old_cube))
+        OFF - decrement by the intersection
+
+    OFF
+        ON  - increment by
+        OFF - only decrement by the new cubes (new_cube - intersection(new_cube, old_cube))
+    """
+
+
 
     if prob == 1:
         return len(room)
     elif prob == 2:
-        return 2
+        return bal
     else:
         print("Invalid problem code")
         exit()
