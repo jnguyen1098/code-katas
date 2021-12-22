@@ -46,10 +46,9 @@ def get_losing_score(player_1, player_2):
 
 """
 DFS algorithm that uses backtracking and top-down DP/memoization.
-
 Explores the game tree until it reaches a game over, then increments the respective winner.
-
 Game is won when there is a score of 21 or over.
+ROLL_DISTRIBUTION is a Counter of digit sums of Cartesian product of 111, 112, 113, ... 331, 332, 333
 """
 
 @lru_cache(None)
