@@ -39,22 +39,11 @@ def solve(prob, inputname):
             )
         )
 
-    print("read")
-    print_arr(lines, " ")
-
     for i in range(len(lines)):
         operation = lines[i][0]
         lines[i] = list(map(int, lines[i][1:])) + [operation]
 
-    tmp = []
-    for line in lines:
-        if valid_line(*line):
-            tmp.append(line)
-
-    lines = copy.deepcopy(tmp)
-
-    print("parsed")
-    print_arr(lines, " ")
+    lines = [line for line in lines if valid_line(*line)]
 
     room = set()
 
@@ -66,9 +55,6 @@ def solve(prob, inputname):
         elif line[-1] == "off":
             for cube in cubes:
                 room.discard(cube)
-        else:
-            print("impossible", line[-1])
-            exit()
 
     if prob == 1:
         return len(room)
