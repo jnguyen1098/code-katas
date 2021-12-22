@@ -115,14 +115,14 @@ def solve(prob, inputname):
                 print("compare", cubes[i], cubes[j])
                 if cubes[i][0] == "on":
                     if cubes[j][0] == "on":
-                        bal += ( get_area(left) - get_area(get_intersection(left, right)) )
+                        bal += ( get_area(left) - get_area(get_cube_intersect(left, right)) )
                     elif cubes[j][0] == "off":
-                        bal += ( get_area(right) - get_area(get_intersection(left, right)) )
+                        bal += ( get_area(right) - get_area(get_cube_intersect(left, right)) )
                 elif cubes[i][0] == "off":
                     if cubes[j][0] == "on":
-                        bal -= ( get_intersection(left, right) )
+                        bal -= ( get_area(get_cube_intersect(left, right)) )
                     elif cubes[j][0] == "off":
-                        bal -= ( get_area(left) - get_area(get_intersection(left, right)) )
+                        bal -= ( get_area(left) - get_area(get_cube_intersect(left, right)) )
                 print()
     """
     ON
