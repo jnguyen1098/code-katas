@@ -53,16 +53,6 @@ def solve(prob, inputname):
 
     lines = copy.deepcopy(tmp)
 
-    """
-    for i in range(len(lines)):
-        for j in range(len(lines[i])):
-            if isinstance(lines[i][j], int):
-                if lines[i][j] < -50:
-                    lines[i][j] = -50
-                elif lines[i][j] > 50:
-                    lines[i][j] = 50
-    """
-
     print("parsed")
     print_arr(lines, " ")
 

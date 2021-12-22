@@ -42,12 +42,10 @@ class TestAll(unittest.TestCase):
 
 
     def test_solve(self):
-        print("small")
         self.assertEqual(solve(1, "small"), 39)
-        print("example")
         self.assertEqual(solve(1, "example"), 590784)
-        print("actual input")
         self.assertEqual(solve(1, "input"), 647076)
+        self.assertEqual(solve(1, "new_example"), 474140)
 
 if __name__ == "__main__":
     unittest.main(failfast=True)
