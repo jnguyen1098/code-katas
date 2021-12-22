@@ -45,25 +45,32 @@ def get_losing_score(player_1, player_2):
     return rolls * min(score_of_player)
 
 def get_universes(state, win_cache={}):
+
     if memo := win_cache.get(state):
         return memo
+
     p1, s1, p2, s2, current_player = decode(state)
     position_of_player = [p1, p2]
     score_of_player = [s1, s2]
     win_count_for_player = [0, 0]
     curr_player = 1
+
     for roll, freq in ROLL_DISTRIBUTION.items():
         new_pos = get_next_position(position_of_player[current_player], roll)
+
         if (new_sco := score_of_player[current_player] + new_pos) >= 21:
             win_count_for_player[current_player] += freq
+
         elif current_player == ONE:
             incr1, incr2 = get_universes(encode(new_pos, new_sco, position_of_player[TWO], score_of_player[TWO], TWO))
             win_count_for_player[ current_player] += incr1 * freq
             win_count_for_player[~current_player] += incr2 * freq
+
         elif current_player == TWO:
             incr1, incr2 = get_universes(encode(position_of_player[ONE], score_of_player[ONE], new_pos, new_sco, ONE))
             win_count_for_player[~current_player] += incr1 * freq
             win_count_for_player[ current_player] += incr2 * freq
+
     win_cache[state] = win_count_for_player
     return win_cache[state]
 
