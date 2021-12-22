@@ -14,16 +14,15 @@ ROLL_DISTRIBUTION = {3: 1,  4: 3,  5: 6,  6: 7,  7: 6,  8: 3,  9: 1}
 def get_next_position(curr, advance):
     return (curr + advance - 1) % 10 + 1
 
-def encode(pos1, sco1, pos2, sco2, turn):
-    return f"{pos1},{sco1}|{pos2},{sco2}|{turn}"
-    return f"{pos1},{sco1 if sco1 < 10 else 'W'}|{pos2},{sco2 if sco2 < 10 else 'W'}|{turn}"
+def encode(pos1, pos2, sco1, sco2, turn):
+    return f"{pos1},{pos2}|{sco1},{sco2}|{turn}"
 
 def decode(serialized):
     spl = serialized.split("|")
-    p1 = spl[0].split(",")
-    p2 = spl[1].split(",")
+    pos = spl[0].split(",")
+    sco = spl[1].split(",")
     turn = spl[2]
-    return int(p1[0]), int(p1[1]), int(p2[0]), int(p2[1]), int(turn)
+    return int(pos[ONE]), int(pos[TWO]), int(sco[ONE]), int(sco[TWO]), int(turn)
 
 def get_losing_score(player_1, player_2):
     position_of_player = [player_1, player_2]
@@ -49,7 +48,7 @@ def get_universes(state, win_cache={}):
     if memo := win_cache.get(state):
         return memo
 
-    p1, s1, p2, s2, current_player = decode(state)
+    p1, p2, s1, s2, current_player = decode(state)
     position_of_player = [p1, p2]
     score_of_player = [s1, s2]
     win_count_for_player = [0, 0]
@@ -64,9 +63,9 @@ def get_universes(state, win_cache={}):
 
         else:
             if current_player == ONE:
-                incr1, incr2 = get_universes(encode(new_pos, new_sco, position_of_player[TWO], score_of_player[TWO], TWO))
-            else:
-                incr1, incr2 = get_universes(encode(position_of_player[ONE], score_of_player[ONE], new_pos, new_sco, ONE))
+                incr1, incr2 = get_universes(encode(new_pos, position_of_player[TWO], new_sco, score_of_player[TWO], TWO))
+            elif current_player == TWO:
+                incr1, incr2 = get_universes(encode(position_of_player[ONE], new_pos, score_of_player[ONE], new_sco, ONE))
             win_count_for_player[ONE] += incr1 * freq
             win_count_for_player[TWO] += incr2 * freq
 
@@ -80,4 +79,4 @@ def solve(prob, inputname):
     if prob == 1:
         return get_losing_score(position_for_player[ONE], position_for_player[TWO])
     if prob == 2:
-        return max(get_universes(f"{position_for_player[ONE]},0|{position_for_player[TWO]},0|{ONE}", {}))
+        return max(get_universes(f"{position_for_player[ONE]},{position_for_player[TWO]}|0,0|{ONE}", {}))
