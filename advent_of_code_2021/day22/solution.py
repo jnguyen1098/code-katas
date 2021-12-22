@@ -1,10 +1,31 @@
 #!/usr/bin/env python3
 
+import itertools
+import json
 import sys
 sys.path.append("..")
 
 from ansi import *
 from comp import *
+
+def serialize(coords):
+    return json.dumps(coords)
+
+def get_cubes(xl, xr, yl, yr, zl, zr):
+    x_range = [i for i in range(xl, xr + 1)]
+    y_range = [i for i in range(yl, yr + 1)]
+    z_range = [i for i in range(zl, zr + 1)]
+    for product in itertools.product(x_range, y_range, z_range):
+        yield product
+
+def valid_line(xl, xr, yl, yr, zl, zr, direction):
+    if xl < -50 and xr < -50: return False
+    if xl > +50 and xr > +50: return False
+    if yl < -50 and yr < -50: return False
+    if yl > +50 and yr > +50: return False
+    if zl < -50 and zr < -50: return False
+    if zl > +50 and zr > +50: return False
+    return True
 
 def solve(prob, inputname):
     lines = []
@@ -18,12 +39,49 @@ def solve(prob, inputname):
             )
         )
 
-    print_arr(lines)
+    print("read")
+    print_arr(lines, " ")
 
-    print(f"{len(lines)} in the array")
+    for i in range(len(lines)):
+        operation = lines[i][0]
+        lines[i] = list(map(int, lines[i][1:])) + [operation]
+
+    tmp = []
+    for line in lines:
+        if valid_line(*line):
+            tmp.append(line)
+
+    lines = copy.deepcopy(tmp)
+
+    """
+    for i in range(len(lines)):
+        for j in range(len(lines[i])):
+            if isinstance(lines[i][j], int):
+                if lines[i][j] < -50:
+                    lines[i][j] = -50
+                elif lines[i][j] > 50:
+                    lines[i][j] = 50
+    """
+
+    print("parsed")
+    print_arr(lines, " ")
+
+    room = set()
+
+    for line in lines:
+        cubes = set(get_cubes(line[0], line[1], line[2], line[3], line[4], line[5]))
+        if line[-1] == "on":
+            for cube in cubes:
+                room.add(cube)
+        elif line[-1] == "off":
+            for cube in cubes:
+                room.discard(cube)
+        else:
+            print("impossible", line[-1])
+            exit()
 
     if prob == 1:
-        return 1
+        return len(room)
     elif prob == 2:
         return 2
     else:
