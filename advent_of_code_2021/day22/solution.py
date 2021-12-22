@@ -11,7 +11,12 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        lines.append(
+            parse(
+                r"(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)",
+                line
+            )
+        )
 
     print_arr(lines)
 
