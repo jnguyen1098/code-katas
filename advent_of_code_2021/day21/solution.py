@@ -44,9 +44,7 @@ ROLL_DISTRIBUTION is a Counter of digit sums of Cartesian product of 111, 112, 1
 @lru_cache(None)
 def get_universes(pos1, pos2, sco1, sco2, turn):
 
-    curr_player = 1
     win_count_for_player = [0, 0]
-
     position_of_player = [pos1, pos2]
     score_of_player = [sco1, sco2]
     current_player = turn
