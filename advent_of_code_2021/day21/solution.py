@@ -43,23 +43,29 @@ def get_losing_score(player_1, player_2):
 
     return rolls * min(score_of_player)
 
+"""
+DFS algorithm that uses backtracking and top-down DP/memoization.
+
+Explores the game tree until it reaches a game over, then increments the respective winner.
+
+Game is won when there is a score of 21 or over.
+"""
 def get_universes(state, win_cache={}):
 
     if memo := win_cache.get(state):
         return memo
 
+    curr_player = 1
+    win_count_for_player = [0, 0]
+
     data = decode(state)
     position_of_player, score_of_player, current_player = data[0:2], data[2:4], data[4]
-    win_count_for_player = [0, 0]
-    curr_player = 1
 
     for roll, freq in ROLL_DISTRIBUTION.items():
         new_pos = get_next_position(position_of_player[current_player], roll)
         new_sco = score_of_player[current_player] + new_pos
-
         if new_sco >= 21:
             win_count_for_player[current_player] += freq
-
         else:
             if current_player == ONE:
                 incr1, incr2 = get_universes(encode(new_pos, position_of_player[TWO], new_sco, score_of_player[TWO], TWO))
