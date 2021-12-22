@@ -43,6 +43,20 @@ class TestAll(unittest.TestCase):
             ])
         ) 
 
+    def test_get_area(self):
+        cube = Cube(
+            xl=0, xr=4,
+            yl=0, yr=4,
+            zl=0, zr=4,
+        )
+        self.assertEqual(get_area(cube), 125)
+        cube = Cube(
+            xl=1, xr=1,
+            yl=1, yr=1,
+            zl=1, zr=1,
+        )
+        self.assertEqual(get_area(cube), 1)
+
     def test_solve_1(self):
         self.assertEqual(solve(1, "small"), 39)
         self.assertEqual(solve(1, "example"), 590784)

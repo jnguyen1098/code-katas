@@ -31,6 +31,9 @@ class Cube:
             ]
         )
 
+def get_area(cube):
+    return (cube.xr - cube.xl + 1) * (cube.yr - cube.yl + 1) * (cube.zr - cube.zl + 1)
+
 def get_intersection(cube1, cube2):
     x_overlap = list(range(max(cube1.xl, cube2.xl), min(cube1.xr, cube2.xr) + 1))
     y_overlap = list(range(max(cube1.yl, cube2.yl), min(cube1.yr, cube2.yr) + 1))
