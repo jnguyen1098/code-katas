@@ -18,6 +18,31 @@ class TestAll(unittest.TestCase):
         )
         self.assertEqual(list(get_intersection(cube1, cube2)), [(4, 4, 4)]) 
 
+    def test_get_intersection_at_a_plane(self):
+        cube1 = Cube(
+            xl=0, xr=4,
+            yl=0, yr=4,
+            zl=0, zr=4,
+        )
+        cube2 = Cube(
+            xl=3, xr=8,
+            yl=3, yr=8,
+            zl=3, zr=8,
+        )
+        self.assertEqual(
+            set(list(get_intersection(cube1, cube2))),
+            set([
+                (3, 3, 3),
+                (4, 3, 3),
+                (3, 4, 3),
+                (4, 4, 3),
+                (3, 3, 4),
+                (4, 3, 4),
+                (3, 4, 4),
+                (4, 4, 4),
+            ])
+        ) 
+
     def test_solve_1(self):
         self.assertEqual(solve(1, "small"), 39)
         self.assertEqual(solve(1, "example"), 590784)
