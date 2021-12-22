@@ -50,29 +50,28 @@ def get_universes(state, win_cache={}):
     p1, s1, p2, s2, current_player = decode(state)
     position_of_player = [p1, p2]
     score_of_player = [s1, s2]
+    win_count_for_player = [0, 0]
     curr_player = 1
-    p1_wins = 0
-    p2_wins = 0
     for roll, freq in ROLL_DISTRIBUTION.items():
         if current_player == ONE:
             new_pos = get_next_position(position_of_player[current_player], roll)
             new_sco = score_of_player[current_player] + new_pos
             if new_sco >= 21:
-                p1_wins += freq
+                win_count_for_player[current_player] += freq
             else:
                 incr1, incr2 = get_universes(encode(new_pos, new_sco, position_of_player[TWO], score_of_player[TWO], TWO))
-                p1_wins += incr1 * freq
-                p2_wins += incr2 * freq
+                win_count_for_player[ current_player] += incr1 * freq
+                win_count_for_player[~current_player] += incr2 * freq
         elif current_player == TWO:
             new_pos = get_next_position(position_of_player[TWO], roll)
             new_sco = score_of_player[TWO] + new_pos
             if new_sco >= 21:
-                p2_wins += freq
+                win_count_for_player[current_player] += freq
             else:
                 incr1, incr2 = get_universes(encode(position_of_player[ONE], score_of_player[ONE], new_pos, new_sco, ONE))
-                p1_wins += incr1 * freq
-                p2_wins += incr2 * freq
-    win_cache[state] = (p1_wins, p2_wins)
+                win_count_for_player[~current_player] += incr1 * freq
+                win_count_for_player[ current_player] += incr2 * freq
+    win_cache[state] = win_count_for_player
     return win_cache[state]
 
 def solve(prob, inputname):
