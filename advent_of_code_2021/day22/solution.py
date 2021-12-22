@@ -8,9 +8,6 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
-def serialize(coords):
-    return json.dumps(coords)
-
 def get_cubes(xl, xr, yl, yr, zl, zr):
     x_range = [i for i in range(xl, xr + 1)]
     y_range = [i for i in range(yl, yr + 1)]
