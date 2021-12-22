@@ -98,6 +98,7 @@ def solve(prob, inputname):
             for cube in cubes:
                 room.discard(cube)
         """
+    print(cubes)
 
     bal = get_area(cubes[0][1])
 

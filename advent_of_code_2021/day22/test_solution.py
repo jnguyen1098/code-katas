@@ -6,6 +6,11 @@ from solution import *
 class TestAll(unittest.TestCase):
 
     def test_main(self):
+        self.assertEqual(solve(2, "single_on"), 27)
+        self.assertEqual(solve(2, "complete_negation"), 0)
+        self.assertEqual(solve(2, "corner_off"), 26)
+        self.assertEqual(solve(2, "corner_off_big"), 26)
+        self.assertEqual(solve(2, "double_remove"), 0)
         self.assertEqual(solve(2, "small"), 39)
         self.assertEqual(solve(2, "new_example"), 2758514936282235)
 
