@@ -52,13 +52,14 @@ ROLL_DISTRIBUTION is a Counter of digit sums of Cartesian product of 111, 112, 1
 """
 
 @lru_cache(None)
-def get_universes(state):
+def get_universes(pos1, pos2, sco1, sco2, turn):
 
     curr_player = 1
     win_count_for_player = [0, 0]
 
-    data = decode(state)
-    position_of_player, score_of_player, current_player = data[0:2], data[2:4], data[4]
+    position_of_player = [pos1, pos2]
+    score_of_player = [sco1, sco2]
+    current_player = turn
 
     for roll, freq in ROLL_DISTRIBUTION.items():
         new_pos = get_next_position(position_of_player[current_player], roll)
@@ -67,9 +68,9 @@ def get_universes(state):
             win_count_for_player[current_player] += freq
         else:
             if current_player == ONE:
-                p1_wins, p2_wins = get_universes(encode(new_pos, position_of_player[TWO], new_sco, score_of_player[TWO], TWO))
+                p1_wins, p2_wins = get_universes(new_pos, position_of_player[TWO], new_sco, score_of_player[TWO], TWO)
             elif current_player == TWO:
-                p1_wins, p2_wins = get_universes(encode(position_of_player[ONE], new_pos, score_of_player[ONE], new_sco, ONE))
+                p1_wins, p2_wins = get_universes(position_of_player[ONE], new_pos, score_of_player[ONE], new_sco, ONE)
             win_count_for_player[ONE] += p1_wins * freq
             win_count_for_player[TWO] += p2_wins * freq
 
@@ -82,4 +83,4 @@ def solve(prob, inputname):
     if prob == 1:
         return get_losing_score(position_for_player[ONE], position_for_player[TWO])
     if prob == 2:
-        return max(get_universes(f"{position_for_player[ONE]},{position_for_player[TWO]}|0,0|{ONE}"))
+        return max(get_universes(position_for_player[ONE], position_for_player[TWO], 0, 0, ONE))
