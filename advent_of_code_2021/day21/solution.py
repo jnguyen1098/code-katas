@@ -48,9 +48,8 @@ def get_universes(state, win_cache={}):
     if memo := win_cache.get(state):
         return memo
 
-    p1, p2, s1, s2, current_player = decode(state)
-    position_of_player = [p1, p2]
-    score_of_player = [s1, s2]
+    data = decode(state)
+    position_of_player, score_of_player, current_player = data[0:2], data[2:4], data[4]
     win_count_for_player = [0, 0]
     curr_player = 1
 
