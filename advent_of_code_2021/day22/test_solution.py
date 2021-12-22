@@ -5,6 +5,9 @@ from solution import *
 
 class TestAll(unittest.TestCase):
 
+    def test_main(self):
+        self.assertEqual(solve(2, "new_example"), 2758514936282235)
+
     def test_get_intersection_at_a_single_point(self):
         cube1 = Cube(
             xl=0, xr=4,

@@ -92,7 +92,7 @@ def solve(prob, inputname):
     for line in lines:
         operation = line[-1]
         new_cube = Cube(line[0], line[1], line[2], line[3], line[4], line[5])
-        for cube in cubes
+        cubes.append((operation, new_cube))
         """
         if line[-1] == "on":
             for cube in cubes:
@@ -101,6 +101,10 @@ def solve(prob, inputname):
             for cube in cubes:
                 room.discard(cube)
         """
+
+    if prob == 2:
+        for cube in cubes:
+            print(cube)
 
     if prob == 1:
         return len(room)
