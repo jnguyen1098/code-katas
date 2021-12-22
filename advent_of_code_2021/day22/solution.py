@@ -5,8 +5,23 @@ import json
 import sys
 sys.path.append("..")
 
+from dataclasses import dataclass
+
 from ansi import *
 from comp import *
+
+@dataclass
+class Cube:
+    xl: int
+    xr: int
+    yl: int
+    yr: int
+    zl: int
+    zr: int
+
+def get_intersection(cube1, cube2):
+    cube = Cube(1, 2, 3, 4, 5, 6)
+    print(cube)
 
 def get_cubes(xl, xr, yl, yr, zl, zr):
     x_range = [i for i in range(xl, xr + 1)]
