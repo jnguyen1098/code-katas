@@ -54,22 +54,22 @@ def get_universes(state, win_cache={}):
     p1_wins = 0
     p2_wins = 0
     for roll, freq in ROLL_DISTRIBUTION.items():
-        if current_player == 1:
+        if current_player == ONE:
             new_p1 = get_next_position(p1, roll)
             new_s1 = s1 + new_p1
             if new_s1 >= 21:
                 p1_wins += freq
             else:
-                incr1, incr2 = get_universes(encode(new_p1, new_s1, p2, s2, 2))
+                incr1, incr2 = get_universes(encode(new_p1, new_s1, p2, s2, TWO))
                 p1_wins += incr1 * freq
                 p2_wins += incr2 * freq
-        elif current_player == 2:
+        elif current_player == TWO:
             new_p2 = get_next_position(p2, roll)
             new_s2 = s2 + new_p2
             if new_s2 >= 21:
                 p2_wins += freq
             else:
-                incr1, incr2 = get_universes(encode(p1, s1, new_p2, new_s2, 1))
+                incr1, incr2 = get_universes(encode(p1, s1, new_p2, new_s2, ONE))
                 p1_wins += incr1 * freq
                 p2_wins += incr2 * freq
     win_cache[state] = (p1_wins, p2_wins)
@@ -82,4 +82,4 @@ def solve(prob, inputname):
     if prob == 1:
         return get_losing_score(position_for_player[ONE], position_for_player[TWO])
     if prob == 2:
-        return max(get_universes(f"{position_for_player[ONE]},0|{position_for_player[TWO]},0|1", {}))
+        return max(get_universes(f"{position_for_player[ONE]},0|{position_for_player[TWO]},0|{ONE}", {}))
