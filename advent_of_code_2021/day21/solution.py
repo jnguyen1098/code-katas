@@ -55,21 +55,21 @@ def get_universes(state, win_cache={}):
     p2_wins = 0
     for roll, freq in ROLL_DISTRIBUTION.items():
         if current_player == ONE:
-            new_p1 = get_next_position(p1, roll)
-            new_s1 = s1 + new_p1
-            if new_s1 >= 21:
+            new_pos = get_next_position(p1, roll)
+            new_sco = s1 + new_pos
+            if new_sco >= 21:
                 p1_wins += freq
             else:
-                incr1, incr2 = get_universes(encode(new_p1, new_s1, p2, s2, TWO))
+                incr1, incr2 = get_universes(encode(new_pos, new_sco, p2, s2, TWO))
                 p1_wins += incr1 * freq
                 p2_wins += incr2 * freq
         elif current_player == TWO:
-            new_p2 = get_next_position(p2, roll)
-            new_s2 = s2 + new_p2
-            if new_s2 >= 21:
+            new_pos = get_next_position(p2, roll)
+            new_sco = s2 + new_pos
+            if new_sco >= 21:
                 p2_wins += freq
             else:
-                incr1, incr2 = get_universes(encode(p1, s1, new_p2, new_s2, ONE))
+                incr1, incr2 = get_universes(encode(p1, s1, new_pos, new_sco, ONE))
                 p1_wins += incr1 * freq
                 p2_wins += incr2 * freq
     win_cache[state] = (p1_wins, p2_wins)
