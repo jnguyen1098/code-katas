@@ -73,18 +73,34 @@ def solve(prob, inputname):
         operation = lines[i][0]
         lines[i] = list(map(int, lines[i][1:])) + [operation]
 
-    lines = [line for line in lines if valid_line(*line)]
+    if prob == 1:
+        lines = [line for line in lines if valid_line(*line)]
 
     room = set()
+    cubes = []
+
+    """
+    ON
+        ON  - only increment by the new cubes (new_cube - intersection(new_cube, old_cube))
+        OFF - decrement all
+
+    OFF
+        ON  - increment all
+        OFF - only decrement by the new cubes (new_cube - intersection(new_cube, old_cube))
+    """
 
     for line in lines:
-        cubes = set(get_cubes(line[0], line[1], line[2], line[3], line[4], line[5]))
+        operation = line[-1]
+        new_cube = Cube(line[0], line[1], line[2], line[3], line[4], line[5])
+        for cube in cubes
+        """
         if line[-1] == "on":
             for cube in cubes:
                 room.add(cube)
         elif line[-1] == "off":
             for cube in cubes:
                 room.discard(cube)
+        """
 
     if prob == 1:
         return len(room)
