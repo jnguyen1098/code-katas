@@ -19,9 +19,24 @@ class Cube:
     zl: int
     zr: int
 
+    def __eq__(self, other):
+        return all(
+            [
+                self.xl == other.xl,
+                self.xr == other.xr,
+                self.yl == other.yl,
+                self.yr == other.yr,
+                self.zl == other.zl,
+                self.zr == other.zr,
+            ]
+        )
+
 def get_intersection(cube1, cube2):
-    cube = Cube(1, 2, 3, 4, 5, 6)
-    print(cube)
+    x_overlap = list(range(max(cube1.xl, cube2.xl), min(cube1.xr, cube2.xr) + 1))
+    y_overlap = list(range(max(cube1.yl, cube2.yl), min(cube1.yr, cube2.yr) + 1))
+    z_overlap = list(range(max(cube1.zl, cube2.zl), min(cube1.zr, cube2.zr) + 1))
+    for product in itertools.product(x_overlap, y_overlap, z_overlap):
+        yield product
 
 def get_cubes(xl, xr, yl, yr, zl, zr):
     x_range = [i for i in range(xl, xr + 1)]
