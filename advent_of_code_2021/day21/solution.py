@@ -68,11 +68,11 @@ def get_universes(state):
             win_count_for_player[current_player] += freq
         else:
             if current_player == ONE:
-                incr1, incr2 = get_universes(encode(new_pos, position_of_player[TWO], new_sco, score_of_player[TWO], TWO))
+                p1_wins, p2_wins = get_universes(encode(new_pos, position_of_player[TWO], new_sco, score_of_player[TWO], TWO))
             elif current_player == TWO:
-                incr1, incr2 = get_universes(encode(position_of_player[ONE], new_pos, score_of_player[ONE], new_sco, ONE))
-            win_count_for_player[ONE] += incr1 * freq
-            win_count_for_player[TWO] += incr2 * freq
+                p1_wins, p2_wins = get_universes(encode(position_of_player[ONE], new_pos, score_of_player[ONE], new_sco, ONE))
+            win_count_for_player[ONE] += p1_wins * freq
+            win_count_for_player[TWO] += p2_wins * freq
 
     return win_count_for_player
 
