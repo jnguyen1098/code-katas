@@ -15,16 +15,6 @@ ROLL_DISTRIBUTION = {3: 1,  4: 3,  5: 6,  6: 7,  7: 6,  8: 3,  9: 1}
 def get_next_position(curr, advance):
     return (curr + advance - 1) % 10 + 1
 
-def encode(pos1, pos2, sco1, sco2, turn):
-    return f"{pos1},{pos2}|{sco1},{sco2}|{turn}"
-
-def decode(serialized):
-    spl = serialized.split("|")
-    pos = spl[0].split(",")
-    sco = spl[1].split(",")
-    turn = spl[2]
-    return int(pos[ONE]), int(pos[TWO]), int(sco[ONE]), int(sco[TWO]), int(turn)
-
 def get_losing_score(player_1, player_2):
     position_of_player = [player_1, player_2]
     score_of_player = [0, 0]
