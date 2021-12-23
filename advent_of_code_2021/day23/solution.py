@@ -24,23 +24,35 @@ Amphipods that move to the hallway can't be intermediate-adjusted;
   move into a room
 
 #############
-#           #
+#ss s s s ss#
 ###B#C#B#D###
   #A#D#C#A#
   #########
 """
 
+class Game:
+    def __init__(self, cols):
+        self.cols = cols
+
+        self.l1 = None
+        self.l2 = None
+
+        self.b1 = None
+        self.b2 = None
+        self.b3 = None
+
+        self.r1 = None
+        self.r2 = None
+
 def solve(prob, inputname):
 
-    rooms = []
-
     if inputname == "example":
-        rooms = [
-            ["B", "A"],
-            ["C", "D"],
-            ["B", "C"],
-            ["D", "A"],
-        ]
+        game = Game([
+            ["A", "B"],
+            ["D", "C"],
+            ["C", "B"],
+            ["A", "D"],
+        ])
     else:
         print("unknown input")
         exit()
