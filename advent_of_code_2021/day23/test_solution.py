@@ -7,8 +7,10 @@ class TestAll(unittest.TestCase):
 
     def test_init(self):
         cols = [[], [[]], [[[]]]]
+        cols = [["A", "B", "C", "D"], ["A", "B", "C"], ["A", "B"], ["A"]]
         game = Game(cols)
         self.assertEqual(game.cols, cols)
+        print(game)
 
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 12521)
