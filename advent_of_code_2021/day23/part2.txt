@@ -1,0 +1,20 @@
+#############
+#...........#
+###B#B#D#D###
+  #D#C#B#A#
+  #D#B#A#C#
+  #C#C#A#A#
+  #########
+
+A will require at least 43 steps
+B will require at least 7+7+(10 or 12)+6 = 30 or 32 steps?
+C will require at least 8+9+7+9 = 33 steps?
+D will require at least 7+6+10+10 = 33 steps?
+
+############# Move 1 (6 left)
+#.........D.# D U1 R1
+###B#B#D#.### 2000
+  #D#C#B#A#
+  #D#B#A#C#
+  #C#C#A#A#
+  #########
