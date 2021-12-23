@@ -1,0 +1,124 @@
+#############
+#...........#
+###B#B#D#D###
+  #C#C#A#A#
+  #########
+
+Bottom A will move at least 8
+Top A will move at least 9
+To move A, you need at least 17 moves = 17
+  A=21  4 AWAY
+
+Bottom B will move at least 5
+Top B will move at least 4
+To move all B, you need at least 9 moves = 90
+  B=9   OPTIMAL
+
+Bottom C will move at least 6
+Top C will move at least 7
+To move all C, you need at least 13 = 1300
+  C=13  OPTIMAL
+
+Bottom D will move at least 5
+Top D will move at least 4
+To move all D, you need at least 9 = 9000
+  D=9   OPTIMAL
+
+#############
+#.........D.# 2000 D U1 R1
+###B#B#D#.### TODO assess the possibility of D moving one more to the right
+  #C#C#A#A#
+  #########
+
+#############
+#.A.......D.# 2009 A U2 L7
+###B#B#D#.### 
+  #C#C#A#.#
+  #########
+
+#############
+#.A.........# 5009 D L1 D2
+###B#B#D#.### 
+  #C#C#A#D#
+  #########
+
+#############
+#.A.........# 9009 D U1 R2 D1
+###B#B#.#D### 
+  #C#C#A#D#
+  #########
+
+#############
+#.A.....A...# 9012 A U2 R1
+###B#B#.#D### 
+  #C#C#.#D#
+  #########
+
+#############
+#.A.B...A...# 9032 B U1 L1
+###B#.#.#D### 
+  #C#C#.#D#
+  #########
+
+#############
+#.A.B...A...# 9632 C U2 R2 D2
+###B#.#.#D### 
+  #C#.#C#D#
+  #########
+
+#############
+#.A.....A...# 9662 B R1 D2
+###B#.#.#D### 
+  #C#B#C#D#
+  #########
+
+#############
+#.A.....A...# 9702 B U1 R2 D1
+###.#B#.#D### 
+  #C#B#C#D#
+  #########
+
+#############
+#.A.....A...# 10402 C U2 R4 D1
+###.#B#C#D### 
+  #.#B#C#D#
+  #########
+
+#############
+#.......A...# 10405 A R1 D2
+###.#B#C#D### 
+  #A#B#C#D#
+  #########
+
+#############
+#...........# 10411 A L5 D1
+###A#B#C#D### 
+  #A#B#C#D#
+  #########
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
