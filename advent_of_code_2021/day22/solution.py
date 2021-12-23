@@ -90,14 +90,6 @@ def solve(prob, inputname):
         operation = line[-1]
         new_cube = Cube(line[0], line[1], line[2], line[3], line[4], line[5])
         cubes.append((operation, new_cube))
-        """
-        if line[-1] == "on":
-            for cube in cubes:
-                room.add(cube)
-        elif line[-1] == "off":
-            for cube in cubes:
-                room.discard(cube)
-        """
     print(cubes)
 
     bal = get_area(cubes[0][1])
