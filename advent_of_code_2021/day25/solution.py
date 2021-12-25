@@ -10,6 +10,11 @@ class Board:
     def __init__(self, data):
         self.data = data
 
+    def advance(self):
+        # Advance east
+        # Advance west
+        pass
+
     def __str__(self):
         return "\n".join("".join(stuff) for stuff in self.data)
 

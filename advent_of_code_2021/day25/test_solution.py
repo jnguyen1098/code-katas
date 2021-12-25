@@ -17,6 +17,17 @@ v>v.vv.v..
 .vv..>.>v.
 v.v..>>v.v
 ....v..v.>""")
+        board.advance()
+        self.assertEqual(str(board),
+"""....>.>v.>
+v.v>.>v.v.
+>v>>..>v..
+>>v>v>.>.v
+.>v.v...v.
+v>>.>vvv..
+..v...>>..
+vv...>>vv.
+>.v.v..v.v""")
 
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 58)
