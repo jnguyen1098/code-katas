@@ -53,7 +53,7 @@ def chunk1(w, x=0, y=0, z=0):
     return w, 1, w + 1, w + 1
 
 def chunk2(w, z, x=0, y=0):
-    return w, 1, (w + 10), (z * 26) + (w + 10)
+    return w, 1, w + 10, (z * 26) + (w + 10)
 
 def chunk3(w, z, x=0, y=0):
     return w, 1, w + 5, (z // 26 * 26) + (w + 5)
