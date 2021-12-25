@@ -25,9 +25,9 @@ def get_char(string):
     for char in string:
         yield char
 
-def simulate(instructions, input_stream):
+def simulate(instructions, input_stream, x=0, y=0, z=0):
     stream = get_char(input_stream)
-    reg = {"w": 0, "x": 0, "y": 0, "z": 0}
+    reg = {"w": 0, "x": x, "y": y, "z": z}
     for inst in instructions:
         match inst.opcode:
             case "inp":
