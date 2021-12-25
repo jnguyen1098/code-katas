@@ -10,15 +10,15 @@ class TestAll(unittest.TestCase):
         print("chunk1")
         for i in range(1, 10):
             self.assertEqual(chunk1(i), simulate(instructions, str(i)))
-            print(chunk1(i))
+            print(f"abstraction={chunk1(i)} simulation={simulate(instructions, str(i))}")
         print()
 
     def test_simulate_chunk_2(self):
         instructions = parse_instructions("chunk2")
-        print("chunk1")
+        print("chunk2")
         for i in range(1, 10):
-            for j in range(22, 111):
-                self.assertEqual(chunk2(i, j), simulate(instructions, str(i), x=i, z=j))
+            for j in range(22, 111, 11):
+                self.assertEqual(chunk2(w=i, z=j), simulate(instructions, str(i), z=j))
                 print(chunk2(i, j))
         print()
 
