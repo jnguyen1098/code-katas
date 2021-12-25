@@ -42,7 +42,7 @@ def simulate(instructions, input_stream):
                 reg[inst.lop] //= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
     return reg["w"], reg["x"], reg["y"], reg["z"]
 
-def solve(prob, inputname):
+def parse_instructions(inputname):
     instructions = []
     gen = yield_line(inputname)
 
@@ -52,6 +52,12 @@ def solve(prob, inputname):
             instructions.append(Instruction(split[0], split[1], split[2]))
         else:
             instructions.append(Instruction(split[0], split[1], ""))
+
+    return instructions
+
+def solve(prob, inputname):
+
+    instructions = parse_instructions(inputname)
 
     for line in instructions:
         print(line)
