@@ -58,6 +58,17 @@ def chunk2(w, z, x=0, y=0):
 def chunk3(w, z, x=0, y=0):
     return w, 1, w + 5, (z // 26 * 26) + (w + 5)
 
+def chunk4(w, z, x=0, y=0):
+    x = (z % 26) + 11
+    x = int(w != x)
+    y = 25 * x + 1
+    z *= y
+    y = w
+    y += 6
+    y *= x
+    z += y
+    return w, x, y, z
+
 def parse_instructions(inputname):
     instructions = []
     gen = yield_line(inputname)

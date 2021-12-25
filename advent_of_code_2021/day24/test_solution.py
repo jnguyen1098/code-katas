@@ -35,6 +35,19 @@ class TestAll(unittest.TestCase):
                 print(chunk_result)
         print()
 
+    def test_simulate_chunk_4(self):
+        instructions = parse_instructions("chunk4")
+        print("chunk4")
+        for w in range(1, 10):
+            for z in range(22, 111, 11):
+                print("w", w, "z", z)
+                w_arg = w
+                z_arg = (z // 26 * 26) + (w + 5)
+                chunk_result = chunk4(w=w_arg, z=z_arg)
+                self.assertEqual(chunk_result, simulate(instructions, str(w_arg), z=z_arg))
+                print(chunk_result)
+        print()
+
     def test_solve(self):
         return
         self.assertEqual(solve(1, "input"), 1)
