@@ -9,11 +9,20 @@ from comp import *
 class Board:
     def __init__(self, data):
         self.data = data
+        self.rows = len(data)
+        self.cols = len(data[0])
+
+    def right(self, col, incr=1):
+        return (col + incr) % self.cols
+
+    def down(self, row, incr=1):
+        return (row + incr) % self.rows
 
     def advance(self):
+        changed = 0
         # Advance east
         # Advance west
-        pass
+        return changed
 
     def __str__(self):
         return "\n".join("".join(stuff) for stuff in self.data)

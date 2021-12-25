@@ -5,6 +5,19 @@ from solution import *
 
 class TestAll(unittest.TestCase):
 
+    def test_dim(self):
+        board = create_board("example")
+        self.assertEqual(len(board.data), 9)
+        for i in range(9):
+            self.assertEqual(len(board.data[i]), 10)
+
+    def test_incr(self):
+        board = create_board("example")
+        self.assertEqual(board.right(0), 1)
+        self.assertEqual(board.right(9), 0)
+        self.assertEqual(board.down(0), 1)
+        self.assertEqual(board.down(8), 0)
+
     def test_advance(self):
         board = create_board("example")
         self.assertEqual(str(board),
