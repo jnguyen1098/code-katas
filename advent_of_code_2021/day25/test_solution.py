@@ -57,7 +57,7 @@ vvv.....>>
 
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 58)
-        self.assertEqual(solve(1, "example"), -1)
+        self.assertEqual(solve(1, "input"), 384)
 
 if __name__ == "__main__":
     unittest.main()
