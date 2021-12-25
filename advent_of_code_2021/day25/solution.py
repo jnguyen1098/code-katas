@@ -6,14 +6,22 @@ sys.path.append("..")
 from ansi import *
 from comp import *
 
+class Board:
+    def __init__(self, data):
+        self.data = data
+
+    def __str__(self):
+        return "\n".join("".join(stuff) for stuff in self.data)
+
 def solve(prob, inputname):
     lines = []
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        lines.append(list(line))
 
-    print_arr(lines)
+    board = Board(lines)
+    print(board)
 
     print(f"{len(lines)} in the array")
 
