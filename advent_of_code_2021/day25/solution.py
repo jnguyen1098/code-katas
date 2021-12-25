@@ -30,7 +30,16 @@ class Board:
             nx, ny = reqs.pop()
             self.data[nx][ny] = "."
             self.data[nx][self.right(ny)] = ">"
-        # Advance west
+        # Advance south
+        assert reqs == []
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i])):
+                if self.data[i][j] == "v" and self.data[self.down(i)][j] == ".":
+                    reqs.append((i, j))
+        while reqs:
+            nx, ny = reqs.pop()
+            self.data[nx][ny] = "."
+            self.data[self.down(nx)][ny] = "v"
         return changed
 
     def __str__(self):
