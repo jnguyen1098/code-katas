@@ -53,26 +53,7 @@ def chunk1(w, x=0, y=0, z=0):
     return w, 1, w + 1, w + 1
 
 def chunk2(w, z, x=0, y=0):
-    x = z
-    x %= 26
-    x += 10
-    if x == w:
-        x = 1
-    else:
-        x = 0
-    return w, x, y, z
-    x = int(not x)
-    y = 0
-    y += 25
-    y *= x
-    y += 1
-    z *= y
-    y *= 0
-    y += w
-    y += 10
-    y *= x
-    z += y
-    return w, x, y, z
+    return w, 1, (w + 10), (z * 26) + (w + 10)
 
 def parse_instructions(inputname):
     instructions = []
