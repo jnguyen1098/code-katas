@@ -56,11 +56,10 @@ def chunk2(w, z, x=0, y=0):
     return w, 1, (w + 10), (z * 26) + (w + 10)
 
 def chunk3(w, z, x=0, y=0):
-    x = z % 26
+    x = 1
+    y = w + 5
+    z = (z // 26) * (26) + y
     return w, x, y, z
-    z //= 26
-    x -= 10
-    x = int(x != w)
 
 def parse_instructions(inputname):
     instructions = []
