@@ -26,6 +26,7 @@ class Board:
             for j in range(len(self.data[i])):
                 if self.data[i][j] == ">" and self.data[i][self.right(j)] == ".":
                     reqs.append((i, j))
+        changed += len(reqs)
         while reqs:
             nx, ny = reqs.pop()
             self.data[nx][ny] = "."
@@ -36,6 +37,7 @@ class Board:
             for j in range(len(self.data[i])):
                 if self.data[i][j] == "v" and self.data[self.down(i)][j] == ".":
                     reqs.append((i, j))
+        changed += len(reqs)
         while reqs:
             nx, ny = reqs.pop()
             self.data[nx][ny] = "."
@@ -55,7 +57,10 @@ def solve(prob, inputname):
     board = create_board(inputname)
 
     if prob == 1:
-        return 1
+        it = 1
+        while board.advance() != 0:
+            it += 1
+        return it
     elif prob == 2:
         return 2
     else:
