@@ -42,6 +42,9 @@ def simulate(instructions, input_stream):
                 reg[inst.lop] //= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
     return reg["w"], reg["x"], reg["y"], reg["z"]
 
+def chunk1(num):
+    return num, 11, 11 * (num + 1), 11 * (num + 1)
+
 def parse_instructions(inputname):
     instructions = []
     gen = yield_line(inputname)

@@ -5,10 +5,10 @@ from solution import *
 
 class TestAll(unittest.TestCase):
 
-    def test_simulate(self):
+    def test_simulate_chunk_1(self):
         instructions = parse_instructions("chunk1")
         for i in range(1, 10):
-            print(simulate(instructions, str(i)))
+            self.assertEqual(chunk1(i), simulate(instructions, str(i)))
 
     def test_solve(self):
         return
