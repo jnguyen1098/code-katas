@@ -1,0 +1,4 @@
+inp w
+mul x 0
+add x z
+mod x 26
