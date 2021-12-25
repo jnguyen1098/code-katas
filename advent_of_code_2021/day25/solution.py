@@ -21,6 +21,15 @@ class Board:
     def advance(self):
         changed = 0
         # Advance east
+        reqs = []
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i])):
+                if self.data[i][j] == ">" and self.data[i][self.right(j)] == ".":
+                    reqs.append((i, j))
+        while reqs:
+            nx, ny = reqs.pop()
+            self.data[nx][ny] = "."
+            self.data[nx][self.right(ny)] = ">"
         # Advance west
         return changed
 
@@ -29,7 +38,7 @@ class Board:
 
 def create_board(inputname):
     gen = yield_line(inputname)
-    lines = [line for line in gen]
+    lines = [list(line) for line in gen]
     board = Board(lines)
     return board
 
