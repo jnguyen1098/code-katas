@@ -42,8 +42,17 @@ def simulate(instructions, input_stream, x=0, y=0, z=0):
                 reg[inst.lop] //= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
     return reg["w"], reg["x"], reg["y"], reg["z"]
 
-def chunk1(num):
-    return num, 11, 11 * (num + 1), 11 * (num + 1)
+def chunk1(w):
+    return w, 11, 11 * (w + 1), 11 * (w + 1)
+
+def chunk2(w, z):
+    x = z % 26 + 10
+    x = 1 if (x != w) else 0
+    y = 25 * x + 1
+    z *= y
+    y = (w + 10) * x
+    z += y
+    return w, x, y, z
 
 def parse_instructions(inputname):
     instructions = []
