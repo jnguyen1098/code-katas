@@ -13,17 +13,14 @@ class Board:
     def __str__(self):
         return "\n".join("".join(stuff) for stuff in self.data)
 
-def solve(prob, inputname):
-    lines = []
+def create_board(inputname):
     gen = yield_line(inputname)
-
-    for line in gen:
-        lines.append(list(line))
-
+    lines = [line for line in gen]
     board = Board(lines)
-    print(board)
+    return board
 
-    print(f"{len(lines)} in the array")
+def solve(prob, inputname):
+    board = create_board(inputname)
 
     if prob == 1:
         return 1
