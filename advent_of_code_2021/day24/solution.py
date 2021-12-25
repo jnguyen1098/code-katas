@@ -33,14 +33,13 @@ def simulate(instructions, input_stream):
             case "inp":
                 reg["w"] = int(next(stream))
             case "add":
-                print("add")
-#reg[inst.lop] = inst.rop
+                reg[inst.lop] += inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
             case "sub":
-                print("subtract")
+                reg[inst.lop] -= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
             case "mul":
-                print("multiply")
+                reg[inst.lop] *= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
             case "div":
-                print("divide")
+                reg[inst.lop] //= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
 
 def solve(prob, inputname):
     instructions = []
@@ -56,7 +55,7 @@ def solve(prob, inputname):
     for line in instructions:
         print(line)
 
-    simulate(instructions, "1234567890")
+    simulate(instructions, "12345678901234")
 
     if prob == 1:
         return 1
