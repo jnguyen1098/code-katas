@@ -50,17 +50,7 @@ def simulate(instructions, input_stream, x=0, y=0, z=0):
     return reg["w"], reg["x"], reg["y"], reg["z"]
 
 def chunk1(w, x=0, y=0, z=0):
-    x = z % 26
-    x += 11
-    x = int (not int(x == w))
-    y += 25
-    y *= x
-    y += 1
-    z *= y
-    y = w + 1
-    y *= x
-    z += y
-    return w, x, y, z
+    return w, 1, w + 1, w + 1
 
 def chunk2(w, z, x=0, y=0):
     x = z
