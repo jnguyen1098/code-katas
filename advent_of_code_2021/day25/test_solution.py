@@ -41,6 +41,19 @@ v>>.>vvv..
 ..v...>>..
 vv...>>vv.
 >.v.v..v.v""")
+        for _ in range(56):
+            board.advance()
+        self.assertEqual(board.advance(), 0)
+        self.assertEqual(str(board),
+"""..>>v>vv..
+..v.>>vv..
+..>>v>>vv.
+..>>>>>vv.
+v......>vv
+v>v....>>v
+vvv.....>>
+>vv......>
+.>v.vv.v..""")
 
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 58)
