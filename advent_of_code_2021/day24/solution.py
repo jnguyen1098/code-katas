@@ -40,6 +40,10 @@ def simulate(instructions, input_stream):
                 reg[inst.lop] *= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
             case "div":
                 reg[inst.lop] //= inst.rop if isinstance(inst.rop, int) else reg[inst.rop]
+    print("w=",  reg["w"])
+    print("x=",  reg["x"])
+    print("y=",  reg["y"])
+    print("z=",  reg["z"])
 
 def solve(prob, inputname):
     instructions = []
@@ -55,7 +59,7 @@ def solve(prob, inputname):
     for line in instructions:
         print(line)
 
-    simulate(instructions, "12345678901234")
+    simulate(instructions, "00000000000000")
 
     if prob == 1:
         return 1
