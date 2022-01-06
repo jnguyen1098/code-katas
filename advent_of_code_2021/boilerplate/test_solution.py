@@ -10,4 +10,4 @@ class TestAll(unittest.TestCase):
         self.assertEqual(solve(2, "input"), 2)
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(failfast=True)
