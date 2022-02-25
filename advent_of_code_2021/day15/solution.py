@@ -7,11 +7,17 @@ from ansi import *
 from comp import *
 from heapq import *
 
+def multiply_data(data):
+    return [[]]
+
 def solve(prob, inputname):
 
     data = []
     for line in yield_line(inputname):
         data.append(intgrid(line))
+
+    if prob == 2:
+        data = multiply_data(data)
 
     rows = len(data)
     cols = len(data[0])
@@ -30,17 +36,12 @@ def solve(prob, inputname):
                 heappush(queue, (cost + data[successor[0]][successor[1]], successor))
                 seen.add(successor)
 
-    if prob == 1:
-        return 1
-    elif prob == 2:
-        return 2
-    else:
-        print("Invalid problem code")
-        exit()
+    print("shouldnt be here lol")
+    exit(1)
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[40, 698], [50, 60]]
+    expcts = [[40, 698], [315, 1]]
     shortc = True
 
     for idx, part in enumerate(expcts):
