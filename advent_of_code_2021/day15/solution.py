@@ -5,13 +5,30 @@ sys.path.append("..")
 
 from ansi import *
 from comp import *
+from heapq import *
 
 def solve(prob, inputname):
 
-    rows = []
+    data = []
     for line in yield_line(inputname):
-        rows.append(intgrid(line))
-    print_arr(rows)
+        data.append(intgrid(line))
+
+    rows = len(data)
+    cols = len(data[0])
+
+    #         c   x  y      where c=cost
+    queue = [(0, (0, 0))]
+
+    seen = set()
+
+    while queue:
+        cost, popped = heappop(queue)
+        if popped == (rows - 1, cols - 1):
+            return cost
+        for move in DIR.ADJA:
+            if (successor := get_point(popped, move, rows, cols)) and successor not in seen:
+                heappush(queue, (cost + data[successor[0]][successor[1]], successor))
+                seen.add(successor)
 
     if prob == 1:
         return 1
@@ -23,7 +40,7 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[40, 30], [50, 60]]
+    expcts = [[40, 698], [50, 60]]
     shortc = True
 
     for idx, part in enumerate(expcts):
