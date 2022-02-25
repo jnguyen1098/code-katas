@@ -7,6 +7,12 @@ from ansi import *
 from comp import *
 
 def solve(prob, inputname):
+
+    rows = []
+    for line in yield_line(inputname):
+        rows.append(intgrid(line))
+    print_arr(rows)
+
     if prob == 1:
         return 1
     elif prob == 2:
