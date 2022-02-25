@@ -7,8 +7,29 @@ from ansi import *
 from comp import *
 from heapq import *
 
+def increment(num, incr):
+    return (num + incr - 1) % 9 + 1
+
 def multiply_data(data):
-    return [[]]
+    big_row = []
+    for row in data:
+        lol = []
+        for i in range(5):
+            tmp = row[:]
+            for j in range(len(tmp)):
+                tmp[j] = increment(tmp[j], i)
+            for num in tmp:
+                lol.append(num)
+        big_row.append(lol)
+    #print_arr(big_row)
+    final = []
+    for i in range(5):
+        for row in big_row:
+            for j in range(len(row)):
+                row[j] = increment(row[j], 1 if i != 0 else 0)
+            final.append(row[:])
+    print_arr(final)
+    return final
 
 def solve(prob, inputname):
 
@@ -41,7 +62,7 @@ def solve(prob, inputname):
 
 if __name__ == "__main__":
     inputs = ["example", "real"]
-    expcts = [[40, 698], [315, 1]]
+    expcts = [[40, 698], [315, 3022]]
     shortc = True
 
     for idx, part in enumerate(expcts):
