@@ -21,14 +21,13 @@ def multiply_data(data):
             for num in tmp:
                 lol.append(num)
         big_row.append(lol)
-    #print_arr(big_row)
     final = []
     for i in range(5):
-        for row in big_row:
+        for _row in big_row:
+            row = _row[:]
             for j in range(len(row)):
-                row[j] = increment(row[j], 1 if i != 0 else 0)
+                row[j] = increment(row[j], i)
             final.append(row[:])
-    print_arr(final)
     return final
 
 def solve(prob, inputname):
