@@ -25,7 +25,7 @@ char *create_board(int x, int y)
 
 int get1d(struct game_t *game, int x, int y)
 {
-    return (game->rows * x) + y;
+    return (game->cols * x) + y;
 }
 
 struct pair_t get2d(struct game_t *game, int disp)
