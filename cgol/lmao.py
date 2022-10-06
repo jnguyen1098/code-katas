@@ -1,23 +1,48 @@
 from collections import defaultdict
 
-n = 250
-k = 130
+tests = {
+    (8, 4): 5,
+    (6, 3): 3,
+    (7, 3): 4,
+    (5, 2): 2,
+    (6, 2): 3,
+    (7, 2): 3,
+    (8, 2): 4,
+    (9, 2): 4,
+    (10, 3): 8,
+    (8, 4): 5,
+    (12, 4): 15,
+    (11, 3): 10,
+    (4, 2): 2,
+    (9, 3): 7,
+    (9, 4): 6,
+    (20, 1): 1,
+    (70, 70): 1,
+    (25, 8): 230,
+    (70, 15): 284054,
+    (99, 42): 613646,
+    (120, 20): 97132873,
+    (250, 130): 1844349560,
+}
 
-def mult(poly, order):
-    result = defaultdict(int)
-    for i in poly.keys():
-        for j in range(n):
-            if j * order > n:
-                break
-            result[i + order * j] += poly[i]
-    return result
+calls = 0
 
-start = {0: 1}
-for i in range(1, k + 1):
-    start = mult(start, i)
+def p(n, k):
+    global calls
 
-print(f"p({n}, {k}) = {start[n - k]}")
+    coefficients = {0: 1}
+    for iteration in range(1, k + 1):
+        result = defaultdict(int)
+        for weight in coefficients.keys():
+            for term in range(n // iteration):
+                calls += 1
+                result[weight + iteration * term] += coefficients[weight]
+        coefficients = result
+    return coefficients[n - k]
 
-assert start[n - k] == 1844349560
+for test, result in tests.items():
+    n, k = test
+    assert p(n, k) == result
 
-print("GOOD")
+print("Pass")
+print(calls)
