@@ -109,6 +109,19 @@ int get_outcome(struct game_t *game, int x, int y)
     exit(1);
 }
 
+void iterate(struct game_t *game)
+{
+    for (int i = 0; i < game->rows; i++) {
+        for (int j = 0; j < game->cols; j++) {
+            game->buffer[get1d(game, i, j)] = get_outcome(game, i, j);
+        }
+    }
+    
+    char *tmp = game->board;
+    game->board = game->buffer;
+    game->buffer = tmp;
+}
+
 void testOutcome(struct game_t *game)
 {
     assert(get_outcome(game, 11, 4) == 0);  // 1 dies underpopulation
@@ -133,16 +146,8 @@ void testCount(struct game_t *game)
 void testSample(struct game_t *game, void *data_ptr)
 {
     char (*expected)[game->cols] = data_ptr;
-
-    for (int i = 0; i < game->rows; i++) {
-        for (int j = 0; j < game->cols; j++) {
-            game->buffer[get1d(game, i, j)] = get_outcome(game, i, j);
-        }
-    }
     
-    char *tmp = game->board;
-    game->board = game->buffer;
-    game->buffer = tmp;
+    iterate(game);
     
     for (int i = 0; i < game->rows; i++) {
         for (int j = 0; j < game->cols; j++) {
@@ -162,8 +167,9 @@ void test(struct game_t *game, void *data, int dataRows, int dataCols, void *exp
     testSample(game, expected);
 }
 
-int main(void)
+void run_all_tests()
 {
+    puts("STARTING TEST");
     char TEST[21][21] = {
         {1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0},
         {1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1},
@@ -225,8 +231,42 @@ int main(void)
     free(game.board);
     free(game.buffer);
     
-    puts("END OF PROGRAM");
-
-    return 0;
+    puts("ENDING TEST");
 }
 
+int main(void)
+{
+    run_all_tests();
+}
+
+/*
+void gameOfLife(int** board, int boardSize, int* boardColSize){
+    struct game_t game = {
+        .rows = boardSize,
+        .cols = *boardColSize,
+    };
+    
+    char *(*flatten)(void) = ({
+        char *flat(void) {
+            char *result = calloc(boardSize * (*boardColSize), sizeof(char));
+            int p = 0;
+            for (int i = 0; i < boardSize; i++) {
+                for (int j = 0; j < *boardColSize; j++) {
+                    result[p++] = (char)board[i][j];
+                }
+            }
+            return result;
+        }
+        flat;
+    });
+    
+    initializeBoard(&game, flatten(), boardSize, *boardColSize);
+    iterate(&game);
+    
+    for (int i = 0; i < boardSize; i++) {
+        for (int j = 0; j < *boardColSize; j++) {
+            board[i][j] = game.board[get1d(&game, i, j)];
+        }
+    }
+}
+*/
