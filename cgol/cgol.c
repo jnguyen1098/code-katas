@@ -405,11 +405,18 @@ void run_all_tests()
     puts("ENDING TEST");
 }
 
-
-void gameOfLife(int** board, int boardSize, int* boardColSize){
+void gameOfLife(int** board, int boardSize, int* boardColSize)
+{    
+    #define MAX(x,y)((x)>(y)?(x):(y))
+    #define MIN(x,y)((x)>(y)?(y):(x))
+    
+    int totalCells = boardSize * (*boardColSize);
+    
     struct game_t game = {
         .rows = boardSize,
         .cols = *boardColSize,
+        .nThreads = MIN(totalCells, 128),
+        .nIterations = 1,
     };
     
     char *(*flatten)(void) = ({
@@ -426,11 +433,8 @@ void gameOfLife(int** board, int boardSize, int* boardColSize){
         flat;
     });
     
-    #define MAX(x,y)((x)>(y)?(x):(y))
-    
     initializeBoard(&game, flatten(), boardSize, *boardColSize);
-    iterate_all_slices(&game, MAX((game.cols * game.cols) / 7, 1));
-    flush(&game);
+    iterate_parallel(&game);
     
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0; j < *boardColSize; j++) {
@@ -441,4 +445,4 @@ void gameOfLife(int** board, int boardSize, int* boardColSize){
     destroyBoards(&game);
 }
 
-int main(void){ run_all_tests(); }
+int main(void) { run_all_tests(); }
