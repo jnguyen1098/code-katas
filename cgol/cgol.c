@@ -214,6 +214,22 @@ void testSplitWorkSinglethreaded(struct game_t *game, void *data_ptr)
     }
 }
 
+void testSplitWorkTorture(struct game_t *game, void *data_ptr)
+{
+    char (*expected)[game->cols] = data_ptr;
+    
+    iterate_all_slices(game, game->rows * game->cols);
+    flush(game);
+    
+    for (int i = 0; i < game->rows; i++) {
+        for (int j = 0; j < game->cols; j++) {
+            if (game->board[get1d(game, i, j)] != expected[i][j]) {
+                printf("Mismatch of result at %d,%d\n", i, j);
+            }
+        }
+    }
+}
+
 void test(struct game_t *game, void *data, int dataRows, int dataCols, void *expected)
 {
     initializeBoard(game, data, dataRows, dataCols);
@@ -228,6 +244,10 @@ void test(struct game_t *game, void *data, int dataRows, int dataCols, void *exp
 
     initializeBoard(game, data, dataRows, dataCols);
     testSplitWorkSinglethreaded(game, expected);
+    destroyBoards(game);
+
+    initializeBoard(game, data, dataRows, dataCols);
+    testSplitWorkTorture(game, expected);
     destroyBoards(game);
 }
 
