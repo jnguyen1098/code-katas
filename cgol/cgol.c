@@ -57,6 +57,12 @@ void initializeBoard(struct game_t *game, void *data_ptr, int dataRows, int data
     }
 }
 
+void destroyBoards(struct game_t *game)
+{
+    free(game->board);
+    free(game->buffer);
+}
+
 int count(struct game_t *game, int x, int y)
 {
     int moves[8][2] = {
@@ -113,6 +119,18 @@ int get_outcome(struct game_t *game, int x, int y)
     exit(1);
 }
 
+struct pair_t get_work(int work_count, int num_workers, int rank)
+{
+    if (num_workers > work_count || rank >= num_workers) {
+        printf("BRO WHAT DID YOU DO\n");
+        assert(false);
+    }
+    int slice_size = work_count / num_workers;
+    int start = rank * slice_size;
+    int end = rank < num_workers - 1 ? (rank + 1) * slice_size : work_count;
+    return (struct pair_t){ .x = start, .y = end - 1};
+}
+
 void iterate(struct game_t *game, int startInclusive, int endInclusive)
 {
     for (int i = startInclusive; i <= endInclusive; i++) {
@@ -133,6 +151,14 @@ void flush(struct game_t *game)
     game->buffer = tmp;
     // TODO temporary debugging
     memset(game->buffer, 64, game->cols * game->rows);
+}
+
+void iterate_all_slices(struct game_t *game, int num_workers)
+{
+    for (int i = 0; i < num_workers; i++) {
+        struct pair_t work = get_work(game->rows * game->cols, num_workers, i);
+        iterate(game, work.x, work.y);
+    }
 }
 
 void testOutcome(struct game_t *game)
@@ -156,11 +182,27 @@ void testCount(struct game_t *game)
     assert(count(game, 11, 11) == 6);
 }
 
-void testSample(struct game_t *game, void *data_ptr)
+void testContiguous(struct game_t *game, void *data_ptr)
 {
     char (*expected)[game->cols] = data_ptr;
     
     iterate(game, 0, game->rows * game->cols - 1);
+    flush(game);
+    
+    for (int i = 0; i < game->rows; i++) {
+        for (int j = 0; j < game->cols; j++) {
+            if (game->board[get1d(game, i, j)] != expected[i][j]) {
+                printf("Mismatch of result at %d,%d\n", i, j);
+            }
+        }
+    }
+}
+
+void testSplitWorkSinglethreaded(struct game_t *game, void *data_ptr)
+{
+    char (*expected)[game->cols] = data_ptr;
+    
+    iterate_all_slices(game, 7);
     flush(game);
     
     for (int i = 0; i < game->rows; i++) {
@@ -178,7 +220,15 @@ void test(struct game_t *game, void *data, int dataRows, int dataCols, void *exp
     testCount(game);
     testMapping(game);
     testOutcome(game);
-    testSample(game, expected);
+    destroyBoards(game);
+
+    initializeBoard(game, data, dataRows, dataCols);
+    testContiguous(game, expected);
+    destroyBoards(game);
+
+    initializeBoard(game, data, dataRows, dataCols);
+    testSplitWorkSinglethreaded(game, expected);
+    destroyBoards(game);
 }
 
 void run_all_tests()
@@ -242,9 +292,6 @@ void run_all_tests()
     
     test(&game, TEST, 21, 21, RESULT);
 
-    free(game.board);
-    free(game.buffer);
-    
     puts("ENDING TEST");
 }
 
