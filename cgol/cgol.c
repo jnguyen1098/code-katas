@@ -1,8 +1,12 @@
 #include <assert.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
+
+pthread_barrier_t barrier;
 
 struct game_t {
     int rows;
@@ -121,8 +125,12 @@ int get_outcome(struct game_t *game, int x, int y)
 
 struct pair_t get_work(int work_count, int num_workers, int rank)
 {
-    if (num_workers > work_count || rank >= num_workers) {
-        printf("BRO WHAT DID YOU DO\n");
+    if (num_workers > work_count) {
+        printf("Error: Num workers %d exceeds work count %d\n", num_workers, work_count);
+        assert(false);
+    }
+    if (rank >= num_workers) {
+        printf("Error: Rank %d exceeds num workers %d\n", rank, num_workers);
         assert(false);
     }
     int slice_size = work_count / num_workers;
@@ -158,6 +166,64 @@ void iterate_all_slices(struct game_t *game, int num_workers)
     for (int i = 0; i < num_workers; i++) {
         struct pair_t work = get_work(game->rows * game->cols, num_workers, i);
         iterate(game, work.x, work.y);
+    }
+}
+
+struct work_unit_t {
+    int rank;
+    struct game_t *game;
+};
+
+void *work_function(void *input)
+{
+    struct work_unit_t *work = input;
+
+    int rank = work->rank;
+    struct game_t *game = work->game;
+
+    int total_work = game->rows * game->cols;
+    int num_workers = game->nThreads;
+
+    struct pair_t work_slice = get_work(total_work, num_workers, rank);
+
+    iterate(game, work_slice.x, work_slice.y);
+
+    pthread_barrier_wait(&barrier);
+    if (rank == 0) {
+        flush(game);
+    }
+    pthread_barrier_wait(&barrier);
+
+    return NULL;
+}
+
+void iterate_parallel(struct game_t *game)
+{
+    int num_workers = game->nThreads;
+
+    if (pthread_barrier_init(&barrier, NULL, num_workers)) {
+        perror("pthread_barrier_init");
+        exit(1);
+    }
+
+    pthread_t threads[num_workers];
+    struct work_unit_t work[num_workers];
+
+    for (int i = 0; i < num_workers; i++) {
+        work[i].rank = i;
+        work[i].game = game;
+    }
+
+    for (int i = 0; i < num_workers; i++) {
+        if (pthread_create(&threads[i], NULL, work_function, &work[i])) {
+            perror("pthread_create");
+        }
+    }
+
+    for (int i = 0; i < num_workers; i++) {
+        if (pthread_join(threads[i], NULL)) {
+            perror("pthread_join");
+        }
     }
 }
 
@@ -230,6 +296,21 @@ void testSplitWorkTorture(struct game_t *game, void *data_ptr)
     }
 }
 
+void testSplitWorkParallel(struct game_t *game, void *data_ptr)
+{
+    char (*expected)[game->cols] = data_ptr;
+    
+    iterate_parallel(game);
+    
+    for (int i = 0; i < game->rows; i++) {
+        for (int j = 0; j < game->cols; j++) {
+            if (game->board[get1d(game, i, j)] != expected[i][j]) {
+                printf("Mismatch of result at %d,%d\n", i, j);
+            }
+        }
+    }
+}
+
 void test(struct game_t *game, void *data, int dataRows, int dataCols, void *expected)
 {
     initializeBoard(game, data, dataRows, dataCols);
@@ -248,6 +329,10 @@ void test(struct game_t *game, void *data, int dataRows, int dataCols, void *exp
 
     initializeBoard(game, data, dataRows, dataCols);
     testSplitWorkTorture(game, expected);
+    destroyBoards(game);
+
+    initializeBoard(game, data, dataRows, dataCols);
+    testSplitWorkParallel(game, expected);
     destroyBoards(game);
 }
 
@@ -303,7 +388,7 @@ void run_all_tests()
     };
     
     struct game_t game = {
-        .nThreads = 1,
+        .nThreads = 30,
         .rows = 21,
         .cols = 21,
         .nIterations = 1,
