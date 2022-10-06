@@ -109,14 +109,16 @@ int get_outcome(struct game_t *game, int x, int y)
     exit(1);
 }
 
-void iterate(struct game_t *game)
+void iterate(struct game_t *game, int startInclusive, int endInclusive)
 {
-    for (int i = 0; i < game->rows; i++) {
-        for (int j = 0; j < game->cols; j++) {
-            game->buffer[get1d(game, i, j)] = get_outcome(game, i, j);
-        }
+    for (int i = startInclusive; i <= endInclusive; i++) {
+        struct pair_t mapping = get2d(game, i);
+        game->buffer[i] = get_outcome(game, mapping.x, mapping.y);
     }
-    
+}
+
+void flush(struct game_t *game)
+{
     char *tmp = game->board;
     game->board = game->buffer;
     game->buffer = tmp;
@@ -147,7 +149,8 @@ void testSample(struct game_t *game, void *data_ptr)
 {
     char (*expected)[game->cols] = data_ptr;
     
-    iterate(game);
+    iterate(game, 0, game->rows * game->cols - 1);
+    flush(game);
     
     for (int i = 0; i < game->rows; i++) {
         for (int j = 0; j < game->cols; j++) {
@@ -234,12 +237,7 @@ void run_all_tests()
     puts("ENDING TEST");
 }
 
-int main(void)
-{
-    run_all_tests();
-}
 
-/*
 void gameOfLife(int** board, int boardSize, int* boardColSize){
     struct game_t game = {
         .rows = boardSize,
@@ -261,7 +259,8 @@ void gameOfLife(int** board, int boardSize, int* boardColSize){
     });
     
     initializeBoard(&game, flatten(), boardSize, *boardColSize);
-    iterate(&game);
+    iterate(&game, 0, game.rows * game.cols - 1);
+    flush(&game);
     
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0; j < *boardColSize; j++) {
@@ -269,4 +268,8 @@ void gameOfLife(int** board, int boardSize, int* boardColSize){
         }
     }
 }
-*/
+
+int main(void)
+{
+    run_all_tests();
+}
