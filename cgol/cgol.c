@@ -1,7 +1,8 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <assert.h>
+#include <string.h>
 
 struct game_t {
     int rows;
@@ -42,7 +43,10 @@ void initializeBoard(struct game_t *game, void *data_ptr, int dataRows, int data
     assert(game->cols == dataCols);
 
     game->board = create_board(dataRows, dataCols);
+
+    // TODO clean this up
     game->buffer = create_board(dataRows, dataCols);
+    memset(game->buffer, 64, dataRows * dataCols);
 
     char (*data)[dataCols] = data_ptr;
 
@@ -113,15 +117,22 @@ void iterate(struct game_t *game, int startInclusive, int endInclusive)
 {
     for (int i = startInclusive; i <= endInclusive; i++) {
         struct pair_t mapping = get2d(game, i);
+        // TODO remove this too
+        assert(game->buffer[i] == 64);
         game->buffer[i] = get_outcome(game, mapping.x, mapping.y);
     }
 }
 
 void flush(struct game_t *game)
 {
+    for (int i = 0; i < game->rows * game->cols; i++) {
+        assert(game->buffer[i] != 64);
+    }
     char *tmp = game->board;
     game->board = game->buffer;
     game->buffer = tmp;
+    // TODO temporary debugging
+    memset(game->buffer, 64, game->cols * game->rows);
 }
 
 void testOutcome(struct game_t *game)
