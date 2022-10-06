@@ -36,7 +36,7 @@ struct pair_t get2d(struct game_t *game, int disp)
     };
 }
 
-void initializeBoard(struct game_t *game, int data[21][21], int dataRows, int dataCols)
+void initializeBoard(struct game_t *game, char data[21][21], int dataRows, int dataCols)
 {
     assert(game->rows == dataRows);
     assert(game->cols == dataCols);
@@ -128,7 +128,7 @@ void testCount(struct game_t *game)
     assert(count(game, 11, 11) == 6);
 }
 
-void testSample(struct game_t *game, int expected[21][21])
+void testSample(struct game_t *game, char expected[21][21])
 {
     for (int i = 0; i < game->rows; i++) {
         for (int j = 0; j < game->cols; j++) {
@@ -149,7 +149,7 @@ void testSample(struct game_t *game, int expected[21][21])
     }
 }
 
-void test(struct game_t *game, int data[21][21], int dataRows, int dataCols, int expected[21][21])
+void test(struct game_t *game, char data[21][21], int dataRows, int dataCols, char expected [21][21])
 {
     initializeBoard(game, data, dataRows, dataCols);
     testCount(game);
@@ -160,7 +160,7 @@ void test(struct game_t *game, int data[21][21], int dataRows, int dataCols, int
 
 int main(void)
 {
-    int TEST[21][21] = {
+    char TEST[21][21] = {
         {1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0},
         {1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1},
         {0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1},
@@ -184,7 +184,7 @@ int main(void)
         {1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1},
     };
     
-    int RESULT[21][21] = {
+    char RESULT[21][21] = {
         {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0},
         {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0},
         {0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0},
