@@ -336,8 +336,10 @@ void gameOfLife(int** board, int boardSize, int* boardColSize){
         flat;
     });
     
+    #define MAX(x,y)((x)>(y)?(x):(y))
+    
     initializeBoard(&game, flatten(), boardSize, *boardColSize);
-    iterate(&game, 0, game.rows * game.cols - 1);
+    iterate_all_slices(&game, MAX((game.cols * game.cols) / 7, 1));
     flush(&game);
     
     for (int i = 0; i < boardSize; i++) {
@@ -345,9 +347,8 @@ void gameOfLife(int** board, int boardSize, int* boardColSize){
             board[i][j] = game.board[get1d(&game, i, j)];
         }
     }
+    
+    destroyBoards(&game);
 }
 
-int main(void)
-{
-    run_all_tests();
-}
+int main(void){ run_all_tests(); }
