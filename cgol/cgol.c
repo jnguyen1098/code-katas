@@ -225,6 +225,11 @@ void iterate_parallel(struct game_t *game)
             perror("pthread_join");
         }
     }
+
+    if (pthread_barrier_destroy(&barrier)) {
+        perror("pthread_barrier_init");
+        exit(1);
+    }
 }
 
 void testOutcome(struct game_t *game)
