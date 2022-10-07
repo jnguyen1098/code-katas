@@ -1,4 +1,66 @@
 from collections import defaultdict
+from functools import lru_cache
+
+import random
+import time
+
+operations = 0
+
+
+def top_down(n, k):
+    td_cache = defaultdict(dict)
+
+    def go(n, k):
+        if (hit := td_cache[n].get(k)) is not None:
+            return hit
+        global operations
+        operations += 1
+        if n <= 0 or k <= 0:
+            return 0
+        if n == k:
+            return 1
+        td_cache[n][k] = go(n - 1, k - 1) + go(n - k, k)
+        return td_cache[n][k]
+
+    return go(n, k)
+
+def bottom_up(n, k):
+    global operations
+
+    table = []
+    for i in range(n + 1):
+        table.append([0] * (k + 1))
+
+    for i in range(1, n + 1):
+        table[i][1] = 1
+
+    for i in range(1, k + 1):
+        table[i][i] = 1
+
+    for i in range(3, n + 1):
+        for j in range(2, k + 1):
+            operations += 1
+            table[i][j] = table[i - 1][j - 1] + table[i - j][j]
+
+    return table[n][k]
+
+def combinatorial(n, k):
+    global operations
+    target = n - k
+
+    coefficients = {0: 1}
+    for iteration in range(1, k + 1):
+        result = defaultdict(int)
+        for weight in coefficients.keys():
+            if weight > target:
+                break
+            for term in range(n // iteration):
+                if term * iteration + weight > target:
+                    break
+                operations += 1
+                result[weight + iteration * term] += coefficients[weight]
+        coefficients = result
+    return coefficients[target]
 
 tests = {
     (8, 4): 5,
@@ -25,70 +87,42 @@ tests = {
     (250, 130): 1844349560,
 }
 
-calls = 0
+def test_runner(name, p, iterations):
+    global operations
+    operations = 0
+    start = time.time()
+    for _ in range(iterations):
+        for test, result in tests.items():
+            n, k = test
+            assert p(n, k) == result
+    end = time.time()
+    return operations, end - start
 
-from functools import lru_cache
+class Trial:
+    def __init__(self, name, runner):
+        self.name = name
+        self.runner = runner
 
-@lru_cache(None)
-def fill(n, k):
-    if n <= 0 or k <= 0:
-        return 0
-    if n == k:
-        return 1
-    return p(n - 1, k - 1) + p(n - k, k)
+def run_trials(trials, iterations):
+    call_counts = defaultdict(int)
+    times = defaultdict(float)
 
-def p_bottomup(n, k):
-    global calls
+    for _ in range(iterations):
+        random.shuffle(trials)
+        for trial in trials:
+            call_count, time = test_runner(trial.name, trial.runner, 1)
+            call_counts[trial.name] += call_count
+            times[trial.name] += time
 
-    table = []
-    for i in range(n + 1):
-        table.append([0] * (k + 1))
+    for name in sorted([trial.name for trial in trials]):
+        print(f"{name} completed in {times[name]:.3f}s using {call_counts[name]} operations")
 
-    for i in range(1, n + 1):
-        calls += 1
-        table[i][1] = 1
+trials = [
+    Trial("   top down dp", top_down),
+    Trial("  bottom up dp", bottom_up),
+    Trial("generator math", combinatorial),
+]
 
-    for i in range(1, k + 1):
-        calls += 1
-        table[i][i] = 1
+run_trials(trials, 100)
 
-    for i in range(3, n + 1):
-        for j in range(2, k + 1):
-            calls += 1
-            table[i][j] = table[i - 1][j - 1] + table[i - j][j]
-
-    return table[n][k]
-
-def p(n, k):
-    global calls
-    target = n - k
-
-    coefficients = {0: 1}
-    for iteration in range(1, k + 1):
-        result = defaultdict(int)
-        for weight in coefficients.keys():
-            if weight > target:
-                break
-            for term in range(n // iteration):
-                if term * iteration + weight > target:
-                    break
-                calls += 1
-                result[weight + iteration * term] += coefficients[weight]
-        coefficients = result
-    return coefficients[target]
-
-ITERATIONS = 10
-
-import time
-
-start = time.time()
-for _ in range(ITERATIONS):
-    for test, result in tests.items():
-        n, k = test
-        assert p(n, k) == result
-#        print(f"p({n}, {k}) pass")
-end = time.time()
-
-print("Pass")
-print("Calls:", calls)
-print("Total time:", end - start)
+# TODO intersperse iterations?
