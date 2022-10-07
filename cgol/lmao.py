@@ -37,27 +37,29 @@ def fill(n, k):
         return 1
     return p(n - 1, k - 1) + p(n - k, k)
 
-def p(n, k):
-    print("global", n, k)
+def p_bottomup(n, k):
+    global calls
+
     table = []
     for i in range(n + 1):
         table.append([0] * (k + 1))
 
     for i in range(1, n + 1):
+        calls += 1
         table[i][1] = 1
 
     for i in range(1, k + 1):
+        calls += 1
         table[i][i] = 1
 
     for i in range(3, n + 1):
         for j in range(2, k + 1):
-            if n < k:
-                continue
+            calls += 1
             table[i][j] = table[i - 1][j - 1] + table[i - j][j]
 
     return table[n][k]
 
-def p_(n, k):
+def p(n, k):
     global calls
     target = n - k
 
@@ -75,10 +77,18 @@ def p_(n, k):
         coefficients = result
     return coefficients[target]
 
-for test, result in tests.items():
-    n, k = test
-    assert p(n, k) == result
-    print(f"p({n}, {k}) pass")
+ITERATIONS = 10
+
+import time
+
+start = time.time()
+for _ in range(ITERATIONS):
+    for test, result in tests.items():
+        n, k = test
+        assert p(n, k) == result
+#        print(f"p({n}, {k}) pass")
+end = time.time()
 
 print("Pass")
-print(calls)
+print("Calls:", calls)
+print("Total time:", end - start)
