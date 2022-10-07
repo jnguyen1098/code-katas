@@ -115,7 +115,7 @@ def run_trials(trials, iterations):
             times[trial.name] += time
 
     for name in sorted([trial.name for trial in trials]):
-        print(f"{name} completed in {times[name]:.3f}s using {call_counts[name]} operations")
+        print(f"{name} done in {times[name]:.3f}s using {call_counts[name]} operations (ops per sec is {call_counts[name] / times[name]})")
 
 trials = [
     Trial("   top down dp", top_down),
