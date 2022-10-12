@@ -315,15 +315,17 @@ def generate_report(trials, sort_lambda):
         print(f"  {trial.name.ljust(25)} done in {trial.time:.3f}s using {trial.operations} operations (ops/s is {trial.op_speed})")
 
 trials = [
-    Trial(name="TD dp", runner=top_down),
     Trial(name="BU dp", runner=bottom_up),
-    Trial(name="TD stack", runner=top_down_stack),
+
+    Trial(name="TD ddict", runner=top_down),
+    Trial(name="TD ddict stack", runner=top_down_stack),
     Trial(name="TD array", runner=top_down_array),
     Trial(name="TD array 1D", runner=top_down_array_1d),
-    Trial(name="generator math", runner=combinatorial),
     Trial(name="TD array stack", runner=top_down_array_stack),
     Trial(name="TD array stack 1D", runner=top_down_array_stack_1d),
-    Trial(name="TD stack with context", runner=top_down_stack_with_context),
+    Trial(name="TD ddict stack context", runner=top_down_stack_with_context),
+
+    Trial(name="generator math", runner=combinatorial),
 ]
 
 run_trials(trials, 100)
