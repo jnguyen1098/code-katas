@@ -7,15 +7,20 @@ import time
 operations = 0
 
 
+# TODO: implement the best ones in C
+# TODO: add if k == 1 logic
+# TODO: add cache check as a separate op than raw hit
+
+
 def top_down(n, k):
     td_cache = defaultdict(dict)
 
     def go(n, k):
+        global operations
         if (hit := td_cache[n].get(k)) is not None:
             return hit
-        global operations
         operations += 1
-        if n <= 0 or k <= 0:
+        if n <= 0 or k <= 0 or n < k:
             return 0
         if n == k:
             return 1
@@ -23,6 +28,43 @@ def top_down(n, k):
         return td_cache[n][k]
 
     return go(n, k)
+
+def top_down_stack(n, k):
+    global operations
+    td_cache = defaultdict(dict)
+
+    stack = [(n, k)]
+
+    while stack:
+        n, k = stack.pop()
+        if n <= 0 or k <= 0 or n < k:
+            operations += 1
+            td_cache[n][k] = 0
+        elif n == k or k == 1:
+            operations += 1
+            td_cache[n][k] = 1
+        else:
+            repush = False
+            stack.append((n, k))
+            if k < n and (hit1 := td_cache[n - k].get(k)) is None:
+                repush = True
+                stack.append((n - k, k))
+            if n > 1 and k > 1 and (hit2 := td_cache[n - 1].get(k - 1)) is None:
+                repush = True
+                stack.append((n - 1, k - 1))
+            if repush:
+                continue
+            stack.pop()
+            operations += 1
+            td_cache[n][k] = hit1 + hit2
+
+    return td_cache[n][k]
+
+def top_down_array(n, k):  # 
+    td_cache = None
+
+def top_down_array_stack(n, k):  # 
+    td_cache = None
 
 def bottom_up(n, k):
     global operations
@@ -118,11 +160,12 @@ def run_trials(trials, iterations):
         print(f"{name} done in {times[name]:.3f}s using {call_counts[name]} operations (ops per sec is {call_counts[name] / times[name]})")
 
 trials = [
-    Trial("   top down dp", top_down),
-    Trial("  bottom up dp", bottom_up),
-    Trial("generator math", combinatorial),
+    Trial("         top down dp", top_down),
+    Trial("        bottom up dp", bottom_up),
+    Trial("      generator math", combinatorial),
+    Trial("      top down stack", top_down_stack),
+#    Trial("      top down array", top_down_array),
+#    Trial("top down array stack", top_down_array_stack),
 ]
 
 run_trials(trials, 100)
-
-# TODO intersperse iterations?
