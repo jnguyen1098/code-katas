@@ -115,7 +115,38 @@ def top_down_array_stack(n, k):
     return td_cache[n][k]
 
 def top_down_array_stack_1d(n, k):
-    pass
+    global operations
+    td_cache = [-1] * (n * k)
+
+    rows = n
+    cols = k
+
+    stack = [(n, k)]
+
+    while stack:
+        n, k = stack.pop()
+        if n <= 0 or k <= 0 or n < k:
+            operations += 1
+            td_cache[(n - 1) * cols + k - 1] = 0
+        elif n == k or k == 1:
+            operations += 1
+            td_cache[(n - 1) * cols + k - 1] = 1
+        else:
+            repush = False
+            stack.append((n, k))
+            if k < n and (hit1 := td_cache[(n - k - 1) * cols + k - 1]) == -1:
+                repush = True
+                stack.append((n - k, k))
+            if n > 1 and k > 1 and (hit2 := td_cache[(n - 1 - 1) * cols + k - 1 - 1]) == -1:
+                repush = True
+                stack.append((n - 1, k - 1))
+            if repush:
+                continue
+            stack.pop()
+            operations += 1
+            td_cache[(n - 1) * cols + k - 1] = hit1 + hit2
+
+    return td_cache[(n - 1) * cols + k - 1]
 
 def bottom_up(n, k):
     global operations
@@ -188,6 +219,7 @@ def test_runner(name, p, iterations):
         for test, expected in tests.items():
             n, k = test
             actual = p(n, k)
+#            print(f"{name}: test={test} expected={expected} actual={actual}")
             assert actual == expected
     end = time.time()
     return operations, end - start
@@ -217,15 +249,16 @@ def run_trials(trials, iterations):
 
 def generate_report(trials, sort_lambda):
     for trial in sorted(trials, key=sort_lambda):
-        print(f"{trial.name} done in {trial.time:.3f}s using {trial.operations} operations (ops per second is {trial.op_speed})")
+        print(f"{trial.name} done in {trial.time:.3f}s using {trial.operations} operations (ops/s is {trial.op_speed})")
 
 trials = [
-    Trial(name="         top down dp", runner=top_down),
-    Trial(name="        bottom up dp", runner=bottom_up),
-    Trial(name="      generator math", runner=combinatorial),
-    Trial(name="      top down stack", runner=top_down_stack),
-    Trial(name="      top down array", runner=top_down_array),
-    Trial(name="top down array stack", runner=top_down_array_stack),
+    Trial(name="            top down dp", runner=top_down),
+    Trial(name="           bottom up dp", runner=bottom_up),
+    Trial(name="         generator math", runner=combinatorial),
+    Trial(name="         top down stack", runner=top_down_stack),
+    Trial(name="         top down array", runner=top_down_array),
+    Trial(name="   top down array stack", runner=top_down_array_stack),
+    Trial(name="top down array stack 1D", runner=top_down_array_stack_1d),
 ]
 
 run_trials(trials, 100)
