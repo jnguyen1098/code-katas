@@ -81,6 +81,26 @@ def top_down_array(n, k):
 
     return go(n, k)
 
+def top_down_array_1d(n, k):
+    rows = n + 1
+    cols = n + 1
+
+    td_cache = [-1] * ((rows + 1) * (cols + 1))
+
+    def go(n, k):
+        global operations
+        if (hit := td_cache[(n + 1) * cols + k + 1]) != -1:
+            return hit
+        operations += 1
+        if n <= 0 or k <= 0 or n < k:
+            return 0
+        if n == k:
+            return 1
+        td_cache[(n + 1) * cols + k + 1] = go(n - 1, k - 1) + go(n - k, k)
+        return td_cache[(n + 1) * cols + k + 1]
+
+    return go(n, k)
+
 def top_down_array_stack(n, k):
     global operations
     td_cache = [] * (n + 1)
@@ -257,6 +277,7 @@ trials = [
     Trial(name="generator math", runner=combinatorial),
     Trial(name="top down stack", runner=top_down_stack),
     Trial(name="top down array", runner=top_down_array),
+    Trial(name="top down array 1D", runner=top_down_array_1d),
     Trial(name="top down array stack", runner=top_down_array_stack),
     Trial(name="top down array stack 1D", runner=top_down_array_stack_1d),
 ]
