@@ -1,5 +1,7 @@
 from collections import defaultdict
+from dataclasses import dataclass
 from functools import lru_cache
+from typing import Callable
 
 import random
 import time
@@ -190,10 +192,12 @@ def test_runner(name, p, iterations):
     end = time.time()
     return operations, end - start
 
+@dataclass
 class Trial:
-    def __init__(self, name, runner):
-        self.name = name
-        self.runner = runner
+    name: str
+    runner: Callable[[int, int], int]
+    time: int = 0
+    operations: int = 0
 
 def run_trials(trials, iterations):
     call_counts = defaultdict(int)
@@ -206,16 +210,27 @@ def run_trials(trials, iterations):
             call_counts[trial.name] += call_count
             times[trial.name] += time
 
-    for name in sorted([trial.name for trial in trials]):
-        print(f"{name} done in {times[name]:.3f}s using {call_counts[name]} operations (ops per sec is {call_counts[name] / times[name]})")
+    for trial in trials:
+        trial.time = times[trial.name]
+        trial.operations = call_counts[trial.name]
+        trial.op_speed = call_counts[trial.name] / times[trial.name]
+
+def generate_report(trials, sort_lambda):
+    for trial in sorted(trials, key=sort_lambda):
+        print(f"{trial.name} done in {trial.time:.3f}s using {trial.operations} operations (ops per second is {trial.op_speed})")
 
 trials = [
-    Trial("         top down dp", top_down),
-    Trial("        bottom up dp", bottom_up),
-    Trial("      generator math", combinatorial),
-    Trial("      top down stack", top_down_stack),
-    Trial("      top down array", top_down_array),
-    Trial("top down array stack", top_down_array_stack),
+    Trial(name="         top down dp", runner=top_down),
+    Trial(name="        bottom up dp", runner=bottom_up),
+    Trial(name="      generator math", runner=combinatorial),
+    Trial(name="      top down stack", runner=top_down_stack),
+    Trial(name="      top down array", runner=top_down_array),
+    Trial(name="top down array stack", runner=top_down_array_stack),
 ]
 
 run_trials(trials, 100)
+
+#generate_report(trials, lambda trial: trial.name)
+#generate_report(trials, lambda trial: trial.operations)
+generate_report(trials, lambda trial: trial.time)
+#generate_report(trials, lambda trial: trial.op_speed)
