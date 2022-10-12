@@ -60,11 +60,60 @@ def top_down_stack(n, k):
 
     return td_cache[n][k]
 
-def top_down_array(n, k):  # 
-    td_cache = None
+def top_down_array(n, k):
+    td_cache = [] * (n + 1)
+    for _ in range(n + 1):
+        td_cache.append([-1] * (k + 1))
 
-def top_down_array_stack(n, k):  # 
-    td_cache = None
+    def go(n, k):
+        global operations
+        if (hit := td_cache[n][k]) != -1:
+            return hit
+        operations += 1
+        if n <= 0 or k <= 0 or n < k:
+            return 0
+        if n == k:
+            return 1
+        td_cache[n][k] = go(n - 1, k - 1) + go(n - k, k)
+        return td_cache[n][k]
+
+    return go(n, k)
+
+def top_down_array_stack(n, k):
+    global operations
+    td_cache = [] * (n + 1)
+    for _ in range(n + 1):
+        td_cache.append([-1] * (k + 1))
+
+    stack = [(n, k)]
+
+    while stack:
+        n, k = stack.pop()
+        if n <= 0 or k <= 0 or n < k:
+            operations += 1
+            td_cache[n][k] = 0
+        elif n == k or k == 1:
+            operations += 1
+            td_cache[n][k] = 1
+        else:
+            repush = False
+            stack.append((n, k))
+            if k < n and (hit1 := td_cache[n - k][k]) == -1:
+                repush = True
+                stack.append((n - k, k))
+            if n > 1 and k > 1 and (hit2 := td_cache[n - 1][k - 1]) == -1:
+                repush = True
+                stack.append((n - 1, k - 1))
+            if repush:
+                continue
+            stack.pop()
+            operations += 1
+            td_cache[n][k] = hit1 + hit2
+
+    return td_cache[n][k]
+
+def top_down_array_stack_1d(n, k):
+    pass
 
 def bottom_up(n, k):
     global operations
@@ -134,9 +183,10 @@ def test_runner(name, p, iterations):
     operations = 0
     start = time.time()
     for _ in range(iterations):
-        for test, result in tests.items():
+        for test, expected in tests.items():
             n, k = test
-            assert p(n, k) == result
+            actual = p(n, k)
+            assert actual == expected
     end = time.time()
     return operations, end - start
 
@@ -164,8 +214,8 @@ trials = [
     Trial("        bottom up dp", bottom_up),
     Trial("      generator math", combinatorial),
     Trial("      top down stack", top_down_stack),
-#    Trial("      top down array", top_down_array),
-#    Trial("top down array stack", top_down_array_stack),
+    Trial("      top down array", top_down_array),
+    Trial("top down array stack", top_down_array_stack),
 ]
 
 run_trials(trials, 100)
