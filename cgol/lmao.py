@@ -249,21 +249,29 @@ def run_trials(trials, iterations):
 
 def generate_report(trials, sort_lambda):
     for trial in sorted(trials, key=sort_lambda):
-        print(f"{trial.name} done in {trial.time:.3f}s using {trial.operations} operations (ops/s is {trial.op_speed})")
+        print(f"  {trial.name.ljust(25)} done in {trial.time:.3f}s using {trial.operations} operations (ops/s is {trial.op_speed})")
 
 trials = [
-    Trial(name="            top down dp", runner=top_down),
-    Trial(name="           bottom up dp", runner=bottom_up),
-    Trial(name="         generator math", runner=combinatorial),
-    Trial(name="         top down stack", runner=top_down_stack),
-    Trial(name="         top down array", runner=top_down_array),
-    Trial(name="   top down array stack", runner=top_down_array_stack),
+    Trial(name="top down dp", runner=top_down),
+    Trial(name="bottom up dp", runner=bottom_up),
+    Trial(name="generator math", runner=combinatorial),
+    Trial(name="top down stack", runner=top_down_stack),
+    Trial(name="top down array", runner=top_down_array),
+    Trial(name="top down array stack", runner=top_down_array_stack),
     Trial(name="top down array stack 1D", runner=top_down_array_stack_1d),
 ]
 
 run_trials(trials, 100)
 
-#generate_report(trials, lambda trial: trial.name)
-#generate_report(trials, lambda trial: trial.operations)
-generate_report(trials, lambda trial: trial.time)
-#generate_report(trials, lambda trial: trial.op_speed)
+metrics = {
+    "name": lambda trial: trial.name,
+    "operations": lambda trial: trial.operations,
+    "time": lambda trial: trial.time,
+    "speed": lambda trial: trial.op_speed,
+}
+
+for metric_name, metric_sort_key in metrics.items():
+    print(f"Metric: {metric_name}")
+    generate_report(trials, metric_sort_key)
+    print()
+
