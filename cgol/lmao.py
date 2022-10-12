@@ -265,9 +265,9 @@ run_trials(trials, 100)
 
 metrics = {
     "name": lambda trial: trial.name,
-    "operations": lambda trial: trial.operations,
-    "time": lambda trial: trial.time,
-    "speed": lambda trial: trial.op_speed,
+    "operations (lower is better)": lambda trial: trial.operations,
+    "time (lower is better)": lambda trial: trial.time,
+    "speed (higher is better)": lambda trial: -trial.op_speed,
 }
 
 for metric_name, metric_sort_key in metrics.items():
