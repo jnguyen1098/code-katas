@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Callable
 
+import math
 import random
 import time
 
@@ -12,7 +13,6 @@ operations = 0
 # TODO: implement the best ones in C
 # TODO: add if k == 1 logic
 # TODO: add cache check as a separate op than raw hit
-
 
 def top_down(n, k):
     td_cache = defaultdict(dict)
@@ -249,6 +249,59 @@ def combinatorial(n, k):
         coefficients = result
     return coefficients[target]
 
+def combinatorial_array(n, k):
+    global operations
+    target = n - k
+
+    coefficients = [0] * n
+    coefficients[0] = 1
+    for iteration in range(1, k + 1):
+        result = [0] * n
+        for weight in range(len(coefficients)):
+            if weight > target:
+                break
+            for term in range(n // iteration):
+                if term * iteration + weight > target:
+                    break
+                operations += 1
+                result[weight + iteration * term] += coefficients[weight]
+        coefficients = result
+    return coefficients[target]
+
+from numpy import convolve
+
+def numpy_convolution(n, k):
+    global operations
+    target = n - k
+
+    coefficients = [0] * n
+    coefficients[0] = 1
+
+    for iteration in range(1, k + 1):
+        terms = []
+        for term_factor in range(n):
+            terms.append(not int(term_factor % iteration))
+        coefficients = convolve(coefficients, terms)
+        operations += (len(coefficients) * len(terms))
+    return coefficients[target]
+
+from scipy import signal
+
+def fft(n, k):
+    global operations
+    target = n - k
+
+    coefficients = [0] * n
+    coefficients[0] = 1
+
+    for iteration in range(1, k + 1):
+        terms = []
+        for term_factor in range(n):
+            terms.append(not int(term_factor % iteration))
+        coefficients = signal.fftconvolve(coefficients, terms)
+        operations += len(terms) * int(math.log(len(terms), 2))
+    return int(coefficients[target])
+
 tests = {
     (8, 4): 5,
     (6, 3): 3,
@@ -326,9 +379,12 @@ trials = [
     Trial(name="TD ddict stack context", runner=top_down_stack_with_context),
 
     Trial(name="generator math", runner=combinatorial),
+    Trial(name="generator math array", runner=combinatorial_array),
+    Trial(name="numpy_convolution", runner=numpy_convolution),
+#    Trial(name="fast fourier transform", runner=fft),
 ]
 
-run_trials(trials, 100)
+run_trials(trials, 10)
 
 metrics = {
     "name": lambda trial: trial.name,
