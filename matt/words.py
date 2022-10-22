@@ -32,12 +32,16 @@ def sign_word(word):
     return "".join(sorted(list(word)))
 
 def get_signatures(words):
+    tuples = set()
     signatures = set()
 
     for word in words:
-        signatures.add((sign_word(word), word))
+        if (signature := sign_word(word)) in signatures:
+            continue
+        signatures.add(signature)
+        tuples.add((signature, word))
 
-    return signatures
+    return tuples
 
 def execute_query(filename):
     answer = 0
@@ -62,7 +66,7 @@ def test_sign_word():
     assert_that(
         "the word boob is signed correctly",
         sign_word("boob"),
-        "bboo"
+        "bboo",
     )
 
     level -= 1
@@ -74,7 +78,13 @@ def test_get_signatures():
     assert_that(
         "the set ['food', 'cat', 'oyster', 'ooooo'] is signed correctly",
         get_signatures(["food", "cat", "oyster", "ooooo"]),
-        set([("dfoo", "food"), ("act", "cat"), ("eorsty", "oyster"), ("ooooo", "ooooo")])
+        set([("dfoo", "food"), ("act", "cat"), ("eorsty", "oyster"), ("ooooo", "ooooo")]),
+    )
+
+    assert_that(
+        "anagrams, once signed  in the same set, collide",
+        get_signatures(["dfoo", "food", "doof"]),
+        set([("dfoo", "dfoo")]),
     )
 
 
