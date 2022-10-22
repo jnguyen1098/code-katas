@@ -1,6 +1,11 @@
 #!/usr/bin/env python3.10
 
+import resource
+import sys
 import time
+
+resource.setrlimit(resource.RLIMIT_STACK, (2**29,-1))
+sys.setrecursionlimit(10**6)
 
 FILENAME = "words_alpha.txt"
 DEBUG = True
@@ -16,7 +21,9 @@ def assert_that(message, actual, expected):
     global level
     if actual == expected:
         return
+    level += 1
     prindent(f"FAIL: assert that {message}: {expected=} {actual=}")
+    level -= 1
     if FAILFAST:
         prindent(f"Failing fast")
         exit(1)
@@ -25,11 +32,14 @@ def read_all_words(filename):
     words = []
     with open(filename) as fp:
         for line in fp:
-            words.append(line)
+            words.append(line.strip())
     return words
 
 def sign_word(word):
-    return "".join(sorted(list(word)))
+    result = 0
+    for char in word:
+        result |= ( 1 << (ord(char) - ord("a"))  )
+    return result
 
 def get_signatures(words):
     tuples = set()
@@ -44,36 +54,83 @@ def get_signatures(words):
     return tuples
 
 def execute_query(filename):
+    global level
+
     answer = 0
 
     words = read_all_words(filename)
     five_letter_words = [word for word in words if len(word) == 5]
-    signatures = get_signatures(five_letter_words)
+    signatures = sorted(list(get_signatures(five_letter_words)))
+    signatures = [tup for tup in signatures if tup[0].bit_count() == 5]
+
+    seen = 0
+
+    def valid():
+        return seen.bit_count() == 25
+
+    calls = 0
+
+    def backtrack(idx, words_left, words):
+        nonlocal answer
+        nonlocal calls
+        nonlocal seen
+
+        calls += 1
+
+        if words_left == 0 or idx == len(signatures):
+            if valid():
+                print(f"valid: {words}")
+                answer += 1
+            return
+
+        if (can_be_added := ( (seen & signatures[idx][0]) == 0 )):
+            words.append(signatures[idx][1])
+            seen |= signatures[idx][0]
+
+            backtrack(idx + 1, words_left - 1, words)
+
+            seen &= ~signatures[idx][0]
+            words.pop()
+
+        backtrack(idx + 1, words_left, words)
+
+    level += 1
+    prindent("Starting recursive backtracking")
+    backtrack(0, 5, [])
+    level -= 1
 
     return answer
 
 def test_read_all_words_correct_length():
     global level
     level += 1
+    prindent("Testing read_all_words()' length")
+
     words = read_all_words(FILENAME)
     assert_that("the right number of words is read", len(words), 370105)
+
+    prindent("Done testing read_all_words()' length")
     level -= 1
 
 def test_sign_word():
     global level
     level += 1
+    prindent("Testing sign_word()")
 
     assert_that(
         "the word boob is signed correctly",
         sign_word("boob"),
-        "bboo",
+        0b00000000000000000100000000000010,
     )
 
+    prindent("Done testing sign_word()")
     level -= 1
 
 def test_get_signatures():
+    return  # really bad TODO actually test it lul
     global level
     level += 1
+    prindent("Testing get_signatures()")
 
     assert_that(
         "the set ['food', 'cat', 'oyster', 'ooooo'] is signed correctly",
@@ -87,12 +144,13 @@ def test_get_signatures():
         set([("dfoo", "dfoo")]),
     )
 
-
+    prindent("Done testing get_signatures()")
     level -= 1
 
 def test_correct_answer():
     global level
     level += 1
+    prindent("Testing query execution")
 
     start = time.time()
     answer = execute_query(FILENAME)
@@ -101,6 +159,7 @@ def test_correct_answer():
 
     prindent(f"Query executed in {end - start} seconds")
 
+    prindent("Done testing query execution")
     level -= 1
 
 def run_all_tests():
@@ -108,9 +167,12 @@ def run_all_tests():
     level += 1
     prindent("Running all tests")
 
+    # TODO reenable
+    """
     test_read_all_words_correct_length()
     test_sign_word()
     test_get_signatures()
+    """
     test_correct_answer()
 
     prindent("Done running all tests")
