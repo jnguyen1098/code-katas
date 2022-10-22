@@ -58,15 +58,22 @@ def execute_query(filename):
 
     answer = 0
 
+    total_factor = 5
+
+    num_words = total_factor
+    word_length = total_factor
+    uniques_per_word = word_length
+    unique_chars_in_total = num_words * uniques_per_word
+
     words = read_all_words(filename)
-    five_letter_words = [word for word in words if len(word) == 5]
+    five_letter_words = [word for word in words if len(word) == word_length]
     signatures = sorted(list(get_signatures(five_letter_words)))
-    signatures = [tup for tup in signatures if tup[0].bit_count() == 5]
+    signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
 
     seen = 0
 
     def valid():
-        return seen.bit_count() == 25
+        return seen.bit_count() == unique_chars_in_total
 
     calls = 0
 
@@ -79,24 +86,24 @@ def execute_query(filename):
 
         if words_left == 0 or idx == len(signatures):
             if valid():
-                print(f"valid: {words}")
+                print(words)
                 answer += 1
             return
 
         if (can_be_added := ( (seen & signatures[idx][0]) == 0 )):
-            words.append(signatures[idx][1])
             seen |= signatures[idx][0]
 
+            words.append(signatures[idx][1])
             backtrack(idx + 1, words_left - 1, words)
+            words.pop()
 
             seen &= ~signatures[idx][0]
-            words.pop()
 
         backtrack(idx + 1, words_left, words)
 
     level += 1
     prindent("Starting recursive backtracking")
-    backtrack(0, 5, [])
+    backtrack(0, num_words, [])
     level -= 1
 
     return answer
