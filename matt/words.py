@@ -53,10 +53,19 @@ def get_signatures(words):
 
     return tuples
 
+def unsign(signature):
+    chars = []
+
+    assert signature.bit_count() == 5
+
+    for i in range(32):
+        if (signature & (1 << i)):
+            chars.append(chr(ord("a") + i))
+
+    return "".join(chars)
+
 def execute_query(filename):
     global level
-
-    answer = 0
 
     total_factor = 5
 
@@ -67,44 +76,13 @@ def execute_query(filename):
 
     words = read_all_words(filename)
     five_letter_words = [word for word in words if len(word) == word_length]
-    signatures = sorted(list(get_signatures(five_letter_words)))
-    signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
+    signatures = []
+    #signatures = sorted(list(get_signatures(five_letter_words)))
+    #signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
+    assert len(signatures) == 5977
 
-    seen = 0
+    answer = 0
 
-    def valid():
-        return seen.bit_count() == unique_chars_in_total
-
-    calls = 0
-
-    def backtrack(idx, words_left, words):
-        nonlocal answer
-        nonlocal calls
-        nonlocal seen
-
-        calls += 1
-
-        if words_left == 0 or idx == len(signatures):
-            if valid():
-                print(words)
-                answer += 1
-            return
-
-        if (can_be_added := ( (seen & signatures[idx][0]) == 0 )):
-            seen |= signatures[idx][0]
-
-            words.append(signatures[idx][1])
-            backtrack(idx + 1, words_left - 1, words)
-            words.pop()
-
-            seen &= ~signatures[idx][0]
-
-        backtrack(idx + 1, words_left, words)
-
-    level += 1
-    prindent("Starting recursive backtracking")
-    backtrack(0, num_words, [])
-    level -= 1
 
     return answer
 
@@ -134,7 +112,6 @@ def test_sign_word():
     level -= 1
 
 def test_get_signatures():
-    return  # really bad TODO actually test it lul
     global level
     level += 1
     prindent("Testing get_signatures()")
@@ -174,12 +151,9 @@ def run_all_tests():
     level += 1
     prindent("Running all tests")
 
-    # TODO reenable
-    """
     test_read_all_words_correct_length()
     test_sign_word()
     test_get_signatures()
-    """
     test_correct_answer()
 
     prindent("Done running all tests")
