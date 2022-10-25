@@ -84,6 +84,12 @@ def get_first_empty_quintuplet(num):
         idx += 1
     return idxs
 
+def apply_mask(num, indices):
+    for idx in indices:
+        assert not num & (1 << idx)  # TODO remove this maybe
+        num |= (1 << idx)
+    return num
+
 def execute_query(filename):
     global level
 
@@ -225,6 +231,26 @@ def test_get_first_empty_quintuplet():
     prindent("Done testing get_first_empty_quintuplet()")
     level -= 1
 
+def test_apply_mask():
+    global level
+    level += 1
+    prindent("Testing apply_mask()")
+
+    assert_that(
+        "apply_mask() works on the first four indices of full-zero",
+        apply_mask(0, [0, 1, 2, 3]),
+        0b1111,
+    )
+
+    assert_that(
+        "apply_mask() works on random digits of full-zero",
+        apply_mask(0, [5, 8, 13, 31]),
+        0b10000000000000000010000100100000,
+    )
+
+    prindent("Done testing apply_mask()")
+    level -= 1
+
 def test_smoke_test():
     global level
     level += 1
@@ -265,6 +291,7 @@ def run_all_tests():
     test_get_signatures()
     test_get_first_zero()
     test_get_first_empty_quintuplet()
+    test_apply_mask()
     test_smoke_test()
     test_correct_answer()
 
