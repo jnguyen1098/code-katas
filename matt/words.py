@@ -79,7 +79,8 @@ def execute_query(filename):
     signatures = []
     #signatures = sorted(list(get_signatures(five_letter_words)))
     #signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
-    assert len(signatures) == 5977
+    if "alpha" in filename:
+        assert len(signatures) == 5977
 
     answer = 0
 
@@ -119,16 +120,39 @@ def test_get_signatures():
     assert_that(
         "the set ['food', 'cat', 'oyster', 'ooooo'] is signed correctly",
         get_signatures(["food", "cat", "oyster", "ooooo"]),
-        set([("dfoo", "food"), ("act", "cat"), ("eorsty", "oyster"), ("ooooo", "ooooo")]),
+        set(
+            [
+                (0b00000000000000000100000000101000, "food"),
+                (0b00000000000010000000000000000101, "cat"),
+                (0b00000001000011100100000000010000, "oyster"),
+                (0b00000000000000000100000000000000, "ooooo"),
+            ]
+        ),
+
     )
 
     assert_that(
         "anagrams, once signed  in the same set, collide",
         get_signatures(["dfoo", "food", "doof"]),
-        set([("dfoo", "dfoo")]),
+        set([(0b00000000000000000100000000101000, "dfoo")]),
     )
 
     prindent("Done testing get_signatures()")
+    level -= 1
+
+def test_smoke_test():
+    global level
+    level += 1
+    prindent("Running smoke test")
+
+    start = time.time()
+    answer = execute_query("words_smoke.txt")
+    end = time.time()
+    assert_that("a simpler correct answer is given", answer, 1)
+
+    prindent(f"Query executed in {end - start} seconds")
+
+    prindent("Done running smoke test")
     level -= 1
 
 def test_correct_answer():
@@ -154,6 +178,7 @@ def run_all_tests():
     test_read_all_words_correct_length()
     test_sign_word()
     test_get_signatures()
+    test_smoke_test()
     test_correct_answer()
 
     prindent("Done running all tests")
