@@ -64,6 +64,26 @@ def unsign(signature):
 
     return "".join(chars)
 
+def get_first_zero(num):
+    idx = 0
+    while num & 1:
+        num >>= 1
+        idx += 1
+    return idx
+
+def get_first_empty_quintuplet(num):
+    idxs = []
+    idx = 0
+    while num and len(idxs) < 5:
+        if num & 1 == 0:
+            idxs.append(idx)
+        num >>= 1
+        idx += 1
+    while len(idxs) < 5:
+        idxs.append(idx)
+        idx += 1
+    return idxs
+
 def execute_query(filename):
     global level
 
@@ -153,6 +173,58 @@ def test_get_signatures():
     prindent("Done testing get_signatures()")
     level -= 1
 
+def test_get_first_zero():
+    global level
+    level += 1
+    prindent("Testing get_first_zero()")
+
+    assert_that(
+        "full-zero has its first index returned",
+        get_first_zero(0),
+        0,
+    )
+
+    assert_that(
+        "bitmask full of ones has its MSB+1 returned",
+        get_first_zero(0b11111111111111111),
+        17,
+    )
+
+    assert_that(
+        "bitmask that is sparse and full of holes returns correct idx",
+        get_first_zero(0b001100000011111011111),
+        5,
+    )
+
+    prindent("Done testing get_first_zero()")
+    level -= 1
+
+def test_get_first_empty_quintuplet():
+    global level
+    level += 1
+    prindent("Testing get_first_empty_quintuplet()")
+
+    assert_that(
+        "full-zero has its first 5 indices returned",
+        get_first_empty_quintuplet(0),
+        [0, 1, 2, 3, 4],
+    )
+
+    assert_that(
+        "full-one has the first 5 indices following it returned",
+        get_first_empty_quintuplet(0b11111),
+        [5, 6, 7, 8, 9],
+    )
+
+    assert_that(
+        "bitmask with a lot of holes returns the right answer",
+        get_first_empty_quintuplet(0b0000000011110111011111),
+        [5, 9, 14, 15, 16],
+    )
+
+    prindent("Done testing get_first_empty_quintuplet()")
+    level -= 1
+
 def test_smoke_test():
     global level
     level += 1
@@ -191,6 +263,8 @@ def run_all_tests():
     test_read_all_words_correct_length()
     test_sign_word()
     test_get_signatures()
+    test_get_first_zero()
+    test_get_first_empty_quintuplet()
     test_smoke_test()
     test_correct_answer()
 
