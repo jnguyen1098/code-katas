@@ -77,13 +77,26 @@ def execute_query(filename):
     words = read_all_words(filename)
     five_letter_words = [word for word in words if len(word) == word_length]
     signatures = []
-    #signatures = sorted(list(get_signatures(five_letter_words)))
-    #signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
-    if "alpha" in filename:
+    signatures = sorted(list(get_signatures(five_letter_words)))
+    signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
+
+    if "alpha" in filename:  # lmao
         assert len(signatures) == 5977
+
+    def backtrack(idx, words_left, mask):
+        if words_left == 0:
+            return 1
+        if idx >= len(signatures):
+            return 0
+        answer = 0
+        if (signatures[idx][0] & mask) == 0:
+            answer += backtrack(idx + 1, words_left - 1, mask | signatures[idx][0])
+        answer += backtrack(idx + 1, words_left, mask)
+        return answer
 
     answer = 0
 
+    answer += backtrack(0, 5, 0)
 
     return answer
 
