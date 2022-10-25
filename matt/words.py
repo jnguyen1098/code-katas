@@ -106,6 +106,8 @@ def execute_query(filename):
     signatures = sorted(list(get_signatures(five_letter_words)))
     signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
 
+    sigdict = {tup[0]: tup[1] for tup in signatures}
+
     if "alpha" in filename:  # lmao
         assert len(signatures) == 5977
 
