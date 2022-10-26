@@ -117,6 +117,18 @@ def apply_mask(num, indices):
         num |= (1 << idx)
     return num
 
+def create_trie(words):
+    trie = {}
+
+    for word in words:
+        tracer = trie
+        for char in word:
+            if char not in tracer:
+                tracer[char] = {}
+            tracer = tracer[char]
+
+    return trie
+
 def execute_query(filename):
     global level
 
@@ -135,23 +147,45 @@ def execute_query(filename):
 
     sigdict = {tup[0]: tup[1] for tup in signatures}
 
+
     if "alpha" in filename:  # lmao
         assert len(signatures) == 5977
+        print("premature")
+        exit()
 
-    def backtrack(idx, words_left, mask):
+    def backtrack(letter_idx, global_mask, letter_mask, words_left, letters_left):
+
+#        print(f"{letter_idx=} {bin(global_mask)=} {bin(letter_mask)=} {words_left=} {letters_left=}")
+
         if words_left == 0:
             return 1
-        if idx >= len(signatures):
+
+        if letters_left == 0:
+            if letter_mask in sigdict:
+#                assert not global_mask & letter_mask  # lmao
+                return backtrack(letter_idx + 1, global_mask | letter_mask, 0, words_left - 1, 5)
             return 0
+
+        if letter_idx >= 26:
+            return 0
+
         answer = 0
-        if (signatures[idx][0] & mask) == 0:
-            answer += backtrack(idx + 1, words_left - 1, mask | signatures[idx][0])
-        answer += backtrack(idx + 1, words_left, mask)
+
+        for i in range(letter_idx, 26):
+            if (global_mask & (1 << i)) == 0 and (letter_mask & (1 << i)) == 0:
+                answer += backtrack(
+                    letter_idx + 1,
+                    global_mask | (1 << i),
+                    letter_mask | (1 << i),
+                    words_left,
+                    letters_left - 1
+                )
+
         return answer
 
     answer = 0
 
-    answer += backtrack(0, 5, 0)
+#    answer += backtrack(0, 0, 0, 5, 5)
 
     return answer
 
@@ -381,6 +415,75 @@ def test_apply_mask():
     prindent("Done testing apply_mask()")
     level -= 1
 
+def test_create_trie():
+    global level
+    level += 1
+    prindent("Testing create_trie()")
+
+    assert_that(
+        "trie for a single word with 5 unique letters is created correctly",
+        create_trie(["hecky"]),
+        {
+            "h": {
+                "e": {
+                    "c": {
+                        "k": {
+                            "y": {
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    )
+
+    assert_that(
+        "trie for a single word with 5 unique letters is created correctly when specified multiple times",
+        create_trie(["hecky"] * 100),
+        {
+            "h": {
+                "e": {
+                    "c": {
+                        "k": {
+                            "y": {
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    )
+
+    assert_that(
+        "trie for multiple words is created correctly",
+        create_trie(["hecky", "heck", "heat", "ass"]),
+        {
+            "h": {
+                "e": {
+                    "c": {
+                        "k": {
+                            "y": {
+                            },
+                        },
+                    },
+                    "a": {
+                        "t": {
+                        },
+                    },
+                },
+            },
+            "a": {
+                "s": {
+                    "s": {
+                    },
+                },
+            },
+        },
+    )
+
+    prindent("Done testing create_trie()")
+    level -= 1
+
 def test_smoke_test():
     global level
     level += 1
@@ -425,6 +528,7 @@ def run_all_tests():
     test_get_first_zero()
     test_get_first_empty_quintuplet()
     test_apply_mask()
+    test_create_trie()
     test_smoke_test()
     test_correct_answer()
 
