@@ -130,6 +130,21 @@ def create_trie(words):
 
     return trie
 
+def create_optimized_alphabet(words):
+    counter = {}
+
+    for word in words:
+        for char in word:
+            if char not in counter:
+                counter[char] = 0
+            counter[char] += 1
+
+    for k, v in {letter: 0 for letter in "abcdefghijklmnopqrstuvwxyz"}.items():
+        if k not in counter:
+            counter[k] = v
+
+    return "".join(sorted(counter.keys(), key=lambda item: counter[item]))
+
 def execute_query(filename):
     global level
 
@@ -144,7 +159,12 @@ def execute_query(filename):
     five_letter_words = [word for word in words if len(word) == word_length]
     signatures = []
     signatures = sorted(list(get_signatures(five_letter_words)))
-    signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
+
+    unique_five_letter_words = [tup[1] for tup in signatures if tup[0].bit_count() == uniques_per_word]
+
+    set_alphabet(create_optimized_alphabet(unique_five_letter_words))
+
+    signatures = sorted(list(get_signatures(unique_five_letter_words)))
 
     five_letter_trie = create_trie([tup[1] for tup in signatures])
 
@@ -167,7 +187,7 @@ def execute_query(filename):
 
         if words_left == 0:
 #            prindent("no more words_left - solution found, returning 1")
-            prindent(f"SOLUTION: {curr_words}")
+#            prindent(f"SOLUTION: {curr_words}")
             sols.add(global_mask)
             level -= 1
             return 1
@@ -521,6 +541,26 @@ def test_create_trie():
     prindent("Done testing create_trie()")
     level -= 1
 
+def test_create_optimized_alphabet():
+    global level
+    level += 1
+    prindent("Testing create_optimized_alphabet()")
+
+    assert_that(
+        "optimized alphabet is created from a single letter",
+        create_optimized_alphabet(["aaaaa", "aa"])[-1] == "a",
+        True
+    )
+
+    assert_that(
+        "optimized alphabet is created from two letters",
+        create_optimized_alphabet(["aaaaab", "baa"])[24:] == "ba",
+        True
+    )
+
+    prindent("Done testing create_optimized_alphabet()")
+    level -= 1
+
 def test_smoke_test():
     global level
     level += 1
@@ -566,6 +606,7 @@ def run_all_tests():
     test_get_first_empty_quintuplet()
     test_apply_mask()
     test_create_trie()
+    test_create_optimized_alphabet()
     test_smoke_test()
     test_correct_answer()
 
