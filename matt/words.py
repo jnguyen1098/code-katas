@@ -15,6 +15,8 @@ class Alphabet:
         return self.shifts[char]
     def get_letter(self, idx):
         return self.alphabet[idx]
+    def get_alphabet(self):
+        return self.alphabet
 
 resource.setrlimit(resource.RLIMIT_STACK, (2**29,-1))
 sys.setrecursionlimit(10**6)
@@ -169,6 +171,8 @@ def test_get_shift():
     level += 1
     prindent("Testing get_shift()")
 
+    original_alphabet = alphabet.get_alphabet()
+
     alpha = "abcdefghijklmnopqrstuvwxyz"
     set_alphabet(alpha)
     for i in range(26):
@@ -178,14 +182,16 @@ def test_get_shift():
             i,
         )
 
-    alpha = alpha[::-1]
-    set_alphabet(alpha)
+    alpha_reverse = alpha[::-1]
+    set_alphabet(alpha_reverse)
     for i in range(26):
         assert_that(
             f"letter {chr(ord('a') + i)} maps correctly to index {26 - i - 1} on reverse alphabet",
             get_shift(chr(ord("a") + i)),
             26 - i - 1,
         ),
+
+    set_alphabet(original_alphabet)
 
     prindent("Done testing get_shift()")
     level -= 1
@@ -194,6 +200,8 @@ def test_get_letter():
     global level
     level += 1
     prindent("Testing get_letter()")
+
+    original_alphabet = alphabet.get_alphabet()
 
     alpha = "abcdefghijklmnopqrstuvwxyz"
     set_alphabet(alpha)
@@ -204,14 +212,16 @@ def test_get_letter():
             chr(ord("a") + i),
         )
 
-    alpha = alpha[::-1]
-    set_alphabet(alpha)
+    alpha_reverse = alpha[::-1]
+    set_alphabet(alpha_reverse)
     for i in range(26):
         assert_that(
             f"index {26 - i - 1} is correctly mapped to letter {chr(ord('a') + i)} on reverse alphabet",
             get_letter(26 - i - 1),
             chr(ord("a") + i),
         ),
+
+    set_alphabet(original_alphabet)
 
     prindent("Done testing get_letter()")
     level -= 1
@@ -380,4 +390,5 @@ def run_all_tests():
     level -= 1
 
 if __name__ == "__main__":
+    set_alphabet(DEFAULT_ALPHABET)
     run_all_tests()
