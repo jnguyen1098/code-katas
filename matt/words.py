@@ -350,6 +350,11 @@ def test_get_signatures():
     level += 1
     prindent("Testing get_signatures()")
 
+    original_alphabet = alphabet.get_alphabet()
+
+    default_alphabet = "abcdefghijklmnopqrstuvwxyz"
+    set_alphabet(default_alphabet)
+
     assert_that(
         "the set ['food', 'cat', 'oyster', 'ooooo'] is signed correctly",
         get_signatures(["food", "cat", "oyster", "ooooo"]),
@@ -369,6 +374,8 @@ def test_get_signatures():
         get_signatures(["dfoo", "food", "doof"]),
         set([(0b00000000000000000100000000101000, "dfoo")]),
     )
+
+    set_alphabet(original_alphabet)
 
     prindent("Done testing get_signatures()")
     level -= 1
