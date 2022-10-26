@@ -178,7 +178,7 @@ def execute_query(filename):
 
     sols = set()
 
-    def backtrack(global_mask, words_left, letters_left, trie, curr_words, curr_word):
+    def backtrack(global_mask, words_left, letters_left, trie):
         global level
 
 #        prindent(f"{global_mask=} {words_left=} {letters_left=} {curr_words=} {curr_word=}")
@@ -190,14 +190,14 @@ def execute_query(filename):
 #            prindent(f"SOLUTION: {curr_words}")
             if global_mask not in sols:
                 sols.add(global_mask)
-                prindent(f"Found solution - running total is now {len(sols)}")
+                print(f"Found solution - running total is now {len(sols)}")
             level -= 1
             return 1
 
         if letters_left == 0:
 #            prindent("no more letters left, going to bookkeep")
             level += 1
-            tmp = backtrack(global_mask, words_left - 1, 5, five_letter_trie, curr_words + [curr_word], "")
+            tmp = backtrack(global_mask, words_left - 1, 5, five_letter_trie)
             level -= 1
             level -= 1
             return tmp
@@ -225,8 +225,6 @@ def execute_query(filename):
                 words_left,
                 letters_left - 1,
                 trie[next_letter],
-                curr_words,
-                curr_word + next_letter
             )
             level -= 1
         level -= 1
@@ -237,7 +235,7 @@ def execute_query(filename):
 
     answer = 0
 
-    answer += backtrack(0, 5, 5, five_letter_trie, [], "")
+    answer += backtrack(0, 5, 5, five_letter_trie)
 
     return len(sols)
 
