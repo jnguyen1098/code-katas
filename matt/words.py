@@ -188,7 +188,9 @@ def execute_query(filename):
         if words_left == 0:
 #            prindent("no more words_left - solution found, returning 1")
 #            prindent(f"SOLUTION: {curr_words}")
-            sols.add(global_mask)
+            if global_mask not in sols:
+                sols.add(global_mask)
+                prindent(f"Found solution - running total is now {len(sols)}")
             level -= 1
             return 1
 
