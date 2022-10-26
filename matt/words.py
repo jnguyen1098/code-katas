@@ -68,6 +68,17 @@ def sign_word(word):
         result |= ( 1 << shift_size )
     return result
 
+def unsign_word(signature):
+    chars = []
+
+    # assert signature.bit_count() == 5
+
+    for i in range(32):
+        if (signature & (1 << i)):
+            chars.append(alphabet.get_letter(i))
+
+    return "".join(chars)
+
 def get_signatures(words):
     tuples = set()
     signatures = set()
@@ -79,17 +90,6 @@ def get_signatures(words):
         tuples.add((signature, word))
 
     return tuples
-
-def unsign(signature):
-    chars = []
-
-    assert signature.bit_count() == 5
-
-    for i in range(32):
-        if (signature & (1 << i)):
-            chars.append(chr(ord("a") + i))
-
-    return "".join(chars)
 
 def get_first_zero(num):
     idx = 0
@@ -231,13 +231,54 @@ def test_sign_word():
     level += 1
     prindent("Testing sign_word()")
 
+    original_alphabet = alphabet.get_alphabet()
+
+    default_alphabet = "abcdefghijklmnopqrstuvwxyz"
+    set_alphabet(default_alphabet)
     assert_that(
-        "the word boob is signed correctly",
+        "the word boob is signed correctly in the default alphabet",
         sign_word("boob"),
         0b00000000000000000100000000000010,
     )
 
+    set_alphabet(default_alphabet[::-1])
+    assert_that(
+        "the word boob is signed correctly in the reversed alphabet",
+        sign_word("boob"),
+        0b00000001000000000000100000000000,
+    )
+
+    set_alphabet(original_alphabet)
+
     prindent("Done testing sign_word()")
+    level -= 1
+
+def test_unsign_word():
+    global level
+    level += 1
+    prindent("Testing unsign_word()")
+
+    original_alphabet = alphabet.get_alphabet()
+
+    default_alphabet = "abcdefghijklmnopqrstuvwxyz"
+    set_alphabet(default_alphabet)
+    assert_that(
+        "0b00000000000000000100000000000010 is properly unsigned into {b, o} on default alpha",
+        set(list(unsign_word(0b00000000000000000100000000000010))),
+        set(list("bo")),
+    )
+
+    reversed_alphabet = default_alphabet[::-1]
+    set_alphabet(reversed_alphabet)
+    assert_that(
+        "0b00000001000000000000100000000000 is properly unsigned into {b, o} on reverse alpha",
+        set(list(unsign_word(0b00000001000000000000100000000000))),
+        set(list("bo")),
+    )
+
+    set_alphabet(original_alphabet)
+
+    prindent("Done testing unsign_word()")
     level -= 1
 
 def test_get_signatures():
@@ -379,6 +420,7 @@ def run_all_tests():
     test_get_shift()
     test_get_letter()
     test_sign_word()
+    test_unsign_word()
     test_get_signatures()
     test_get_first_zero()
     test_get_first_empty_quintuplet()
