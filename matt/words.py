@@ -10,8 +10,10 @@ sys.setrecursionlimit(10**6)
 FILENAME = "words_alpha.txt"
 DEBUG = True
 FAILFAST = True
+DEFAULT_ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
 level = 0
+alphabet = None
 
 def prindent(message):
     if DEBUG:
@@ -35,10 +37,21 @@ def read_all_words(filename):
             words.append(line.strip())
     return words
 
+def set_alphabet(new_alphabet):
+    global alphabet
+    assert len(new_alphabet) == 26 and len(set(new_alphabet)) == 26\
+        and new_alphabet.isalpha() and new_alphabet.islower()
+    alphabet = new_alphabet
+
+def get_shift(char):
+    assert char.isalpha() and char.islower()
+    return ord(char) - ord("a")
+
 def sign_word(word):
     result = 0
     for char in word:
-        result |= ( 1 << (ord(char) - ord("a"))  )
+        shift_size = get_shift(char)
+        result |= ( 1 << shift_size )
     return result
 
 def get_signatures(words):
@@ -138,6 +151,9 @@ def test_read_all_words_correct_length():
 
     prindent("Done testing read_all_words()' length")
     level -= 1
+
+def test_get_shift():
+    set_alphabet(DEFAULT_ALPHABET)
 
 def test_sign_word():
     global level
@@ -289,6 +305,7 @@ def run_all_tests():
     prindent("Running all tests")
 
     test_read_all_words_correct_length()
+    test_get_shift()
     test_sign_word()
     test_get_signatures()
     test_get_first_zero()
