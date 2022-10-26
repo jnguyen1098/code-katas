@@ -31,7 +31,8 @@ alphabet = None
 
 def prindent(message):
     if DEBUG:
-        print("    " * level + message)
+#        print("    " * level + message)
+        print(" " * level + message)
 
 def assert_that(message, actual, expected):
     global level
@@ -145,49 +146,78 @@ def execute_query(filename):
     signatures = sorted(list(get_signatures(five_letter_words)))
     signatures = [tup for tup in signatures if tup[0].bit_count() == uniques_per_word]
 
+    five_letter_trie = create_trie([tup[1] for tup in signatures])
+
     sigdict = {tup[0]: tup[1] for tup in signatures}
+#    from pprint import pprint
+#    pprint(five_letter_trie)
 
 
     if "alpha" in filename:  # lmao
         assert len(signatures) == 5977
-        print("premature")
-        exit()
 
-    def backtrack(letter_idx, global_mask, letter_mask, words_left, letters_left):
+    sols = set()
 
-#        print(f"{letter_idx=} {bin(global_mask)=} {bin(letter_mask)=} {words_left=} {letters_left=}")
+    def backtrack(global_mask, words_left, letters_left, trie, curr_words, curr_word):
+        global level
+
+#        prindent(f"{global_mask=} {words_left=} {letters_left=} {curr_words=} {curr_word=}")
+
+        level += 1
 
         if words_left == 0:
+#            prindent("no more words_left - solution found, returning 1")
+            prindent(f"SOLUTION: {curr_words}")
+            sols.add(global_mask)
+            level -= 1
             return 1
 
         if letters_left == 0:
-            if letter_mask in sigdict:
-#                assert not global_mask & letter_mask  # lmao
-                return backtrack(letter_idx + 1, global_mask | letter_mask, 0, words_left - 1, 5)
-            return 0
+#            prindent("no more letters left, going to bookkeep")
+            level += 1
+            tmp = backtrack(global_mask, words_left - 1, 5, five_letter_trie, curr_words + [curr_word], "")
+            level -= 1
+            level -= 1
+            return tmp
 
-        if letter_idx >= 26:
+        if len(trie.keys()) == 0:
+#            prindent("ran out of letters...")
+            level -= 1
             return 0
 
         answer = 0
 
-        for i in range(letter_idx, 26):
-            if (global_mask & (1 << i)) == 0 and (letter_mask & (1 << i)) == 0:
-                answer += backtrack(
-                    letter_idx + 1,
-                    global_mask | (1 << i),
-                    letter_mask | (1 << i),
-                    words_left,
-                    letters_left - 1
-                )
+#        prindent(f"possible choices for this letter are {trie.keys()}")
+        level += 1
+        for next_letter in trie.keys():
+            if (global_mask & (1 << (next_shift := get_shift(next_letter)))) != 0:
+#                prindent(f"unable to add {next_letter=} as it interferes with global_mask")
+#                prindent(f"global_mask={bin(global_mask)}")
+#                prindent(f"next_shift={next_shift}")
+#                prindent(f"attempted mask={global_mask & (1 << next_shift)}")
+                continue
+#            prindent(f"can add {next_letter=}")
+            level += 1
+            answer += backtrack(
+                global_mask | (1 << next_shift),
+                words_left,
+                letters_left - 1,
+                trie[next_letter],
+                curr_words,
+                curr_word + next_letter
+            )
+            level -= 1
+        level -= 1
 
+#        prindent(f"end of function reached, returning {answer=}")
+        level -= 1
         return answer
 
     answer = 0
 
-#    answer += backtrack(0, 0, 0, 5, 5)
+    answer += backtrack(0, 5, 5, five_letter_trie, [], "")
 
-    return answer
+    return len(sols)
 
 def test_read_all_words_correct_length():
     global level
