@@ -4,6 +4,18 @@ import resource
 import sys
 import time
 
+class Alphabet:
+    def __init__(self, new_alphabet):
+        assert len(new_alphabet) == 26 and len(set(new_alphabet)) == 26\
+            and new_alphabet.isalpha() and new_alphabet.islower()
+        self.alphabet = new_alphabet
+        self.shifts = {letter: idx for idx, letter in enumerate(self.alphabet)}
+    def get_shift(self, char):
+        assert char.isalpha() and char.islower()  # TODO remove this?
+        return self.shifts[char]
+    def get_letter(self, idx):
+        return self.alphabet[idx]
+
 resource.setrlimit(resource.RLIMIT_STACK, (2**29,-1))
 sys.setrecursionlimit(10**6)
 
@@ -39,13 +51,13 @@ def read_all_words(filename):
 
 def set_alphabet(new_alphabet):
     global alphabet
-    assert len(new_alphabet) == 26 and len(set(new_alphabet)) == 26\
-        and new_alphabet.isalpha() and new_alphabet.islower()
-    alphabet = new_alphabet
+    alphabet = Alphabet(new_alphabet)
 
 def get_shift(char):
-    assert char.isalpha() and char.islower()
-    return ord(char) - ord("a")
+    return alphabet.get_shift(char)
+
+def get_letter(idx):
+    return alphabet.get_letter(idx)
 
 def sign_word(word):
     result = 0
@@ -153,7 +165,56 @@ def test_read_all_words_correct_length():
     level -= 1
 
 def test_get_shift():
-    set_alphabet(DEFAULT_ALPHABET)
+    global level
+    level += 1
+    prindent("Testing get_shift()")
+
+    alpha = "abcdefghijklmnopqrstuvwxyz"
+    set_alphabet(alpha)
+    for i in range(26):
+        assert_that(
+            f"letter {chr(ord('a') + i)} maps correctly to index {i} on default alphabet",
+            get_shift(chr(ord("a") + i)),
+            i,
+        )
+
+    alpha = alpha[::-1]
+    set_alphabet(alpha)
+    for i in range(26):
+        assert_that(
+            f"letter {chr(ord('a') + i)} maps correctly to index {26 - i - 1} on reverse alphabet",
+            get_shift(chr(ord("a") + i)),
+            26 - i - 1,
+        ),
+
+    prindent("Done testing get_shift()")
+    level -= 1
+
+def test_get_letter():
+    global level
+    level += 1
+    prindent("Testing get_letter()")
+
+    alpha = "abcdefghijklmnopqrstuvwxyz"
+    set_alphabet(alpha)
+    for i in range(26):
+        assert_that(
+            f"index {i} is correctly mapped to letter {chr(ord('a') + i)} on default alphabet",
+            get_letter(i),
+            chr(ord("a") + i),
+        )
+
+    alpha = alpha[::-1]
+    set_alphabet(alpha)
+    for i in range(26):
+        assert_that(
+            f"index {26 - i - 1} is correctly mapped to letter {chr(ord('a') + i)} on reverse alphabet",
+            get_letter(26 - i - 1),
+            chr(ord("a") + i),
+        ),
+
+    prindent("Done testing get_letter()")
+    level -= 1
 
 def test_sign_word():
     global level
@@ -306,6 +367,7 @@ def run_all_tests():
 
     test_read_all_words_correct_length()
     test_get_shift()
+    test_get_letter()
     test_sign_word()
     test_get_signatures()
     test_get_first_zero()
