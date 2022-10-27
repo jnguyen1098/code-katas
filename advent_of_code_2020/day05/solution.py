@@ -27,12 +27,14 @@ def get_seat(sequence):
 
     for i in range(7, 10):
         mid = l + (r - l) // 2
-        if sequence[i] == "R":
-            r = mid - 1
-        elif sequence[i] == "L":
-            l = mid + 1
+        if sequence[i] == "L":
+            r = max(0, mid - 1)
+        elif sequence[i] == "R":
+            l = min(127, mid + 1)
         else:
             raise Exception(f"forbidden seat symbol {sequence[i]}")
+
+    return math.ceil(l + (r - l) / 2)
         
 
 def solve(prob, inputname):
