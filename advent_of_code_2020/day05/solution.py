@@ -19,7 +19,7 @@ def get_row(sequence):
         else:
             raise Exception(f"forbidden symbol {sequence[i]}")
 
-    return mid
+    return l + (r - l) // 2
         
 
 def solve(prob, inputname):
