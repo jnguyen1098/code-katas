@@ -10,6 +10,11 @@ def get_row(sequence):
     l = 0
     r = 127
 
+    try:
+        assert len(sequence) == 10
+    except:
+        print("FAIL:", sequence)
+
     for i in range(7):
         mid = l + (r - l) // 2
         if sequence[i] == "F":
@@ -24,6 +29,11 @@ def get_row(sequence):
 def get_seat(sequence):
     l = 0
     r = 7
+
+    try:
+        assert len(sequence) == 10
+    except:
+        print("FAIL:", sequence)
 
     for i in range(7, 10):
         mid = l + (r - l) // 2
@@ -45,10 +55,12 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
+        if line in ["", "\n"]:
+            continue
         lines.append(line)
 
     if prob == 1:
-        return 1
+        return max([get_id(seq) for seq in lines])
     elif prob == 2:
         return 2
     else:
