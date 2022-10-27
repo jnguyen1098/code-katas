@@ -11,14 +11,20 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
-
-    print_arr(lines)
-
-    print(f"{len(lines)} in the array")
+        lines.append(parse(r"(\d+)-(\d+) ([a-z]): (.+)", line))
 
     if prob == 1:
-        return 1
+        count = 0
+
+        def satisfies(password, char, lo, hi):
+            counter = Counter(password)
+            return lo <= counter[char] <= hi
+
+        for lo, hi, char, password in lines:
+            if satisfies(password, char, int(lo), int(hi)):
+                count += 1
+
+        return count
     elif prob == 2:
         return 2
     else:

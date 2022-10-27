@@ -7,8 +7,8 @@ class TestAll(unittest.TestCase):
 
     def test_solve(self):
         self.assertEqual(solve(1, "example1"), 2)
-        self.assertEqual(solve(1, "input1"), 1)
-        self.assertEqual(solve(2, "example2"), 2)
+        self.assertEqual(solve(1, "input1"), 655)
+        self.assertEqual(solve(2, "example2"), 1)
         self.assertEqual(solve(2, "input2"), 2)
 
 if __name__ == "__main__":
