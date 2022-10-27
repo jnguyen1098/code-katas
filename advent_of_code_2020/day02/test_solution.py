@@ -9,7 +9,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(solve(1, "example1"), 2)
         self.assertEqual(solve(1, "input1"), 655)
         self.assertEqual(solve(2, "example2"), 1)
-        self.assertEqual(solve(2, "input2"), 2)
+        self.assertEqual(solve(2, "input2"), 673)
 
 if __name__ == "__main__":
     unittest.main(failfast=True)

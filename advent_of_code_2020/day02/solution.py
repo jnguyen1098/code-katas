@@ -26,7 +26,16 @@ def solve(prob, inputname):
 
         return count
     elif prob == 2:
-        return 2
+        count = 0
+
+        def satisfies(password, char, lo, hi):
+            return (password[lo - 1] == char) ^ (password[hi - 1] == char)
+
+        for lo, hi, char, password in lines:
+            if satisfies(password, char, int(lo), int(hi)):
+                count += 1
+
+        return count
     else:
         print("Invalid problem code")
         exit()
