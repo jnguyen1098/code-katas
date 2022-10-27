@@ -47,9 +47,9 @@ class TestAll(unittest.TestCase):
 
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 2)
-        self.assertEqual(solve(1, "input"), -1)
-        self.assertEqual(solve(2, "example"), -1)
-        self.assertEqual(solve(2, "input"), -1)
+        self.assertEqual(solve(1, "input"), 239)
+        self.assertEqual(solve(2, "example2"), 4)
+        self.assertEqual(solve(2, "input"), 188)
 
 if __name__ == "__main__":
     unittest.main(failfast=True)
