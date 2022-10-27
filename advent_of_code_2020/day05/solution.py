@@ -65,7 +65,17 @@ def solve(prob, inputname):
     if prob == 1:
         return max([get_id(seq) for seq in lines])
     elif prob == 2:
-        return 2
+        numbers = set(list(range(1024)))
+
+        for seq in lines:
+            numbers.remove(get_id(seq))
+        numbers = list(sorted(numbers))
+
+        for i in range(1, len(numbers)):
+            if numbers[i] - numbers[i - 1] > 1:
+                return numbers[i]
+
+        raise Exception("Couldn't find seat")
     else:
         print("Invalid problem code")
         exit()
