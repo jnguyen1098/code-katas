@@ -47,8 +47,11 @@ def get_seat(sequence):
     return math.ceil(l + (r - l) / 2)
 
 def get_id(sequence):
-    return get_row(sequence) * 8 + get_seat(sequence)
-        
+    mask = sequence.replace("F", "0").replace("B", "1").replace("L", "0").replace("R", "1")
+    while mask and mask[0] == "0":
+        mask = mask.removeprefix("0")
+    return 0 if not mask else int(mask, 2)
+#    return get_row(sequence) * 8 + get_seat(sequence)
 
 def solve(prob, inputname):
     lines = []
