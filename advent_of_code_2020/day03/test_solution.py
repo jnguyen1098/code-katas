@@ -12,8 +12,8 @@ class TestAll(unittest.TestCase):
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 7)
         self.assertEqual(solve(1, "input"), 228)
-        self.assertEqual(solve(2, "example"), -1)
-        self.assertEqual(solve(2, "input"), -1)
+        self.assertEqual(solve(2, "example"), 336)
+        self.assertEqual(solve(2, "input"), 6818112000)
 
 if __name__ == "__main__":
     unittest.main(failfast=True)
