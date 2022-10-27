@@ -5,6 +5,9 @@ from solution import *
 
 class TestAll(unittest.TestCase):
 
+    def test_get_row(self):
+        self.assertEqual(get_row("FBFBBFFRLR"), 44)
+
     def test_solve(self):
         self.assertEqual(solve(1, "example1"), 357)
         self.assertEqual(solve(1, "example2"), 567)
