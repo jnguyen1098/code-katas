@@ -33,9 +33,23 @@ class TestAll(unittest.TestCase):
             ]
         )
 
+    def test_create_passport(self):
+        lines = generate_example_lines()
+        kv_pairs = split_lines_into_key_value_pairs([lines[0]])
+        passport = create_passport(kv_pairs)
+        expected_passport = {
+            "ecl": "gry",
+            "pid": "860033327",
+            "eyr": "2020",
+            "hcl": "#fffffd",
+        }
+        self.assertEqual(passport, expected_passport)
+
     def test_solve(self):
-        self.assertEqual(solve(1, "input"), 1)
-        self.assertEqual(solve(2, "input"), 2)
+        self.assertEqual(solve(1, "example"), 2)
+        self.assertEqual(solve(1, "input"), -1)
+        self.assertEqual(solve(2, "example"), -1)
+        self.assertEqual(solve(2, "input"), -1)
 
 if __name__ == "__main__":
     unittest.main(failfast=True)
