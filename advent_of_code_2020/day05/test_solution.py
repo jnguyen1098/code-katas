@@ -14,6 +14,13 @@ class TestAll(unittest.TestCase):
         self.assertEqual(get_seat(".......LLL"), 0)
         self.assertEqual(get_seat(".......RRR"), 7)
         self.assertEqual(get_seat(".......RLR"), 5)
+        self.assertEqual(get_seat(".......RLL"), 4)
+
+    def test_get_id(self):
+        self.assertEqual(get_id("FBFBBFFRLR"), 357)
+        self.assertEqual(get_id("BFFFBBFRRR"), 567)
+        self.assertEqual(get_id("FFFBBBFRRR"), 119)
+        self.assertEqual(get_id("BBFFBBFRLL"), 820)
 
     def test_solve(self):
         self.assertEqual(solve(1, "example1"), 357)

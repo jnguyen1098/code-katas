@@ -35,6 +35,9 @@ def get_seat(sequence):
             raise Exception(f"forbidden seat symbol {sequence[i]}")
 
     return math.ceil(l + (r - l) / 2)
+
+def get_id(sequence):
+    return get_row(sequence) * 8 + get_seat(sequence)
         
 
 def solve(prob, inputname):
@@ -43,10 +46,6 @@ def solve(prob, inputname):
 
     for line in gen:
         lines.append(line)
-
-    print_arr(lines)
-
-    print(f"{len(lines)} in the array")
 
     if prob == 1:
         return 1
