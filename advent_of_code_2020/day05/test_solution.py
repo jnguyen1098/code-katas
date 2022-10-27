@@ -10,6 +10,11 @@ class TestAll(unittest.TestCase):
         self.assertEqual(get_row("BBBBBBB..."), 127)
         self.assertEqual(get_row("FBFBBFFRLR"), 44)
 
+    def test_get_seat(self):
+        self.assertEqual(get_seat(".......LLL"), 0)
+        self.assertEqual(get_seat(".......RRR"), 7)
+        self.assertEqual(get_seat(".......RLR"), 5)
+
     def test_solve(self):
         self.assertEqual(solve(1, "example1"), 357)
         self.assertEqual(solve(1, "example2"), 567)

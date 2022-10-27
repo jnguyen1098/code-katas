@@ -13,13 +13,26 @@ def get_row(sequence):
     for i in range(7):
         mid = l + (r - l) // 2
         if sequence[i] == "F":
-            r = mid - 1
+            r = max(0, mid - 1)
         elif sequence[i] == "B":
+            l = min(127, mid + 1)
+        else:
+            raise Exception(f"forbidden row symbol {sequence[i]}")
+
+    return math.ceil(l + (r - l) / 2)
+
+def get_seat(sequence):
+    l = 0
+    r = 7
+
+    for i in range(7, 10):
+        mid = l + (r - l) // 2
+        if sequence[i] == "R":
+            r = mid - 1
+        elif sequence[i] == "L":
             l = mid + 1
         else:
-            raise Exception(f"forbidden symbol {sequence[i]}")
-
-    return l + (r - l) // 2
+            raise Exception(f"forbidden seat symbol {sequence[i]}")
         
 
 def solve(prob, inputname):
