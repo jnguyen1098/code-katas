@@ -7,7 +7,7 @@ class TestAll(unittest.TestCase):
 
     def test_solve(self):
         self.assertEqual(solve(1, "example"), 4)
-        self.assertEqual(solve(1, "input"), -1)
+        self.assertEqual(solve(1, "input"), 302)
         self.assertEqual(solve(2, "example"), -1)
         self.assertEqual(solve(2, "input"), -1)
 
