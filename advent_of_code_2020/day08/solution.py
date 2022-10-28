@@ -11,7 +11,10 @@ def solve(prob, inputname):
     gen = yield_line(inputname)
 
     for line in gen:
-        lines.append(line)
+        if line == "":
+            continue
+        inst, val = parse(r"(nop|acc|jmp) ([\-\+]\d+)", line)
+        print(inst, val)
 
     print_arr(lines)
 
