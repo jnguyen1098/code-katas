@@ -9,6 +9,7 @@ sys.path.append("..")
 sys.setrecursionlimit(100000000)
 
 from collections import defaultdict, deque, Counter
+from functools import lru_cache
 from math import ceil, floor, inf, log, sqrt
 from pprint import pprint
 
