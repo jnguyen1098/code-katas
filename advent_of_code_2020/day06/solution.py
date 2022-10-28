@@ -14,6 +14,7 @@ def solve(prob, inputname):
         lines.append(line)
 
     if prob == 1:
+
         assert lines[0] != ""
 
         groups = []
@@ -29,16 +30,39 @@ def solve(prob, inputname):
 
         total_sum = 0
 
-        print(groups)
-
         for group in groups:
             total_sum += len(group)
 
         return total_sum
 
-        return 0
     elif prob == 2:
-        return 2
+
+        assert lines[0] != ""
+
+        groups = []
+        curr_group = set()
+        reset = True
+
+        for line in lines:
+            if reset:
+                curr_group = set([char for char in line])
+                reset = False
+            if line == "":
+                groups.append(sorted(list(curr_group)))
+                curr_group.clear()
+                reset = True
+                continue
+            tmp_set = set()
+            for char in line:
+                tmp_set.add(char)
+            curr_group &= tmp_set
+
+        total_sum = 0
+
+        for group in groups:
+            total_sum += len(group)
+
+        return total_sum
     else:
         print("Invalid problem code")
         exit()
