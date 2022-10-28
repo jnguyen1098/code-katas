@@ -54,6 +54,7 @@ def solve(prob, inputname):
 
         return answer
 
+    @lru_cache(None)
     def flatten_and_count(target_bag_name: str) -> int:
         """This will include the bag itself."""
 
