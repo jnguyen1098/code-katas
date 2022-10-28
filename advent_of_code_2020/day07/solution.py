@@ -54,6 +54,19 @@ def solve(prob, inputname):
 
         return answer
 
+    def flatten_and_count(target_bag_name: str) -> int:
+        """This will include the bag itself."""
+
+        if bags[target_bag_name] == []:
+            return 1
+
+        answer = 1
+
+        for child_count, child_bag_type in bags[target_bag_name]:
+            answer += int(child_count) * flatten_and_count(child_bag_type)
+
+        return answer
+
     if prob == 1:
         count = 0
         for bag_name in bags.keys():
@@ -63,7 +76,7 @@ def solve(prob, inputname):
                 count += 1
         return count
     elif prob == 2:
-        return 2
+        return flatten_and_count("shiny gold") - 1
     else:
         print("Invalid problem code")
         exit()
