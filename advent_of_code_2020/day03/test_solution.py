@@ -10,9 +10,9 @@ class TestAll(unittest.TestCase):
         self.assertEqual(displace(11, 11, 3, 9, 1, 3), (4, 1))
 
     def test_solve(self):
-        self.assertEqual(solve(1, "example"), 7)
+        self.assertEqual(solve(1, "example1"), 7)
         self.assertEqual(solve(1, "input"), 228)
-        self.assertEqual(solve(2, "example"), 336)
+        self.assertEqual(solve(2, "example1"), 336)
         self.assertEqual(solve(2, "input"), 6818112000)
 
 if __name__ == "__main__":
