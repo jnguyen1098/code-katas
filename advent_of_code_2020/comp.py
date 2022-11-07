@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import copy
-import sys
+import itertools
 import math
 import random
 import re
+import sys
 
 sys.path.append("..")
 sys.setrecursionlimit(100000000)
