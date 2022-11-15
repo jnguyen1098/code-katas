@@ -60,7 +60,13 @@ revdict = lambda dt: {v: k for k, v in dt.items()}
 strsep = lambda text, sep=None: list(text.strip().split(sep))
 intsep  = lambda text, sep=None: list(map(int, text.strip().split(sep)))
 intgrid = lambda text: list(map(int, [char for char in text.strip()]))
-parse = lambda pattern, text: re.match(pattern, text).groups()
+# parse = lambda pattern, text: re.match(pattern, text).groups()
+
+def parse(pattern, text):
+    try:
+        return re.match(pattern, text).groups()
+    except:
+        return None
 
 def yield_line(filename):
     with open(filename, "r") as file_p:
