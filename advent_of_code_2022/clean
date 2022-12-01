@@ -2,7 +2,6 @@
 FOLDERS=(
     "__pycache__"
     ".pytest_cache"
-    ".idea"
 )
 for folder_name in "${FOLDERS[@]}"; do
     echo "destroy $folder_name"
