@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+FOLDERS=(
+    "__pycache__"
+    ".pytest_cache"
+    ".idea"
+)
+for folder_name in "${FOLDERS[@]}"; do
+    echo "destroy $folder_name"
+    find . -name "$folder_name" -type d -exec rm -rf "{}" +
+done
+echo "done cleaning up"
