@@ -5,11 +5,13 @@
   * `intsep(line[, sep])` - parse `sep`arator-delimited `int` as `list[int]` (`1 23 3` -> `[1, 23, 3]`)
   * `intgrid(line)` - parse adjacent `int` as `list[int]` (`12345` -> `[1, 2, 3, 4, 5]`)
   * `parse(pattern, line)` - create `group` from regex as `list[str]` (`3 to 6` -> `["3", "6"]` using `r"(\d+) to (\d+)"`)
+* **Logging** - `log(message, newline=False)` or `log(defer(f"Expensive {resource}"))`
 * **`DIR`ection**:
   * Kernels - `DIR.{DIAG,HORZ,VERT,SURR,ADJA}`
   * Bearings - `DIR.{N,S,E,W,NW,NE,SW,SE}`
 * **Reverse a dictionary** `revdict(source_dict)`
 * **Pointers and Variables** Use `Context` for this
+* **Chinese Remainder Theorem** - `crt(residues, moduli)`
 * **Documentation**
   * [Documentation for `collections.Counter`](https://docs.python.org/3/library/collections.html#collections.Counter)
   * [Documentation for `collections.defaultdict`](https://docs.python.org/3/library/collections.html#collections.defaultdict)
