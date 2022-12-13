@@ -17,6 +17,8 @@
   * [Documentation for `collections.defaultdict`](https://docs.python.org/3/library/collections.html#collections.defaultdict)
   * [Documentation for `collections.deque`](https://docs.python.org/3/library/collections.html#collections.deque)
   * [Documentation for `heapq`](https://docs.python.org/3/library/heapq.html)
+  * [Documentation for `itertools`](https://docs.python.org/3/library/itertools.html)
+  * [Documentation for `functools`](https://docs.python.org/3/library/functools.html)
 * **Point**
   * **Create** `Point(1, 2)` or `Point([1, 2])` or `Point((1, 2))`
   * **Normal Add/Sub** `point1 += (1, 2)`  
@@ -29,3 +31,12 @@
   * **1D <-> 2D** `Point.from_id(displacement, col_size)` and `point.to_1d(col_size)`
   * **Equality** `point1 = Point(1, 2)` and `point2 = Point([1, 2])` => `point1 == point2`
   * **Tuple Fallback** `get_point(old_tuple, new_tuple, rows, cols)`
+* [Documentation for `itertools`](https://docs.python.org/3/library/itertools.html)
+  * **Clone Iterator** `tee(my_iterator, 3)` -> `copy1, copy2, copy3`
+  * **Flatten/Unpack** `chain("ABC", "DEF", "G")` -> `A, B, C, D, E, F, G`
+    * `chain.from_iterable(["ABC", "DEF", "G"])` -> `A, B, C, D, E, F, G`
+  * **Subset Bitmask Select** `compress("ABCDEF", [1, 0, 1, 0, 1, 1])` -> `A, C, E, F`
+  * **Infinite Cycle** `cycle([1, 2, 3])` -> `1, 2, 3, 1, 2, 3, ...,`
+  * **Absement Sum** `accumulate([1, 2, 3])` -> `1, 3, 6`
+* [Documentation for `functools`](https://docs.python.org/3/library/functools.html)
+  * **Make Class Comparable** Implement `==`, then one of: `<` `<=` `>` `>=`, then use `@total_ordering`

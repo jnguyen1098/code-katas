@@ -10,6 +10,7 @@ import doctest
 import functools
 import heapq
 import itertools
+import json
 import math
 import pydantic
 import random
@@ -22,9 +23,10 @@ sys.path.append("..")
 sys.setrecursionlimit(100000000)
 
 from collections import *
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import *
 from heapq import *
+from itertools import chain
 from math import prod, ceil, floor, comb, fabs, factorial, floor, fmod, fsum, gcd, lcm, perm, remainder, exp, log, log10, pow, sqrt
 from pprint import pprint
 from pydantic import BaseModel as PydanticBaseModel
@@ -94,6 +96,7 @@ class DIR:
     ADJA = (*HORZ, *VERT)
 
 
+@total_ordering
 class Point:
     """2D point class."""
 
@@ -174,6 +177,55 @@ class Point:
             return Point(new_x, new_y)
         return None
 
+    def get_points(self, kernel: Iterable[Any], x_min: int = -INF, x_max: int = INF, y_min: int = -INF, y_max: int = INF) -> set[Point]:
+        points = set()
+        for data in kernel:
+            if (new_point := self.get_point(data, x_min, x_max, y_min, y_max)) is not None:
+                points.add(new_point)
+        return points
+
+    def __lt__(self, other):
+        return (self.x, self.y) < (other.x, other.y)
+
+    def __hash__(self):
+        return hash((self.x, self.y))
+
+    def reaches(self, other_data: Any, kernel: tuple[tuple[int, int], ...]) -> bool:
+        other_point = Point.coerce(other_data)
+        for dx, dy in kernel:
+            if self.get_point((dx, dy)) == other_point:
+                return True
+        return False
+
+    def surr(self, other_data: Any) -> bool:
+        return self.reaches(other_data, DIR.SURR)
+
+    def adja(self, other_data: Any) -> bool:
+        return self.reaches(other_data, DIR.ADJA)
+
+    def diag(self, other_data: Any) -> bool:
+        return self.reaches(other_data, DIR.DIAG)
+
+    def horz(self, other_data: Any) -> bool:
+        return self.reaches(other_data, DIR.HORZ)
+
+    def vert(self, other_data: Any) -> bool:
+        return self.reaches(other_data, DIR.VERT)
+
+    def __getitem__(self, item):
+        if item not in {0, 1}:
+            raise IndexError
+        return self.x if item == 0 else self.y
+
+    def __tuple__(self):
+        return self.to_tuple()
+
+    def __list__(self):
+        return self.to_list()
+
+    def __iter__(self):
+        return iter((self.x, self.y))
+
     def __iadd__(self, other: object) -> Point:
         if not isinstance(other, Point | tuple | list):
             raise ValueError(f"Tried adding to Point using invalid type {type(other)}: {other}")
@@ -203,30 +255,6 @@ class Point:
         this_copy = Point(x=self.x, y=self.y)
         this_copy -= other
         return this_copy
-
-    def reaches(self, other_data: Any, kernel: tuple[tuple[int, int], ...]) -> bool:
-        other_point = Point.coerce(other_data)
-        for dx, dy in kernel:
-            if self.get_point((dx, dy)) == other_point:
-                return True
-        return False
-
-    def surr(self, other_data: Any) -> bool:
-        return self.reaches(other_data, DIR.SURR)
-
-    def adja(self, other_data: Any) -> bool:
-        return self.reaches(other_data, DIR.ADJA)
-
-    def diag(self, other_data: Any) -> bool:
-        return self.reaches(other_data, DIR.DIAG)
-
-    def horz(self, other_data: Any) -> bool:
-        return self.reaches(other_data, DIR.HORZ)
-
-    def vert(self, other_data: Any) -> bool:
-        return self.reaches(other_data, DIR.VERT)
-
-    # TODO: do get_points
 
     def __eq__(self, other_data: object) -> bool:
         other = Point.coerce(other_data)  # type: ignore[arg-type]
@@ -615,3 +643,77 @@ chinese_remainder_theorem = solve_chinese_remainder_theorem
 solve_crt = solve_chinese_remainder_theorem
 get_chinese_remainder_theorem_solution = solve_chinese_remainder_theorem
 get_crt = solve_chinese_remainder_theorem
+
+class ImmutableDict(dict[Any, Any]):
+    """Dictionary not allowing repeat assignments."""
+
+    def __setitem__(self, key: Any, value: Any) -> None:
+        if (old_value := super().get(key)) is not None:
+            raise ValueError(f"Can't set ImmutableDict[{key}]={value} when it already exists as {old_value}")
+        super().__setitem__(key, value)
+
+
+class ImmutableSet(set[Any]):
+    """Set not allowing repeat adds."""
+
+    def add(self, item: Any) -> None:
+        if super().__contains__(item):
+            raise ValueError(f"Can't add {item} to ImmutableSet as it already exists")
+        super().add(item)
+
+
+def test_immutable_set() -> None:
+    """Test immutable set."""
+
+    empty_set = ImmutableSet()
+    for i in range(10):
+        empty_set.add(i)
+    with pytest.raises(ValueError) as exception:
+        empty_set.add(0)
+    assert f"Can't add {0} to ImmutableSet as it already exists" in str(exception)
+    assert empty_set == set(range(10))
+
+    init_set = ImmutableSet(set(range(10)))
+    with pytest.raises(ValueError) as exception:
+        init_set.add(0)
+    assert f"Can't add {0} to ImmutableSet as it already exists" in str(exception)
+    assert init_set == set(range(10))
+
+    del_set = ImmutableSet(set(range(10)))
+    for _ in range(10):
+        del_set.discard(0)
+    del_set.add(0)
+    with pytest.raises(ValueError) as exception:
+        del_set.add(0)
+    assert f"Can't add {0} to ImmutableSet as it already exists" in str(exception)
+    assert del_set == set(range(10))
+
+
+def test_immutable_dict() -> None:
+    """Running some tests."""
+
+    empty_dict = ImmutableDict()
+    for i in range(10):
+        empty_dict[i] = i * 10
+    with pytest.raises(ValueError) as exception:
+        empty_dict[0] = 10
+    assert f"Can't set ImmutableDict[{0}]={10} when it already exists as {0}" in str(exception)
+    assert empty_dict == {i: i * 10 for i in range(10)}
+
+    init_dict = ImmutableDict({i: i * 10 for i in range(10)})
+    with pytest.raises(ValueError) as exception:
+        init_dict[0] = 10
+    assert f"Can't set ImmutableDict[{0}]={10} when it already exists as {0}" in str(exception)
+    assert init_dict == {i: i * 10 for i in range(10)}
+
+    del_dict = ImmutableDict({i: i * 10 for i in range(10)})
+    del del_dict[0]
+    del_dict[0] = 0
+    del del_dict[0]
+    del_dict[0] = 0
+    del del_dict[0]
+    del_dict[0] = 0
+    with pytest.raises(ValueError) as exception:
+        del_dict[0] = 10
+    assert f"Can't set ImmutableDict[{0}]={10} when it already exists as {0}" in str(exception)
+    assert del_dict == {i: i * 10 for i in range(10)}
