@@ -18,12 +18,14 @@ import re
 import sys
 import typing
 import pytest
+import graphviz
 
 sys.path.append("..")
 sys.setrecursionlimit(100000000)
 
 from collections import *
 from dataclasses import dataclass, field
+from enum import Enum
 from functools import *
 from heapq import *
 from itertools import chain
@@ -211,6 +213,23 @@ class Point:
 
     def vert(self, other_data: Any) -> bool:
         return self.reaches(other_data, DIR.VERT)
+
+    def vert_infinite(self, other_data: Any) -> bool:
+        other_point = Point.coerce(other_data)
+        return self == other_point or self.y == other_point.y
+
+    def horz_infinite(self, other_data: Any) -> bool:
+        other_point = Point.coerce(other_data)
+        return self == other_point or self.x == other_point.x
+
+    def adja_infinite(self, other_data: Any) -> bool:
+        return self.vert_infinite(other_data) or self.horz_infinite(other_data)
+
+    def diag_infinite(self, other_data: Any) -> bool:
+        raise NotImplementedError
+
+    def surr_infinite(self, other_data: Any):
+        raise self.diag_infinite(other_data) or self.adja_infinite(other_data)
 
     def __getitem__(self, item):
         if item not in {0, 1}:
@@ -580,10 +599,6 @@ def yield_line(filename: str) -> Iterable[str]:
         for line in file_p.read().splitlines():
             yield line
 
-
-def test_yield_line() -> None:
-    for line in yield_line(__name__ + ".py"):
-        pass
 
 # CRT stolen from https://rosettacode.org/wiki/Chinese_remainder_theorem#Python
 def get_modular_multiplicative_inverse(a: int, m: int) -> int:
