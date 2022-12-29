@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+function lint-edit {
+    "$EDITOR" ~/workplace/Jsonwinstorage/shared/lint
+}
+
+function lint-run {
+
+    LINT_ME="$1"
+    LINE_LIMIT="150"
+    PYLINT_IGNORE="too-few-public-methods"
+    PYLINT_PKG_WHITELIST="pydantic"
+
+    echo "Running all linters for file $LINT_ME using line limit $LINE_LIMIT"
+    isort --diff "$LINT_ME" --line-length="$LINE_LIMIT" || return "$?"
+    mypy --strict --show-error-context --show-column-numbers --show-error-codes --pretty "$LINT_ME" || return "$?"
+    black --diff --check "$LINT_ME" --line-length="$LINE_LIMIT" || return "$?"
+    flake8 "$LINT_ME" --max-line-length="$LINE_LIMIT" || return "$?"
+    pylint "$LINT_ME" --max-line-length="$LINE_LIMIT" --disable="fixme,$PYLINT_IGNORE" --extension-pkg-whitelist="$PYLINT_PKG_WHITELIST"|| return "$?"
+
+    echo "Done linting. Here are your TODOs:"
+    pylint "$LINT_ME" --max-line-length="$LINE_LIMIT" --disable="$PYLINT_IGNORE" --extension-pkg-whitelist="$PYLINT_PKG_WHITELIST" || true
+
+    return 0
+}
+
+function run-pytest {
+    coverage run -m pytest "$1"
+}
+
+function run-coverage {
+    coverage report --show-missing --fail-under="100"\
+        --omit="/opt/homebrew/lib/python3.10/site-packages*"\
+        --omit="/opt/homebrew/Cellar/six/1.16.0_2/lib/python3.10/site-packages*"\
+        --omit="/opt/homebrew/lib/python3.10/site-packages/**/*"\
+        --omit="/opt/homebrew/lib/python3.10/site-packages/*"
+}
+
+function lint {
+
+    if [ "$#" -ne "1" ] && [ "$#" -ne "2" ]; then
+        echo "Usage: lint filename.py [--dirty]"
+        return 1
+    fi
+
+    DIRTY=false
+
+    if [ "$#" -eq "2" ]; then
+        if [ "$2" != "--dirty" ]; then
+            echo "Unrecognized argument: $2"
+            echo "Usage: lint filename.py [--dirty]"
+            return 1
+        else
+            DIRTY=true
+        fi
+    fi
+
+    LINT_ME="$1"
+
+    lint-run "$LINT_ME"
+    LINT_RETVAL="$?"
+
+    run-pytest "$LINT_ME"
+    PYTEST_RETVAL="$?"
+
+    run-coverage
+    COVERAGE_RETVAL="$?"
+
+    ! "$DIRTY" && rm -rf "__pycache__" ".coverage" ".pytest_cache" ".mypy_cache"
+
+    if [ "$LINT_RETVAL" -ne "0" ] || [ "$PYTEST_RETVAL" -ne "0" ] || [ "$COVERAGE_RETVAL" -ne "0" ]; then
+        echo "Lint failed"
+        return 1
+    fi
+
+    echo "Success!"
+    return 0
+}
+
+function test-then-lint {
+    if ! run-pytest "$1"; then
+        echo "Pytest failed; exiting"
+        return 1
+    fi
+    if ! run-coverage; then
+        echo "Coverage failed; exiting"
+        return 2
+    fi
+    if ! lint "$1" --dirty; then
+        echo "Lint failed; exiting"
+        return 3
+    fi
+    echo "Success"
+}
