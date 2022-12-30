@@ -4,8 +4,11 @@
 from __future__ import annotations
 
 import re
+import timeit
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from dataclasses import dataclass
+from heapq import heappop, heappush
 from typing import Any, Iterable, Protocol, runtime_checkable
 
 import pydantic
@@ -19,6 +22,7 @@ from pydantic import Extra, StrictInt, StrictStr
 # TODO: test maximal greedy?
 
 INF = 0x3F3F3F3F
+MAX_TURNS = 30  # TODO: fix this!
 
 
 class BaseModel(PydanticBaseModel):
@@ -47,6 +51,10 @@ class BoundedBrancher(ABC):
     """Exhaustive searcher that uses branch-and-bound heuristics"""
 
     @abstractmethod
+    def get_start(self) -> Any:  # pragma: no cover
+        """Entrypoint for the algorithm."""
+
+    @abstractmethod
     def get_lower_bound(self, state: Any) -> Comparable:  # pragma: no cover
         """Gets lower bound for heuristic value of state."""
 
@@ -58,9 +66,37 @@ class BoundedBrancher(ABC):
     def get_children(self, state: Any) -> Iterable[Any]:  # pragma: no cover
         """Gets children (successors) of the given node."""
 
+    # TODO: remove this?
     @abstractmethod
     def is_goal_state(self, state: Any) -> bool:  # pragma: no cover
         """Given a state, returns True if it's the end state."""
+
+    def solve(self) -> Comparable:
+        """Attempts to find the problem using the supplied heuristics."""
+
+        start_node = self.get_start()
+        pushed = set()
+        best_node = start_node
+        lower_bound = self.get_lower_bound(start_node)
+        stack = [start_node]
+
+        curr_path = []
+        curr_seen = set()
+
+        while stack:
+            curr_node = stack.pop()
+            if curr_node > best_node:
+                best_node = curr_node
+            if self.is_goal_state(curr_node):
+                continue
+            for child_node in self.get_children(curr_node):
+                if child_node not in pushed:
+                    pushed.add(child_node)
+                    if (upper_bound := self.get_upper_bound(child_node)) < lower_bound:
+                        continue
+                    stack.append(child_node)
+
+        return best_node
 
 
 class Valve(BaseModel):
@@ -91,16 +127,24 @@ class Valve(BaseModel):
         return values
 
 
-class State(BaseModel):
+@dataclass
+class State:
     """Represents a node in the exhaustive DFS search."""
 
-    curr_flow: StrictInt
-    curr_turn: StrictInt
-    curr_valve: StrictStr
-    curr_relief: StrictInt
+    curr_flow: int
+    curr_turn: int
+    curr_valve: str
+    curr_relief: int
+    curr_payout: int = 0
+
+    def __post_init__(self) -> None:
+        self.curr_payout = self.curr_relief + (self.curr_flow * (MAX_TURNS - self.curr_turn + 1))
 
     def __hash__(self) -> int:
         return hash((self.curr_flow, self.curr_turn, self.curr_valve, self.curr_relief))
+
+    def __lt__(self, other) -> bool:
+        return other.curr_payout > self.curr_payout
 
 
 class TravellingPlumber(BoundedBrancher, BaseModel):
@@ -109,6 +153,7 @@ class TravellingPlumber(BoundedBrancher, BaseModel):
     valves: list[Valve]
     max_turns: StrictInt
     start_valve: StrictStr
+    max_flow: StrictInt | None
     valve_by_name: dict[StrictStr, Valve] | None = None
     canonical_graph: dict[StrictStr, dict[StrictStr, StrictInt]] | None = None
     cost_between_valves: dict[StrictStr, dict[StrictStr, StrictInt]] | None = None
@@ -280,6 +325,7 @@ class TravellingPlumber(BoundedBrancher, BaseModel):
         values["canonical_graph"] = TravellingPlumber.validate_canonical_graph(
             values["canonical_graph"], values["valve_by_name"], values["start_valve"]
         )
+        values["max_flow"] = sum(valve.flow for valve in values["valves"])
         TravellingPlumber.validate_everything_or_crash(values)
         return values
 
@@ -295,20 +341,24 @@ class TravellingPlumber(BoundedBrancher, BaseModel):
             lines = [line.rstrip("\n") for line in file_object]
         return TravellingPlumber.from_lines(lines=lines, start_valve=start_valve, max_turns=max_turns)
 
+    def get_start(self) -> State:
+        """Generates a start state."""
+        return State(curr_flow=0, curr_turn=1, curr_valve=self.start_valve, curr_relief=0)
+
     def get_lower_bound(self, state: State) -> Comparable:
         """Gets the lower bound for a current state."""
-        raise NotImplementedError  # pragma: no cover
+        return state.curr_payout
 
     def get_upper_bound(self, state: State) -> Comparable:
         """Gets the upper bound for a current state."""
-        raise NotImplementedError  # pragma: no cover
+        return state.curr_relief + (self.max_turns - state.curr_turn + 1) * self.max_flow
 
     def is_goal_state(self, state: State) -> bool:
         """Returns whether the state is terminal."""
         return state.curr_turn == self.max_turns + 1
 
     def get_children(self, state: State) -> Iterable[State]:
-        """Starts solving."""
+        """Generates children (successors)."""
         curr_flow = state.curr_flow
         curr_turn = state.curr_turn
         curr_valve = state.curr_valve
@@ -318,25 +368,86 @@ class TravellingPlumber(BoundedBrancher, BaseModel):
 
         turns_left = self.max_turns - curr_turn + 1
 
-        yield State(
-            curr_flow=curr_flow,
-            curr_turn=curr_turn + turns_left,
-            curr_valve=curr_valve,
-            curr_relief=curr_relief + (curr_flow * turns_left),
-        )
-
         assert self.canonical_graph is not None
         assert self.valve_by_name is not None
         for next_valve_name in self.canonical_graph[curr_valve].keys():
             next_valve_distance = self.canonical_graph[curr_valve][next_valve_name]
-            if (next_turn := curr_turn + (next_valve_cost := next_valve_distance + 1)) > self.max_turns + 1:
-                continue
+            next_valve_cost = next_valve_distance + 1
+            next_turn = curr_turn + next_valve_cost
             yield State(
                 curr_flow=curr_flow + self.valve_by_name[next_valve_name].flow,
                 curr_turn=next_turn,
                 curr_valve=next_valve_name,
                 curr_relief=curr_relief + (curr_flow * next_valve_cost),
             )
+
+    def solve(self) -> Comparable:
+        start_node = self.get_start()
+
+        best_total_relief_node = start_node
+
+        curr_valve_path = [self.start_valve]
+        curr_valve_set = set()
+        states_pushed = set()
+
+        metrics = {
+            "goal_states_encountered": 0,
+            "children_generated": 0,
+            "cached_state_hits": 0,
+            "wait_rejections": 0,
+            "duplicate_valve_rejections": 0,
+            "bound_rejections": 0,
+            "total_calls": 0,
+        }
+        def increment(metric: str) -> None:
+            metrics[metric] += 1
+
+        def explore_node(curr_node: State, level: int = 0) -> None:
+
+            nonlocal best_total_relief_node
+
+            increment("total_calls")
+
+            best_total_relief_node = max(best_total_relief_node, curr_node)
+
+            if self.is_goal_state(curr_node):
+                increment("goal_states_encountered")
+                return
+
+            for child_node in self.get_children(curr_node):
+
+                child_valve = child_node.curr_valve
+                increment("children_generated")
+
+                if child_node in states_pushed:
+                    increment("cached_state_hits")
+                    continue
+                states_pushed.add(child_node)
+
+                if child_node.curr_turn > self.max_turns + 1:
+                    increment("wait_rejections")
+                    continue
+
+                if child_valve in curr_valve_set:
+                    increment("duplicate_valve_rejections")
+                    continue
+
+                if (upper_bound := self.get_upper_bound(child_node)) < self.get_lower_bound(best_total_relief_node):
+                    increment("bound_rejections")
+                    continue
+
+                curr_valve_set.add(child_valve)
+                curr_valve_path.append(child_valve)
+                explore_node(child_node)
+                curr_valve_path.pop()
+                curr_valve_set.remove(child_valve)
+
+        explore_node(start_node)
+
+        for metric_name, value in metrics.items():
+            print(f"{metric_name: >30s} -> {value: >10}")
+
+        return best_total_relief_node
 
 
 @pytest.fixture(name="example1")
@@ -501,7 +612,6 @@ def test_plumber_get_children(example1: TravellingPlumber) -> None:
     """Tests that the children generator works."""
     start_state = State(curr_flow=0, curr_turn=1, curr_valve="AA", curr_relief=0)
     assert set(example1.get_children(start_state)) == {
-        State(curr_flow=0, curr_turn=31, curr_valve="AA", curr_relief=0),
         State(curr_flow=13, curr_turn=3, curr_valve="BB", curr_relief=0),
         State(curr_flow=2, curr_turn=4, curr_valve="CC", curr_relief=0),
         State(curr_flow=20, curr_turn=3, curr_valve="DD", curr_relief=0),
@@ -510,13 +620,26 @@ def test_plumber_get_children(example1: TravellingPlumber) -> None:
         State(curr_flow=21, curr_turn=4, curr_valve="JJ", curr_relief=0),
     }
     assert set(example1.get_children(State(curr_flow=3, curr_turn=4, curr_valve="EE", curr_relief=0))) == {
-        State(curr_flow=3, curr_turn=31, curr_valve="EE", curr_relief=81),
         State(curr_flow=16, curr_turn=8, curr_valve="BB", curr_relief=12),
         State(curr_flow=5, curr_turn=7, curr_valve="CC", curr_relief=9),
         State(curr_flow=23, curr_turn=6, curr_valve="DD", curr_relief=6),
         State(curr_flow=25, curr_turn=8, curr_valve="HH", curr_relief=12),
         State(curr_flow=24, curr_turn=9, curr_valve="JJ", curr_relief=15),
     }
-    assert set(example1.get_children(State(curr_flow=3, curr_turn=30, curr_valve="HH", curr_relief=2))) == {
-        State(curr_flow=3, curr_turn=31, curr_valve="HH", curr_relief=5),
-    }
+
+
+def test_get_start(example1: TravellingPlumber) -> None:
+    """Tests start state generation."""
+    assert example1.get_start() == State(curr_flow=0, curr_turn=1, curr_valve="AA", curr_relief=0)
+
+def test_example1_solve(example1: TravellingPlumber) -> None:
+    """Tests the example1 input."""
+    solve_node = example1.solve()
+    assert solve_node.curr_payout == 1651
+
+def test_input1_solve(input1: TravellingPlumber) -> None:
+    """Tests the input1 input."""
+    print(timeit.timeit(lambda: input1.solve(), number=10))
+    assert False
+    # solve_node = input1.solve()
+    # assert solve_node.curr_payout == 1850 + 1
