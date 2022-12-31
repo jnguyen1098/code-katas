@@ -141,20 +141,19 @@ class TravellingPlumber:
         return TravellingPlumber(valves=[Valve.from_line(line) for line in lines], start_valve_name=start_valve, max_turns=max_turns)
 
     @staticmethod
-    def from_filename(*, filename: str, start_valve: str, max_turns: int) -> "TravellingPlumber":
+    def from_filename(*, path: str, start_valve: str, max_turns: int) -> "TravellingPlumber":
         """Parses the valves for the problem from a file."""
-        with open(filename, "r", encoding="ascii") as file_object:
+        with open(path, "r", encoding="ascii") as file_object:
             lines = [line.rstrip("\n") for line in file_object]
         return TravellingPlumber.from_lines(lines=lines, start_valve=start_valve, max_turns=max_turns)
 
-    def solve(self, ignore_set: set[str] | frozenset[str] | None = None) -> Result:
+    def solve(self, ignore_set: set[str] | frozenset[str] = frozenset()) -> Result:
         """
         Solves Advent of Code, 2022, Day 16 for a single agent.
 
         Pre-processes the valves, a canonical graph, and maximal ordering, all of which rely on
         the maximum turns, start valve, and the valves themselves.
         """
-        ignore = ignore_set or set()
 
         def get_payout(state: State) -> int:
             return state[CURR_RELIEF] + state[CURR_FLOW] * state[TURNS_LEFT]
@@ -168,7 +167,7 @@ class TravellingPlumber:
 
         curr_valve_path = [self.start_valve_name]
         curr_relief_accum = [-1] * self.max_turns
-        curr_valve_set = set()
+        curr_valve_set = set() | ignore_set
 
         def explore_node(curr_node: State) -> None:
 
@@ -190,7 +189,7 @@ class TravellingPlumber:
                 return
 
             for next_valve_name in self.maximal_valve_ordering:
-                if next_valve_name in ignore or next_valve_name in curr_valve_set:
+                if next_valve_name in curr_valve_set:
                     continue
                 activation_cost_in_turns = self.canonical_graph[curr_valve][next_valve_name] + 1
                 next_turns_left = curr_node[TURNS_LEFT] - activation_cost_in_turns
@@ -219,13 +218,13 @@ class TravellingPlumber:
 @pytest.fixture(name="example1")
 def get_example1() -> TravellingPlumber:
     """Returns a problem instance of the example."""
-    return TravellingPlumber.from_filename(filename="example1", start_valve="AA", max_turns=30)
+    return TravellingPlumber.from_filename(path="example1", start_valve="AA", max_turns=30)
 
 
 @pytest.fixture(name="input1")
 def get_input1() -> TravellingPlumber:
     """Returns a problem instance of the input."""
-    return TravellingPlumber.from_filename(filename="input1", start_valve="AA", max_turns=30)
+    return TravellingPlumber.from_filename(path="input1", start_valve="AA", max_turns=30)
 
 
 # Valve Tests
@@ -330,7 +329,7 @@ def test_input1_benchmarking() -> None:
     iterations = 25
 
     def stress_test() -> None:
-        instance = TravellingPlumber.from_filename(filename="input1", start_valve="AA", max_turns=30)
+        instance = TravellingPlumber.from_filename(path="input1", start_valve="AA", max_turns=30)
         payout, _path, _turns_left = instance.solve()
         assert payout == 1850, f"got {payout} instead of 1850"
 
@@ -341,7 +340,7 @@ def test_input1_benchmarking() -> None:
 
 def test_example1_piecewise_answer() -> None:
     """Tests the optimal partition for example1 just to see if it can at least calculate that."""
-    instance = TravellingPlumber.from_filename(filename="example1", start_valve="AA", max_turns=26)
+    instance = TravellingPlumber.from_filename(path="example1", start_valve="AA", max_turns=26)
     # DD BB JJ HH EE CC
     human = instance.solve({"DD", "HH", "EE"})
     elephant = instance.solve({"JJ", "BB", "CC"})
@@ -365,16 +364,20 @@ class ElephantSolver:
 
     @cached_property
     def sorted_quiescent_valves(self) -> list[str]:
+        """Takes our quiescent valves and creates a sorted view."""
         return sorted(self.plumber.quiescent_valves)
 
     def get_subset_from_mask(self, mask: list[int]) -> frozenset[str]:
+        """Takes a given bitmask and returns a set of valves based on membership."""
         return frozenset(itertools.compress(self.sorted_quiescent_valves, mask))
 
     @staticmethod
     def get_nth_mask(idx: int, cardinality: int) -> list[int]:
+        """Gets a particular bitmask based on position within cardinality."""
         return list(map(int, bin(2**cardinality + idx)[3:]))
 
     def set_to_mask(self, valve_set: set[str]) -> list[int]:
+        """Takes a set of valves and converts it back to a bitmask."""
         mask = []
         for valve in self.sorted_quiescent_valves:
             if valve in valve_set:
@@ -385,68 +388,66 @@ class ElephantSolver:
 
     @staticmethod
     def mask_to_num(mask: list[int]) -> int:
+        """Takes a given bitmask and converts it back to an integer."""
         return int("".join(map(str, mask)), 2)
 
     def generate_all_subsets_starting_from(self, start_idx: int = 0) -> Iterable[frozenset[str]]:
+        """Iterates all subsets modulo the given cardinality, starting at a certain position within."""
         for i in range(2 ** len(self.plumber.quiescent_valves)):
             final_value = (i + start_idx) % (2 ** len(self.plumber.quiescent_valves))
             mask = self.get_nth_mask(final_value, len(self.plumber.quiescent_valves))
             subset = self.get_subset_from_mask(mask)
             yield subset
 
-def solve_both(filename: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, int]:
+    def get_single_agent_result(self, ignore_set: frozenset[str] = frozenset()) -> Result:
+        """Gets the optimal result given a single agent and valves to ignore."""
+        return self.plumber.solve(ignore_set)
+
+    @cached_property
+    def valve_subsets_sorted_by_increasing_cardinality_gap(self) -> list[frozenset[str]]:
+        """Gets all subsets of every quiescent valve, sorted by the cardinality gap between the human and elephant."""
+        return sorted(list(self.generate_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(self.plumber.quiescent_valves)))
+
+    @cached_property
+    def part_one(self) -> int:
+        """Returns the answer to part 1."""
+        return self.get_single_agent_result()[0]
+
+
+def solve_both(path: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, int]:
     """Solves both p1 and p2."""
     turns_part_one, turns_part_two = turns
 
     # Part 1
-    instance_1 = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_one)
-    solver_1 = ElephantSolver(instance_1)
-    first = solver_1.plumber.solve()[0]
+    first = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_one)).part_one
 
     # Part 2
-    instance_2 = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_two)
-    solver_2 = ElephantSolver(instance_2)
-    all_valves = frozenset(solver_2.plumber.canonical_graph.keys()) - {"AA"}
-    all_valves_canonical = sorted(all_valves)
+    solver_2 = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_two))
 
-    best_single_agent_score, best_single_agent_path, best_single_agent_turns_left = solver_2.plumber.solve(set())
-    print(best_single_agent_score, best_single_agent_path)
-    best_complement_score, best_complement_path, best_complement_turns_left = solver_2.plumber.solve(set(best_single_agent_path))
-    print(best_complement_score, best_complement_path)
-
+    best_single_agent_score, best_single_agent_path = solver_2.plumber.solve(set())[0:2]
+    best_complement_score = solver_2.plumber.solve(set(best_single_agent_path))[0]
     best_score = best_single_agent_score + best_complement_score
 
     highest_score_ignoring = {}
-    processed = 0
-    pruned = 0
 
-    sorted_subsets = sorted(list(solver_2.generate_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(all_valves)))
-
-    for subset in sorted_subsets:
+    for subset in solver_2.valve_subsets_sorted_by_increasing_cardinality_gap:
         if subset in highest_score_ignoring:
             continue
-        human_will_ignore = subset
-        elephant_will_ignore = all_valves - human_will_ignore
-        human_score, human_path, human_spare = solver_2.plumber.solve(human_will_ignore)
-        processed += 1
+        human_will_ignore = frozenset(subset)
+        elephant_will_ignore = frozenset(solver_2.plumber.quiescent_valves - human_will_ignore)
+        human_score = solver_2.get_single_agent_result(human_will_ignore)[0]
+        highest_score_ignoring[human_will_ignore] = human_score
         if human_score + best_single_agent_score < best_score:
             highest_score_ignoring[elephant_will_ignore] = -INF
-            pruned += 1
             continue
-        elephant_score, elephant_path, elephant_spare = solver_2.plumber.solve(elephant_will_ignore)
-        processed += 1
-        highest_score_ignoring[human_will_ignore] = human_score
+        elephant_score = solver_2.get_single_agent_result(elephant_will_ignore)[0]
         highest_score_ignoring[elephant_will_ignore] = elephant_score
-        human_args = ", ".join(sorted(elephant_will_ignore))
-        ele_args = ", ".join(sorted(human_will_ignore))
-        spare_diff = abs(human_spare - elephant_spare)
         if human_score + elephant_score > best_score:
-            print(f"{human_args} (human={human_score}) <=={spare_diff}==> (elephant={elephant_score}) {ele_args} ==> {human_score + elephant_score}")
             best_score = human_score + elephant_score
-    print(f"{best_score=}, {processed=}, {pruned=}")
     return first, best_score
 
 
+# 19s as of 3:19pm 2022-12-31
 test_cases = {
     "example1": (1651, 1707, None),
     "input1": (1850, 2306, None),
@@ -461,11 +462,10 @@ test_cases = {
 
 for filename, test_data in test_cases.items():
     expected_p1, expected_p2, turn_setup = test_data
+    print(f"{filename: <8} -> {expected_p1}, {expected_p2}{f' with custom turns {turn_setup}' if turn_setup else ''}")
     if turn_setup is None:
         p1, p2 = solve_both(filename)
     else:
         p1, p2 = solve_both(filename, turn_setup)
     assert p1 == expected_p1, f"got {p1} for p1 for {filename} but expected {expected_p1}"
     assert p2 == expected_p2, f"got {p2} for p2 for {filename} but expected {expected_p2}"
-
-print("we are good!")
