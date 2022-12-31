@@ -7,7 +7,8 @@ import itertools
 import re
 import timeit
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from functools import cached_property
 from typing import Iterable
 
 import pytest
@@ -42,16 +43,13 @@ class TravellingPlumber:
 
     valves: list[Valve]
     max_turns: int
-    start_valve: str
-    valve_by_name: dict[str, Valve] = field(default_factory=dict)
-    canonical_graph: dict[str, dict[str, int]] = field(default_factory=dict)
-    cost_between_valves: dict[str, dict[str, int]] = field(default_factory=dict)
+    start_valve_name: str
 
-    @classmethod
-    def create_valve_by_name(cls, valves: list[Valve]) -> dict[str, Valve]:
+    @cached_property
+    def valve_by_name(self) -> dict[str, Valve]:
         """Takes the valve list and creates a dictionary for easy reference."""
         valve_by_name = {}
-        for valve in valves:
+        for valve in self.valves:
             if valve.name in valve_by_name:
                 raise ValueError(f"Duplicate valve {valve.name} detected")
             valve_by_name[valve.name] = valve
@@ -61,51 +59,30 @@ class TravellingPlumber:
                     raise ValueError(f"Exit {ex} for valve {valve_name} not present in graph")
         return valve_by_name
 
-    @classmethod
-    def validate_reachability(cls, valve_by_name: dict[str, Valve], start_valve_name: str) -> None:
-        """Validates that the start valve can reach every other valve."""
-        start_valve = valve_by_name[start_valve_name]
-
-        reach = {start_valve_name}
-        stack = [start_valve]
-
-        while stack:
-            popped_valve = stack.pop()
-            for valve_exit_name in popped_valve.exits:
-                valve_exit = valve_by_name[valve_exit_name]
-                if valve_exit_name not in reach:
-                    reach.add(valve_exit_name)
-                    stack.append(valve_exit)
-
-        if len(reach) != len(valve_by_name):
-            sorted_reach = sorted(list(reach))
-            sorted_valve_names = sorted(valve_by_name.keys())
-            raise ValueError(f"Graph is disjoint; start valve could only reach valves {sorted_reach} out of the valves {sorted_valve_names}")
-
-    @classmethod
-    def create_cost_between_valves(cls, valve_by_name: dict[str, Valve]) -> dict[str, dict[str, int]]:
+    @cached_property
+    def cost_between(self) -> dict[str, dict[str, int]]:
         """Establishes the transitive closure of the graph using the Floyd-Warshall algorithm."""
-        cost_between_valves = {}
+        cost_between = {}
 
-        for valve in valve_by_name.values():
+        for valve in self.valve_by_name.values():
             for exit_name in valve.exits:
-                cost_between_valves[valve.name, exit_name] = 1
+                cost_between[valve.name, exit_name] = 1
 
-        for k in (valve_names := list(valve_by_name.keys())):
+        for k in (valve_names := list(self.valve_by_name.keys())):
             for i in valve_names:
                 for j in valve_names:
                     if i == j:
                         continue
-                    cost_between_valves[i, j] = min(
-                        cost_between_valves.get((i, j), INF),
-                        cost_between_valves.get((i, k), INF) + cost_between_valves.get((k, j), INF),
+                    cost_between[i, j] = min(
+                        cost_between.get((i, j), INF),
+                        cost_between.get((i, k), INF) + cost_between.get((k, j), INF),
                     )
 
         expanded_dict: dict[str, dict[str, int]] = {}
 
-        for pair, cost in cost_between_valves.items():
+        for pair, cost in cost_between.items():
             left, right = pair
-            rev_cost = cost_between_valves[right, left]
+            rev_cost = cost_between[right, left]
             assert cost == rev_cost, f"Cost-between-valves is not symmetric between {pair} and {right, left}"
             if left not in expanded_dict:
                 expanded_dict[left] = {}
@@ -116,102 +93,52 @@ class TravellingPlumber:
 
         return expanded_dict
 
-    @classmethod
-    def create_canonical_graph(cls, cost_between: dict[str, dict[str, int]], valve_dict: dict[str, Valve], start: str) -> dict[str, dict[str, int]]:
+    @cached_property
+    def canonical_graph(self) -> dict[str, dict[str, int]]:
         """
         Takes the transitive closure created by the Floyd-Warshall algorithm and reduces it.
 
         Now that every shortest cost is found, we only want non-zero interactions.
         """
-        quiescent_valves = {valve_name for valve_name, valve in valve_dict.items() if valve.flow}
         canonical_graph: dict[str, dict[str, int]] = {}
 
-        for quiescent_valve_name in quiescent_valves:
+        for quiescent_valve_name in self.quiescent_valves:
             if quiescent_valve_name not in canonical_graph:
                 canonical_graph[quiescent_valve_name] = {}
-            for target in cost_between[quiescent_valve_name]:
-                if target not in quiescent_valves:
+            for target in self.cost_between[quiescent_valve_name]:
+                if target not in self.quiescent_valves:
                     continue
                 if target not in canonical_graph:
                     canonical_graph[target] = {}
-                canonical_graph[quiescent_valve_name][target] = cost_between[quiescent_valve_name][target]
-                canonical_graph[target][quiescent_valve_name] = cost_between[target][quiescent_valve_name]
+                canonical_graph[quiescent_valve_name][target] = self.cost_between[quiescent_valve_name][target]
+                canonical_graph[target][quiescent_valve_name] = self.cost_between[target][quiescent_valve_name]
 
-        assert start not in canonical_graph, "Start node should not have be in canonical graph yet"
-        canonical_graph[start] = {}
-        for end in cost_between[start]:
-            if end not in quiescent_valves:
+        canonical_graph[self.start_valve_name] = {}
+        for end in self.cost_between[self.start_valve_name]:
+            if end not in self.quiescent_valves:
                 continue
-            canonical_graph[start][end] = cost_between[start][end]
+            canonical_graph[self.start_valve_name][end] = self.cost_between[self.start_valve_name][end]
 
         return canonical_graph
 
-    @classmethod
-    def validate_canonical_graph(cls, canonical: dict[str, dict[str, int]], valve_dict: dict[str, Valve], start: str) -> dict[str, dict[str, int]]:
-        """Validates the canonical graph we just made."""
-        quiescent_valves = {valve_name for valve_name, valve in valve_dict.items() if valve.flow}
-        non_quiescent_valves = set(valve_dict.keys()) - quiescent_valves
-        assert quiescent_valves | non_quiescent_valves == set(valve_dict.keys()), "Quiescence should be mutually-exclusive"
-
-        quiescent_valves_reached = set()
-        pushed = {start}
-        stack = [start]
-        for _ in range(len(valve_dict) + 1):
-            if not stack:
-                break
-            popped = stack.pop()
-            for exit_valve_name in canonical[popped]:
-                if exit_valve_name in non_quiescent_valves or exit_valve_name in pushed:
-                    continue
-                pushed.add(exit_valve_name)
-                quiescent_valves_reached.add(exit_valve_name)
-                stack.append(exit_valve_name)
-        else:
-            raise Exception(f"Timed out after {len(valve_dict)} iterations")  # pragma: no cover
-
-        assert set(canonical.keys()) - {start} == quiescent_valves, "Canonical key mismatch"
-
-        for from_valve in canonical:
-            assert set(canonical[from_valve].keys()) == quiescent_valves - {from_valve}, "Canonical graph doesn't have full coverage"
-
-        assert quiescent_valves_reached == quiescent_valves, "Canonical traversal isn't exhaustive"
-        return canonical
-
-    def validate_everything_or_crash(self) -> None:
-        """Validates everything else I forgot."""
-        canonical_valve_names = set(self.canonical_graph.keys()) - {self.start_valve}
-        for valve in self.valves:
-            if valve.name in canonical_valve_names:
-                assert valve.flow > 0, "Raw valve mismatch with canonical graph"
-            else:
-                assert valve.flow == 0
-
-    def __post_init__(self) -> None:
-        """Runs all validators in the right order."""
-        self.valve_by_name = TravellingPlumber.create_valve_by_name(self.valves)
-        TravellingPlumber.validate_reachability(self.valve_by_name, self.start_valve)
-        self.cost_between_valves = TravellingPlumber.create_cost_between_valves(self.valve_by_name)
-        self.canonical_graph = TravellingPlumber.create_canonical_graph(
-            self.cost_between_valves,
-            self.valve_by_name,
-            self.start_valve,
-        )
-        self.canonical_graph = TravellingPlumber.validate_canonical_graph(
-            self.canonical_graph,
-            self.valve_by_name,
-            self.start_valve,
-        )
-        self.maximal_valve_ordering = sorted(
-            set(self.canonical_graph.keys()) - {self.start_valve},
+    @cached_property
+    def maximal_valve_ordering(self) -> list[str]:
+        """The ordering of valves based on flow."""
+        return sorted(
+            self.quiescent_valves,
             key=lambda valve_name: self.valve_by_name[valve_name].flow,
             reverse=True,
         )
-        self.validate_everything_or_crash()
+
+    @cached_property
+    def quiescent_valves(self) -> set[str]:
+        """Valves that have non-zero flow."""
+        return {valve.name for valve in self.valves if valve.flow > 0 and valve.name != self.start_valve_name}
 
     @staticmethod
     def from_lines(*, lines: list[str], start_valve: str, max_turns: int) -> "TravellingPlumber":
         """Parses the valves for the problem from lines."""
-        return TravellingPlumber(valves=[Valve.from_line(line) for line in lines], start_valve=start_valve, max_turns=max_turns)
+        return TravellingPlumber(valves=[Valve.from_line(line) for line in lines], start_valve_name=start_valve, max_turns=max_turns)
 
     @staticmethod
     def from_filename(*, filename: str, start_valve: str, max_turns: int) -> "TravellingPlumber":
@@ -221,19 +148,13 @@ class TravellingPlumber:
         return TravellingPlumber.from_lines(lines=lines, start_valve=start_valve, max_turns=max_turns)
 
     def solve(self, ignore_set: set[str] | frozenset[str] | None = None) -> Result:
+        """
+        Solves Advent of Code, 2022, Day 16 for a single agent.
 
+        Pre-processes the valves, a canonical graph, and maximal ordering, all of which rely on
+        the maximum turns, start valve, and the valves themselves.
+        """
         ignore = ignore_set or set()
-
-        metrics = {
-            "goal_states_encountered": 0,
-            "children_generated": 0,
-            "duplicate_valve_rejections": 0,
-            "bound_rejections": 0,
-            "total_calls": 0,
-        }
-
-        def increment(metric: str) -> None:
-            metrics[metric] += 1
 
         def get_payout(state: State) -> int:
             return state[CURR_RELIEF] + state[CURR_FLOW] * state[TURNS_LEFT]
@@ -245,21 +166,17 @@ class TravellingPlumber:
         best_valve_path = []
         best_turns_left = INF
 
-        curr_valve_path = [self.start_valve]
+        curr_valve_path = [self.start_valve_name]
         curr_relief_accum = [-1] * self.max_turns
         curr_valve_set = set()
 
-        def explore_node(curr_node: State, level: int = 0) -> None:
+        def explore_node(curr_node: State) -> None:
 
             nonlocal best_payout
             nonlocal best_relief_accum
             nonlocal best_valve_path
             nonlocal best_turns_left
 
-            increment("total_calls")
-
-            curr_flow = curr_node[CURR_FLOW]
-            turns_left = curr_node[TURNS_LEFT]
             curr_valve = curr_valve_path[-1]
             curr_relief = curr_node[CURR_RELIEF]
 
@@ -267,34 +184,26 @@ class TravellingPlumber:
                 best_payout = curr_payout
                 best_relief_accum = curr_relief_accum[:]
                 best_valve_path = curr_valve_path[:]
-                best_turns_left = turns_left
+                best_turns_left = curr_node[TURNS_LEFT]
 
-            if turns_left == 1:
-                increment("goal_states_encountered")
+            if curr_node[TURNS_LEFT] == 1:
                 return
-
-            assert 0 <= turns_left <= self.max_turns
-            assert self.canonical_graph is not None
-            assert self.valve_by_name is not None
 
             for next_valve_name in self.maximal_valve_ordering:
                 if next_valve_name in ignore or next_valve_name in curr_valve_set:
-                    increment("duplicate_valve_rejections")
                     continue
                 activation_cost_in_turns = self.canonical_graph[curr_valve][next_valve_name] + 1
-                next_turns_left = turns_left - activation_cost_in_turns
-                if turns_left - activation_cost_in_turns < 1:
+                next_turns_left = curr_node[TURNS_LEFT] - activation_cost_in_turns
+                if curr_node[TURNS_LEFT] - activation_cost_in_turns < 1:
                     continue
-                next_relief = curr_relief + (curr_flow * activation_cost_in_turns)
-                next_flow = curr_flow + self.valve_by_name[next_valve_name].flow
+                next_relief = curr_relief + (curr_node[CURR_FLOW] * activation_cost_in_turns)
+                next_flow = curr_node[CURR_FLOW] + self.valve_by_name[next_valve_name].flow
                 next_state = (
                     next_flow,
                     next_turns_left,
                     next_relief,
                 )
-                increment("children_generated")
                 if best_relief_accum[self.max_turns - next_turns_left] >= next_relief:
-                    increment("bound_rejections")
                     continue
                 curr_valve_set.add(next_valve_name)
                 curr_valve_path.append(next_valve_name)
@@ -304,13 +213,6 @@ class TravellingPlumber:
                 curr_valve_set.remove(next_valve_name)
 
         explore_node(start_node)
-
-        """
-        for metric_name, value in metrics.items():
-            print(f"{metric_name: >30s} -> {value: >10}")
-        print()
-        print(best_valve_path)
-        """
         return best_payout, best_valve_path, best_turns_left
 
 
@@ -337,44 +239,6 @@ def test_valve_bad_parse() -> None:
 # Travelling Plumber Tests
 
 
-def test_plumber_duplicate_valve() -> None:
-    """Test plumber validation for duplicate valve."""
-    with pytest.raises(ValueError) as exc:
-        TravellingPlumber.from_lines(
-            lines=[
-                "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB",
-                "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB",
-            ],
-            start_valve="AA",
-            max_turns=30,
-        )
-    assert "duplicate" in str(exc).casefold()
-
-
-def test_plumber_bad_dictionary_invalid_exits() -> None:
-    """Test dictionary validation for nonexistent exit."""
-    with pytest.raises(ValueError) as exc:
-        TravellingPlumber.create_valve_by_name(
-            [
-                Valve(name="AA", flow=0, exits=["BB"]),
-            ]
-        )
-    assert "not present in graph" in str(exc)
-
-
-def test_plumber_bad_reachability() -> None:
-    """Test reachability of the raw graph."""
-    valve_by_name = {
-        "AA": Valve(name="AA", flow=0, exits=["BB"]),
-        "BB": Valve(name="BB", flow=0, exits=["CC"]),
-        "CC": Valve(name="CC", flow=0, exits=[]),
-        "FF": Valve(name="FF", flow=0, exits=[]),
-    }
-    with pytest.raises(ValueError) as exc:
-        TravellingPlumber.validate_reachability(valve_by_name, "AA")
-    assert "disjoint" in str(exc)
-
-
 def test_plumber_cost_between_names(example1: TravellingPlumber, input1: TravellingPlumber) -> None:
     """Test Floyd-Warshall closure."""
     closures = {
@@ -399,13 +263,13 @@ def test_plumber_cost_between_names(example1: TravellingPlumber, input1: Travell
             target_closure[from_name][to_name] = closures[valve_names[i]][j]
             target_closure[to_name][from_name] = closures[valve_names[i]][j]
 
-    assert example1.cost_between_valves == target_closure
+    assert example1.cost_between == target_closure
 
-    assert input1.cost_between_valves is not None
+    assert input1.cost_between is not None
     for valve in input1.valves:
         for exit_valve_name in valve.exits:
-            assert input1.cost_between_valves[valve.name][exit_valve_name] == 1
-    assert input1.cost_between_valves["ZS"]["SB"] == 2
+            assert input1.cost_between[valve.name][exit_valve_name] == 1
+    assert input1.cost_between["ZS"]["SB"] == 2
 
 
 def test_plumber_quiescence(example1: TravellingPlumber) -> None:
@@ -424,10 +288,10 @@ def test_plumber_quiescence(example1: TravellingPlumber) -> None:
     target_closure: dict[str, dict[str, int]] = defaultdict(dict)
     for i, from_name in enumerate(valve_names):
         for j, to_name in enumerate(valve_names):
-            if to_name in {from_name, example1.start_valve}:
+            if to_name in {from_name, example1.start_valve_name}:
                 continue
             target_closure[from_name][to_name] = closures[valve_names[i]][j]
-            if from_name != example1.start_valve:
+            if from_name != example1.start_valve_name:
                 target_closure[to_name][from_name] = closures[valve_names[i]][j]
 
     assert example1.canonical_graph == target_closure
@@ -435,17 +299,18 @@ def test_plumber_quiescence(example1: TravellingPlumber) -> None:
 
 def test_example1_solve(example1: TravellingPlumber) -> None:
     """Tests the example1 input."""
-    payout, path, turns_left = example1.solve()
+    payout, _path, _turns_left = example1.solve()
     assert payout == 1651
 
 
 def test_input1_solve(input1: TravellingPlumber) -> None:
     """Tests the input1 input."""
-    payout, path, turns_left = input1.solve()
+    payout, _path, _turns_left = input1.solve()
     assert payout == 1850
 
 
 def test_input1_benchmarking() -> None:
+    """Benchmarks the input1 test."""
     # Unknown setup
     # 2022-12-30 14:13 commit -> 1.5 seconds
 
@@ -466,7 +331,7 @@ def test_input1_benchmarking() -> None:
 
     def stress_test() -> None:
         instance = TravellingPlumber.from_filename(filename="input1", start_valve="AA", max_turns=30)
-        payout, path, turns_left = instance.solve()
+        payout, _path, _turns_left = instance.solve()
         assert payout == 1850, f"got {payout} instead of 1850"
 
     total_time = timeit.timeit(stress_test, number=iterations)
@@ -475,6 +340,7 @@ def test_input1_benchmarking() -> None:
 
 
 def test_example1_piecewise_answer() -> None:
+    """Tests the optimal partition for example1 just to see if it can at least calculate that."""
     instance = TravellingPlumber.from_filename(filename="example1", start_valve="AA", max_turns=26)
     # DD BB JJ HH EE CC
     human = instance.solve({"DD", "HH", "EE"})
@@ -488,7 +354,18 @@ def test_example1_piecewise_answer() -> None:
 # input6 13468, 12887, quadratically increasing rates, /u/i_have_no_biscuits, passes as of commit
 # input7 1288, 1484, circle, /u/i_have_no_biscuits, passes as of commit
 # input8 2400, 3680, clusters, /u/i_have_no_biscuits, passes as of commit
+
+
+class ElephantSolver:
+    """Container class for solving AOC 2022, Day 16."""
+
+    def __init__(self, plumber: TravellingPlumber) -> None:
+        """Instantiates the Elephant Solver."""
+        self.plumber = plumber
+
+
 def solve_both(filename: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, int]:
+    """Solves both p1 and p2."""
     turns_part_one, turns_part_two = turns
     instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_one)
     first = instance.solve()[0]
