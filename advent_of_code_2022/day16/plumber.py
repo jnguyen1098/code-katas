@@ -5,54 +5,50 @@ from __future__ import annotations
 
 import itertools
 import re
-from dataclasses import dataclass
 from functools import cached_property
 from typing import Iterable
 
 INF = 0x3F3F3F3F
-CURR_FLOW, TURNS_LEFT, CURR_RELIEF = 0, 1, 2
+
 State = tuple[int, int, int]  # curr_flow, turns_left, curr_relief
+CURR_FLOW, TURNS_LEFT, CURR_RELIEF = 0, 1, 2
+
+Valve = tuple[str, int, list[str]]  # name, flow, exits
+NAME, FLOW, EXITS = 0, 1, 2
+
 Result = tuple[int, list[str], int]  # payout, path, turns_left
 
+# (a - y) * 26 + (b - y)
+# 26a - 26y + b - y
+# 26a - 27y + b
+def valve_to_num(valve: str) -> int:
+    return 26 * ord(valve[0]) + ord(valve[1]) - 1755
 
-@dataclass
-class Valve:
-    """Valve that enables a flow and can be opened."""
+def num_to_valve(val: int) -> str:
+    res = ["A", "A"]
 
-    name: str
-    flow: int
-    exits: list[str]
+    if val < 26:
+        res[1] = chr(65 + val)
+    else:
+        res[0] = chr(65 + (val // 26) % 26)
+        res[1] = chr(65 + (val % 26))
 
-    @staticmethod
-    def from_line(line: str) -> "Valve":
-        """Parses a valve object from a line."""
-        if not (match := re.fullmatch(r"Valve ([A-Z]{2})[^=]+=(-?\d+);.*valves? (.*)", line)):
-            raise ValueError(f"Could not parse {line=} for class Valve")
-        groups = match.groups()
-        valve_name, flow, exits = groups[0], int(groups[1]), groups[2].split(", ")
-        return Valve(name=valve_name, flow=flow, exits=exits)
+    return "".join(res)
 
-
-@dataclass
 class TravellingPlumber:
     """Represents a branch-and-bound implementation of AOC 2022, Day 16: Proboscidea Volcanium."""
 
-    valves: list[Valve]
-    max_turns: int
-    start_valve_name: str
+    def __init__(self, valves: list[Valve], max_turns: int, start_valve_name: str) -> None:
+        self.valves = valves
+        self.max_turns = max_turns
+        self.start_valve_name = start_valve_name
 
     @cached_property
     def valve_by_name(self) -> dict[str, Valve]:
         """Takes the valve list and creates a dictionary for easy reference."""
         valve_by_name = {}
         for valve in self.valves:
-            if valve.name in valve_by_name:
-                raise ValueError(f"Duplicate valve {valve.name} detected")
-            valve_by_name[valve.name] = valve
-        for valve_name, valve in valve_by_name.items():
-            for ex in valve.exits:
-                if ex not in valve_by_name:
-                    raise ValueError(f"Exit {ex} for valve {valve_name} not present in graph")
+            valve_by_name[valve[NAME]] = valve
         return valve_by_name
 
     @cached_property
@@ -61,8 +57,8 @@ class TravellingPlumber:
         cost_between = {}
 
         for valve in self.valve_by_name.values():
-            for exit_name in valve.exits:
-                cost_between[valve.name, exit_name] = 1
+            for exit_name in valve[EXITS]:
+                cost_between[valve[NAME], exit_name] = 1
 
         for k in (valve_names := list(self.valve_by_name.keys())):
             for i in valve_names:
@@ -122,26 +118,27 @@ class TravellingPlumber:
         """The ordering of valves based on flow."""
         return sorted(
             self.quiescent_valves,
-            key=lambda valve_name: self.valve_by_name[valve_name].flow,
+            key=lambda valve_name: self.valve_by_name[valve_name][FLOW],
             reverse=True,
         )
 
     @cached_property
     def quiescent_valves(self) -> set[str]:
         """Valves that have non-zero flow."""
-        return {valve.name for valve in self.valves if valve.flow > 0 and valve.name != self.start_valve_name}
-
-    @staticmethod
-    def from_lines(*, lines: list[str], start_valve: str, max_turns: int) -> "TravellingPlumber":
-        """Parses the valves for the problem from lines."""
-        return TravellingPlumber(valves=[Valve.from_line(line) for line in lines], start_valve_name=start_valve, max_turns=max_turns)
+        return {valve[NAME] for valve in self.valves if valve[FLOW] > 0 and valve[NAME] != self.start_valve_name}
 
     @staticmethod
     def from_filename(*, path: str, start_valve: str, max_turns: int) -> "TravellingPlumber":
         """Parses the valves for the problem from a file."""
         with open(path, "r", encoding="ascii") as file_object:
             lines = [line.rstrip("\n") for line in file_object]
-        return TravellingPlumber.from_lines(lines=lines, start_valve=start_valve, max_turns=max_turns)
+        valves = []
+        for line in lines:
+            parse = re.findall(r"([A-Z]{2}|\d+)", line)
+            name, flow, exits = parse[0], int(parse[1]), parse[2:]
+            valves.append((name, flow, exits))
+        return TravellingPlumber(valves=valves, start_valve_name=start_valve, max_turns=max_turns)
+
 
     def solve(self, ignore_set: set[str] | frozenset[str] = frozenset()) -> Result:
         """
@@ -192,7 +189,7 @@ class TravellingPlumber:
                 if curr_node[TURNS_LEFT] - activation_cost_in_turns < 1:
                     continue
                 next_relief = curr_relief + (curr_node[CURR_FLOW] * activation_cost_in_turns)
-                next_flow = curr_node[CURR_FLOW] + self.valve_by_name[next_valve_name].flow
+                next_flow = curr_node[CURR_FLOW] + self.valve_by_name[next_valve_name][FLOW]
                 next_state = (
                     next_flow,
                     next_turns_left,
