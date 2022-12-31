@@ -35,6 +35,7 @@ def num_to_valve(val: int) -> str:
 
     return "".join(res)
 
+
 class TravellingPlumber:
     """Represents a branch-and-bound implementation of AOC 2022, Day 16: Proboscidea Volcanium."""
 
@@ -135,7 +136,7 @@ class TravellingPlumber:
         valves = []
         for line in lines:
             parse = re.findall(r"([A-Z]{2}|\d+)", line)
-            name, flow, exits = parse[0], int(parse[1]), parse[2:]
+            name, flow, exits = valve_to_num(parse[0]), int(parse[1]), list(map(valve_to_num, parse[2:]))
             valves.append((name, flow, exits))
         return TravellingPlumber(valves=valves, start_valve_name=start_valve, max_turns=max_turns)
 
@@ -319,24 +320,24 @@ def run_all_tests() -> None:
         "input8": (2400, 3680, None),  # /u/i_have_no_biscuits
     }
 
-    # Part 1
+    print("Part 1")
     for filename, test_data in test_cases.items():
         expected, _, turn_setup = test_data
         print(f"{filename: <8} -> {expected}")
         max_turns = 30
         if turn_setup is not None:
             max_turns = turn_setup[0]
-        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve="AA", max_turns=max_turns)).part_one
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=0, max_turns=max_turns)).part_one
         assert actual == expected, f"got {actual} for p1 for {filename} but expected {expected}"
 
-    # Part 2
+    print("\nPart 2")
     for filename, test_data in test_cases.items():
         _, expected, turn_setup = test_data
         print(f"{filename: <8} -> {expected}")
         max_turns = 26
         if turn_setup is not None:
             max_turns = turn_setup[1]
-        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve="AA", max_turns=max_turns)).part_two
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=0, max_turns=max_turns)).part_two
     assert actual == expected, f"got {actual} for p2 for {filename} but expected {expected}"
 
 
