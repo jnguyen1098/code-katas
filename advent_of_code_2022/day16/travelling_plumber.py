@@ -112,7 +112,7 @@ class TravellingPlumber:
             left, right = pair
             rev_pair = right, left
             rev_cost = cost_between_valves[rev_pair]
-            assert cost == rev_cost, "Cost-between-valves is not symmetric"
+            assert cost == rev_cost, f"Cost-between-valves is not symmetric between {pair} and {rev_pair}"
             if left not in expanded_dict:
                 expanded_dict[left] = {}
             if right not in expanded_dict:
@@ -169,7 +169,7 @@ class TravellingPlumber:
         quiescent_valves_reached = set()
         pushed = {start}
         stack = [start]
-        for _ in range(len(valve_dict)):
+        for _ in range(len(valve_dict) + 1):
             if not stack:
                 break
             popped = stack.pop()
@@ -211,14 +211,12 @@ class TravellingPlumber:
         self.canonical_graph = TravellingPlumber.validate_canonical_graph(
             self.canonical_graph, self.valve_by_name, self.start_valve,
         )
-        self.max_flow = sum(valve.flow for valve in self.valves)
         self.maximal_valve_ordering = sorted(
             set(self.canonical_graph.keys()) - {self.start_valve},
             key=lambda valve_name: self.valve_by_name[valve_name].flow,
             reverse=True,
         )
         self.validate_everything_or_crash()
-        self.valve_ordering_by_local_profit_cache = {}
 
     @staticmethod
     def from_lines(*, lines: list[str], start_valve: str, max_turns: int) -> "TravellingPlumber":
@@ -232,7 +230,9 @@ class TravellingPlumber:
             lines = [line.rstrip("\n") for line in file_object]
         return TravellingPlumber.from_lines(lines=lines, start_valve=start_valve, max_turns=max_turns)
 
-    def solve(self) -> tuple[int]:
+    def solve(self, ignore_set: set[str] | None = None) -> tuple[int]:
+
+        ignore = ignore_set or set()
 
         CURR_FLOW, TURNS_LEFT, CURR_VALVE, CURR_RELIEF = 0, 1, 2 ,3
 
@@ -254,6 +254,8 @@ class TravellingPlumber:
 
         best_payout = get_payout(start_node)
         best_relief_accum = [-1] * self.max_turns
+        best_valve_path = None
+        best_turns_left = INF
 
         curr_valve_path = [self.start_valve]
         curr_relief_accum = [-1] * self.max_turns
@@ -263,6 +265,8 @@ class TravellingPlumber:
 
             nonlocal best_payout
             nonlocal best_relief_accum
+            nonlocal best_valve_path
+            nonlocal best_turns_left
 
             increment("total_calls")
 
@@ -274,6 +278,8 @@ class TravellingPlumber:
             if (curr_payout := get_payout(curr_node)) > best_payout:
                 best_payout = curr_payout
                 best_relief_accum = curr_relief_accum[:]
+                best_valve_path = curr_valve_path[:]
+                best_turns_left = turns_left
 
             if turns_left == 1:
                 increment("goal_states_encountered")
@@ -283,8 +289,9 @@ class TravellingPlumber:
             assert self.canonical_graph is not None
             assert self.valve_by_name is not None
 
+            explored = False
             for next_valve_name in self.maximal_valve_ordering:
-                if next_valve_name in curr_valve_set:
+                if next_valve_name in ignore or next_valve_name in curr_valve_set:
                     increment("duplicate_valve_rejections")
                     continue
                 activation_cost_in_turns = self.canonical_graph[curr_valve][next_valve_name] + 1
@@ -303,6 +310,7 @@ class TravellingPlumber:
                 if best_relief_accum[self.max_turns - next_turns_left] >= next_relief:
                     increment("bound_rejections")
                     continue
+                explored = True
                 curr_valve_set.add(next_valve_name)
                 curr_valve_path.append(next_valve_name)
                 curr_relief_accum[self.max_turns - next_turns_left] = next_relief
@@ -312,10 +320,14 @@ class TravellingPlumber:
 
         explore_node(start_node)
 
+        """
         for metric_name, value in metrics.items():
             print(f"{metric_name: >30s} -> {value: >10}")
         print()
-
+        print(best_valve_path)
+        """
+        if ignore_set is not None:
+            return best_payout, best_valve_path, best_turns_left
         return best_payout
 
 
@@ -471,3 +483,86 @@ def test_input1_benchmarking() -> None:
     average_time = total_time / iterations
     print(f"Average time over {iterations} iterations: {average_time}")
     assert 0
+
+def test_example1_piecewise_answer() -> None:
+    instance = TravellingPlumber.from_filename(filename="example1", start_valve="AA", max_turns=26)
+    ## DD BB JJ HH EE CC
+    human = instance.solve({"DD", "HH", "EE"})
+    elephant = instance.solve({"JJ", "BB", "CC"})
+    res = human + elephant
+    assert res == 1707
+
+# input4 only 6 turns; 60 p1, 100 p2, /u/Zerdligham, passes as of commit
+# input5 2640, 1670, linearly increasing rates, /u/i_have_no_biscuits, passes as of commit
+# input6 13468, 12887, quadratically increasing rates, /u/i_have_no_biscuits, passes as of commit
+# input7 1288, 1484, circle, /u/i_have_no_biscuits, passes as of commit
+# input8 2400, 3680, clusters, /u/i_have_no_biscuits, passes as of commit
+import itertools
+filename = "input8"
+instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=30)
+assert instance.solve() == 2400
+instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=26)
+all_valves = frozenset(instance.canonical_graph.keys()) - {"AA"}
+all_valves_canonical = sorted(all_valves)
+
+def get_subset_from_mask(mask: int) -> frozenset[str]:
+    return frozenset(itertools.compress(all_valves_canonical, mask))
+
+def get_nth_mask(idx: int, cardinality: int) -> list[int]:
+    return list(map(int, bin(2 ** cardinality + idx)[3:]))
+
+def set_to_mask(valve_set: set[str]) -> list[int]:
+    mask = []
+    for valve in all_valves_canonical:
+        if valve in valve_set:
+            mask.append(1)
+        else:
+            mask.append(0)
+    return mask
+
+def mask_to_num(mask: list[int]) -> int:
+    return int("".join(map(str, mask)), 2)
+
+def get_all_subsets_starting_from(start_idx: int = 0):
+    for i in range(2 ** len(all_valves)):
+        final_value = (i + start_idx) % (2 ** len(all_valves))
+        mask = get_nth_mask(final_value, len(all_valves))
+        subset = get_subset_from_mask(mask)
+        yield subset
+
+best_single_agent_score, best_single_agent_path, best_single_agent_turns_left = instance.solve(set())
+print(best_single_agent_score, best_single_agent_path)
+best_complement_score, best_complement_path, best_complement_turns_left = instance.solve(set(best_single_agent_path))
+print(best_complement_score, best_complement_path)
+
+best_score = best_single_agent_score + best_complement_score
+
+highest_score_ignoring = {}
+processed = 0
+pruned = 0
+
+sorted_subsets = sorted(list(get_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(all_valves)))
+
+for subset in sorted_subsets:
+    if subset in highest_score_ignoring:
+        continue
+    human_will_ignore = subset
+    elephant_will_ignore = all_valves - human_will_ignore
+    human_score, human_path, human_spare = instance.solve(human_will_ignore)
+    processed += 1
+    if human_score + best_single_agent_score < best_score:
+        highest_score_ignoring[elephant_will_ignore] = -INF
+        pruned += 1
+        continue
+    elephant_score, elephant_path, elephant_spare = instance.solve(elephant_will_ignore)
+    processed += 1
+    highest_score_ignoring[human_will_ignore] = human_score
+    highest_score_ignoring[elephant_will_ignore] = elephant_score
+    human_args = ", ".join(sorted(elephant_will_ignore))
+    ele_args = ", ".join(sorted(human_will_ignore))
+    combined_spare = human_spare + elephant_spare
+    absolute_spare_diff = abs(human_spare - elephant_spare)
+    if human_score + elephant_score > best_score:
+        print(f"{human_args} (human={human_score}) <=={absolute_spare_diff}==> (elephant={elephant_score}) {ele_args} ==> {human_score + elephant_score}")
+        best_score = human_score + elephant_score
+print(f"{best_score=}, {processed=}, {pruned=}")
