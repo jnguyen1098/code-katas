@@ -495,7 +495,7 @@ def test_input_1():
     assert example1 == 1850, f"Expected 1850 for example but got {example1}"
     print("Success input 1")
 
-test_example_1()
+# test_example_1()
 test_input_1()
 
 def create_mask(all_valves: list[str], blocked_valves: list[str]) -> dict[str, bool]:
@@ -535,5 +535,16 @@ def test_input_12():
     assert best_max == 2306, f"Expected 2306 for example but got {best_max}"
     print("Success input 1 part 2")
 
-test_example_12()
-test_input_12()
+def test_input_22():
+    parsed = parse_valve_by_name("input2")
+    non_decoy_valve_names = {valve.name for valve in parsed.valves if valve.name not in parsed.decoy_valves}
+    optimal_path = solve(parsed.valves, parsed.decoy_valves, parsed.cost_by_edges, parsed.valve_by_name, start_valve=ENTRY_VALVE_AA, taken_dict=None, min_left=26)[1]
+    best_max = -0x3F3F3F3F
+    elephant_ignore = set(optimal_path)
+    human_ignore = non_decoy_valve_names - elephant_ignore
+    human_score, human_path = solve(parsed.valves, parsed.decoy_valves, parsed.cost_by_edges, parsed.valve_by_name, start_valve=ENTRY_VALVE_AA, taken_dict=create_mask(non_decoy_valve_names, human_ignore), min_left=26)
+    elephant_score, elephant_path = solve(parsed.valves, parsed.decoy_valves, parsed.cost_by_edges, parsed.valve_by_name, start_valve=ENTRY_VALVE_AA, taken_dict=create_mask(non_decoy_valve_names, elephant_ignore), min_left=26)
+    best_max = human_score + elephant_score
+    assert best_max == 2304, f"Expected 2304 for example but got {best_max}"
+    print("Success input 2 part 2")
+test_input_22()
