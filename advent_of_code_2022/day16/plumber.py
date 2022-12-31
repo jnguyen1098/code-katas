@@ -363,44 +363,55 @@ class ElephantSolver:
         """Instantiates the Elephant Solver."""
         self.plumber = plumber
 
+    @cached_property
+    def sorted_quiescent_valves(self) -> list[str]:
+        return sorted(self.plumber.quiescent_valves)
 
-def solve_both(filename: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, int]:
-    """Solves both p1 and p2."""
-    turns_part_one, turns_part_two = turns
-    instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_one)
-    first = instance.solve()[0]
-    instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_two)
-    all_valves = frozenset(instance.canonical_graph.keys()) - {"AA"}
-    all_valves_canonical = sorted(all_valves)
+    def get_subset_from_mask(self, mask: list[int]) -> frozenset[str]:
+        return frozenset(itertools.compress(self.sorted_quiescent_valves, mask))
 
-    def get_subset_from_mask(mask: list[int]) -> frozenset[str]:
-        return frozenset(itertools.compress(all_valves_canonical, mask))
-
+    @staticmethod
     def get_nth_mask(idx: int, cardinality: int) -> list[int]:
         return list(map(int, bin(2**cardinality + idx)[3:]))
 
-    def set_to_mask(valve_set: set[str]) -> list[int]:
+    def set_to_mask(self, valve_set: set[str]) -> list[int]:
         mask = []
-        for valve in all_valves_canonical:
+        for valve in self.sorted_quiescent_valves:
             if valve in valve_set:
                 mask.append(1)
             else:
                 mask.append(0)
         return mask
 
+    @staticmethod
     def mask_to_num(mask: list[int]) -> int:
         return int("".join(map(str, mask)), 2)
 
-    def get_all_subsets_starting_from(start_idx: int = 0) -> Iterable[frozenset[str]]:
-        for i in range(2 ** len(all_valves)):
-            final_value = (i + start_idx) % (2 ** len(all_valves))
-            mask = get_nth_mask(final_value, len(all_valves))
-            subset = get_subset_from_mask(mask)
+    def generate_all_subsets_starting_from(self, start_idx: int = 0) -> Iterable[frozenset[str]]:
+        for i in range(2 ** len(self.plumber.quiescent_valves)):
+            final_value = (i + start_idx) % (2 ** len(self.plumber.quiescent_valves))
+            mask = self.get_nth_mask(final_value, len(self.plumber.quiescent_valves))
+            subset = self.get_subset_from_mask(mask)
             yield subset
 
-    best_single_agent_score, best_single_agent_path, best_single_agent_turns_left = instance.solve(set())
+def solve_both(filename: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, int]:
+    """Solves both p1 and p2."""
+    turns_part_one, turns_part_two = turns
+
+    # Part 1
+    instance_1 = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_one)
+    solver_1 = ElephantSolver(instance_1)
+    first = solver_1.plumber.solve()[0]
+
+    # Part 2
+    instance_2 = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_two)
+    solver_2 = ElephantSolver(instance_2)
+    all_valves = frozenset(solver_2.plumber.canonical_graph.keys()) - {"AA"}
+    all_valves_canonical = sorted(all_valves)
+
+    best_single_agent_score, best_single_agent_path, best_single_agent_turns_left = solver_2.plumber.solve(set())
     print(best_single_agent_score, best_single_agent_path)
-    best_complement_score, best_complement_path, best_complement_turns_left = instance.solve(set(best_single_agent_path))
+    best_complement_score, best_complement_path, best_complement_turns_left = solver_2.plumber.solve(set(best_single_agent_path))
     print(best_complement_score, best_complement_path)
 
     best_score = best_single_agent_score + best_complement_score
@@ -409,20 +420,20 @@ def solve_both(filename: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, i
     processed = 0
     pruned = 0
 
-    sorted_subsets = sorted(list(get_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(all_valves)))
+    sorted_subsets = sorted(list(solver_2.generate_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(all_valves)))
 
     for subset in sorted_subsets:
         if subset in highest_score_ignoring:
             continue
         human_will_ignore = subset
         elephant_will_ignore = all_valves - human_will_ignore
-        human_score, human_path, human_spare = instance.solve(human_will_ignore)
+        human_score, human_path, human_spare = solver_2.plumber.solve(human_will_ignore)
         processed += 1
         if human_score + best_single_agent_score < best_score:
             highest_score_ignoring[elephant_will_ignore] = -INF
             pruned += 1
             continue
-        elephant_score, elephant_path, elephant_spare = instance.solve(elephant_will_ignore)
+        elephant_score, elephant_path, elephant_spare = solver_2.plumber.solve(elephant_will_ignore)
         processed += 1
         highest_score_ignoring[human_will_ignore] = human_score
         highest_score_ignoring[elephant_will_ignore] = elephant_score
@@ -436,7 +447,6 @@ def solve_both(filename: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, i
     return first, best_score
 
 
-"""
 test_cases = {
     "example1": (1651, 1707, None),
     "input1": (1850, 2306, None),
@@ -459,4 +469,3 @@ for filename, test_data in test_cases.items():
     assert p2 == expected_p2, f"got {p2} for p2 for {filename} but expected {expected_p2}"
 
 print("we are good!")
-"""
