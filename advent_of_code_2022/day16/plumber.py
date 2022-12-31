@@ -18,6 +18,15 @@ CURR_FLOW, TURNS_LEFT, CURR_RELIEF = 0, 1, 2
 State = tuple[int, int, int]  # curr_flow, turns_left, curr_relief
 Result = tuple[int, list[str], int]  # payout, path, turns_left
 
+# import cProfile
+# import pstats
+# profiler = cProfile.Profile()
+# profiler.enable()
+# code go here
+# profiler.disable()
+# stats = pstats.Stats(profiler).sort_stats("tottime")
+# stats.print_stats()
+
 
 @dataclass
 class Valve:
@@ -348,13 +357,6 @@ def test_example1_piecewise_answer() -> None:
     assert res == 1707
 
 
-# input4 only 6 turns; 60 p1, 100 p2, /u/Zerdligham, passes as of commit
-# input5 2640, 2670, linearly increasing rates, /u/i_have_no_biscuits, passes as of commit
-# input6 13468, 12887, quadratically increasing rates, /u/i_have_no_biscuits, passes as of commit
-# input7 1288, 1484, circle, /u/i_have_no_biscuits, passes as of commit
-# input8 2400, 3680, clusters, /u/i_have_no_biscuits, passes as of commit
-
-
 class ElephantSolver:
     """Container class for solving AOC 2022, Day 16."""
 
@@ -451,33 +453,41 @@ class ElephantSolver:
         return best_score
 
 
-def solve_both(path: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, int]:
-    """Solves both p1 and p2."""
-    turns_part_one, turns_part_two = turns
-    instance_1 = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_one))
-    instance_2 = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_two))
-    return instance_1.part_one, instance_2.part_two
+def run_all_tests() -> None:
+    """Run all unit tests."""
+
+    test_cases = {
+        "example1": (1651, 1707, None),
+        "input1": (1850, 2306, None),
+        "input2": (1728, 2304, None),
+        "input3": (4999999999995, 1000000000304, None),
+        "input4": (60, 100, (6, 6)),  # /u/Zerdligham
+        "input5": (2640, 2670, None),  # /u/i_have_no_biscuits
+        "input6": (13468, 12887, None),  # /u/i_have_no_biscuits
+        "input7": (1288, 1484, None),  # /u/i_have_no_biscuits
+        "input8": (2400, 3680, None),  # /u/i_have_no_biscuits
+    }
+
+    # Part 1
+    for filename, test_data in test_cases.items():
+        expected, _, turn_setup = test_data
+        print(f"{filename: <8} -> {expected}")
+        max_turns = 30
+        if turn_setup is not None:
+            max_turns = turn_setup[0]
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve="AA", max_turns=max_turns)).part_one
+        assert actual == expected, f"got {actual} for p1 for {filename} but expected {expected}"
+
+    # Part 2
+    for filename, test_data in test_cases.items():
+        _, expected, turn_setup = test_data
+        print(f"{filename: <8} -> {expected}")
+        max_turns = 26
+        if turn_setup is not None:
+            max_turns = turn_setup[1]
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve="AA", max_turns=max_turns)).part_two
+    assert actual == expected, f"got {actual} for p2 for {filename} but expected {expected}"
 
 
-# 19s as of 3:19pm 2022-12-31
-test_cases = {
-    "example1": (1651, 1707, None),
-    "input1": (1850, 2306, None),
-    "input2": (1728, 2304, None),
-    "input3": (4999999999995, 1000000000304, None),
-    "input4": (60, 100, (6, 6)),
-    "input5": (2640, 2670, None),
-    "input6": (13468, 12887, None),
-    "input7": (1288, 1484, None),
-    "input8": (2400, 3680, None),
-}
-
-for filename, test_data in test_cases.items():
-    expected_p1, expected_p2, turn_setup = test_data
-    print(f"{filename: <8} -> {expected_p1}, {expected_p2}{f' with custom turns {turn_setup}' if turn_setup else ''}")
-    if turn_setup is None:
-        p1, p2 = solve_both(filename)
-    else:
-        p1, p2 = solve_both(filename, turn_setup)
-    assert p1 == expected_p1, f"got {p1} for p1 for {filename} but expected {expected_p1}"
-    assert p2 == expected_p2, f"got {p2} for p2 for {filename} but expected {expected_p2}"
+if __name__ == "__main__":
+    run_all_tests()
