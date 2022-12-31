@@ -404,47 +404,59 @@ class ElephantSolver:
         return self.plumber.solve(ignore_set)
 
     @cached_property
+    def best_single_agent_result(self) -> Result:
+        """Returns the tuple representing the best single agent result."""
+        return self.plumber.solve()
+
+    @cached_property
     def valve_subsets_sorted_by_increasing_cardinality_gap(self) -> list[frozenset[str]]:
         """Gets all subsets of every quiescent valve, sorted by the cardinality gap between the human and elephant."""
         return sorted(list(self.generate_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(self.plumber.quiescent_valves)))
 
     @cached_property
+    def start_bound(self) -> int:
+        """
+        Calculates a reasonable "best so far".
+
+        Uses the result obtained from greedily giving leftover valves to the elephant.
+        When the first part of an assignment has no hope of beating the bound, we prune.
+        """
+        best_single_agent_score, best_single_agent_path = self.best_single_agent_result[0:2]
+        best_complement_score = self.plumber.solve(set(best_single_agent_path))[0]
+        return best_single_agent_score + best_complement_score
+
+    @cached_property
     def part_one(self) -> int:
         """Returns the answer to part 1."""
-        return self.get_single_agent_result()[0]
+        return self.best_single_agent_result[0]
+
+    @cached_property
+    def part_two(self) -> int:
+        """Returns the answer to part 2."""
+        highest_score_ignoring = {}
+        best_score = self.start_bound
+        best_single_agent_score = self.part_one
+        for human_will_ignore in self.valve_subsets_sorted_by_increasing_cardinality_gap:
+            if human_will_ignore in highest_score_ignoring:
+                continue
+            elephant_will_ignore = frozenset(self.plumber.quiescent_valves - human_will_ignore)
+            human_score = self.get_single_agent_result(human_will_ignore)[0]
+            highest_score_ignoring[human_will_ignore] = human_score
+            if human_score + best_single_agent_score < best_score:
+                highest_score_ignoring[elephant_will_ignore] = -INF
+                continue
+            elephant_score = self.get_single_agent_result(elephant_will_ignore)[0]
+            highest_score_ignoring[elephant_will_ignore] = elephant_score
+            best_score = max(best_score, human_score + elephant_score)
+        return best_score
 
 
 def solve_both(path: str, turns: tuple[int, int] = (30, 26)) -> tuple[int, int]:
     """Solves both p1 and p2."""
     turns_part_one, turns_part_two = turns
-
-    # Part 1
-    first = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_one)).part_one
-
-    # Part 2
-    solver_2 = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_two))
-
-    best_single_agent_score, best_single_agent_path = solver_2.plumber.solve(set())[0:2]
-    best_complement_score = solver_2.plumber.solve(set(best_single_agent_path))[0]
-    best_score = best_single_agent_score + best_complement_score
-
-    highest_score_ignoring = {}
-
-    for subset in solver_2.valve_subsets_sorted_by_increasing_cardinality_gap:
-        if subset in highest_score_ignoring:
-            continue
-        human_will_ignore = frozenset(subset)
-        elephant_will_ignore = frozenset(solver_2.plumber.quiescent_valves - human_will_ignore)
-        human_score = solver_2.get_single_agent_result(human_will_ignore)[0]
-        highest_score_ignoring[human_will_ignore] = human_score
-        if human_score + best_single_agent_score < best_score:
-            highest_score_ignoring[elephant_will_ignore] = -INF
-            continue
-        elephant_score = solver_2.get_single_agent_result(elephant_will_ignore)[0]
-        highest_score_ignoring[elephant_will_ignore] = elephant_score
-        if human_score + elephant_score > best_score:
-            best_score = human_score + elephant_score
-    return first, best_score
+    instance_1 = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_one))
+    instance_2 = ElephantSolver(TravellingPlumber.from_filename(path=path, start_valve="AA", max_turns=turns_part_two))
+    return instance_1.part_one, instance_2.part_two
 
 
 # 19s as of 3:19pm 2022-12-31
