@@ -493,76 +493,101 @@ def test_example1_piecewise_answer() -> None:
     assert res == 1707
 
 # input4 only 6 turns; 60 p1, 100 p2, /u/Zerdligham, passes as of commit
-# input5 2640, 1670, linearly increasing rates, /u/i_have_no_biscuits, passes as of commit
+# input5 2640, 2670, linearly increasing rates, /u/i_have_no_biscuits, passes as of commit
 # input6 13468, 12887, quadratically increasing rates, /u/i_have_no_biscuits, passes as of commit
 # input7 1288, 1484, circle, /u/i_have_no_biscuits, passes as of commit
 # input8 2400, 3680, clusters, /u/i_have_no_biscuits, passes as of commit
 import itertools
-filename = "input8"
-instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=30)
-assert instance.solve() == 2400
-instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=26)
-all_valves = frozenset(instance.canonical_graph.keys()) - {"AA"}
-all_valves_canonical = sorted(all_valves)
+def solve_both(filename: str, turns: tuple[int, int] = (30, 26)) -> int:
+    turns_part_one, turns_part_two = turns
+    instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_one)
+    first = instance.solve()
+    instance = TravellingPlumber.from_filename(filename=filename, start_valve="AA", max_turns=turns_part_two)
+    all_valves = frozenset(instance.canonical_graph.keys()) - {"AA"}
+    all_valves_canonical = sorted(all_valves)
 
-def get_subset_from_mask(mask: int) -> frozenset[str]:
-    return frozenset(itertools.compress(all_valves_canonical, mask))
+    def get_subset_from_mask(mask: int) -> frozenset[str]:
+        return frozenset(itertools.compress(all_valves_canonical, mask))
 
-def get_nth_mask(idx: int, cardinality: int) -> list[int]:
-    return list(map(int, bin(2 ** cardinality + idx)[3:]))
+    def get_nth_mask(idx: int, cardinality: int) -> list[int]:
+        return list(map(int, bin(2 ** cardinality + idx)[3:]))
 
-def set_to_mask(valve_set: set[str]) -> list[int]:
-    mask = []
-    for valve in all_valves_canonical:
-        if valve in valve_set:
-            mask.append(1)
-        else:
-            mask.append(0)
-    return mask
+    def set_to_mask(valve_set: set[str]) -> list[int]:
+        mask = []
+        for valve in all_valves_canonical:
+            if valve in valve_set:
+                mask.append(1)
+            else:
+                mask.append(0)
+        return mask
 
-def mask_to_num(mask: list[int]) -> int:
-    return int("".join(map(str, mask)), 2)
+    def mask_to_num(mask: list[int]) -> int:
+        return int("".join(map(str, mask)), 2)
 
-def get_all_subsets_starting_from(start_idx: int = 0):
-    for i in range(2 ** len(all_valves)):
-        final_value = (i + start_idx) % (2 ** len(all_valves))
-        mask = get_nth_mask(final_value, len(all_valves))
-        subset = get_subset_from_mask(mask)
-        yield subset
+    def get_all_subsets_starting_from(start_idx: int = 0):
+        for i in range(2 ** len(all_valves)):
+            final_value = (i + start_idx) % (2 ** len(all_valves))
+            mask = get_nth_mask(final_value, len(all_valves))
+            subset = get_subset_from_mask(mask)
+            yield subset
 
-best_single_agent_score, best_single_agent_path, best_single_agent_turns_left = instance.solve(set())
-print(best_single_agent_score, best_single_agent_path)
-best_complement_score, best_complement_path, best_complement_turns_left = instance.solve(set(best_single_agent_path))
-print(best_complement_score, best_complement_path)
+    best_single_agent_score, best_single_agent_path, best_single_agent_turns_left = instance.solve(set())
+    print(best_single_agent_score, best_single_agent_path)
+    best_complement_score, best_complement_path, best_complement_turns_left = instance.solve(set(best_single_agent_path))
+    print(best_complement_score, best_complement_path)
 
-best_score = best_single_agent_score + best_complement_score
+    best_score = best_single_agent_score + best_complement_score
 
-highest_score_ignoring = {}
-processed = 0
-pruned = 0
+    highest_score_ignoring = {}
+    processed = 0
+    pruned = 0
 
-sorted_subsets = sorted(list(get_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(all_valves)))
+    sorted_subsets = sorted(list(get_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(all_valves)))
 
-for subset in sorted_subsets:
-    if subset in highest_score_ignoring:
-        continue
-    human_will_ignore = subset
-    elephant_will_ignore = all_valves - human_will_ignore
-    human_score, human_path, human_spare = instance.solve(human_will_ignore)
-    processed += 1
-    if human_score + best_single_agent_score < best_score:
-        highest_score_ignoring[elephant_will_ignore] = -INF
-        pruned += 1
-        continue
-    elephant_score, elephant_path, elephant_spare = instance.solve(elephant_will_ignore)
-    processed += 1
-    highest_score_ignoring[human_will_ignore] = human_score
-    highest_score_ignoring[elephant_will_ignore] = elephant_score
-    human_args = ", ".join(sorted(elephant_will_ignore))
-    ele_args = ", ".join(sorted(human_will_ignore))
-    combined_spare = human_spare + elephant_spare
-    absolute_spare_diff = abs(human_spare - elephant_spare)
-    if human_score + elephant_score > best_score:
-        print(f"{human_args} (human={human_score}) <=={absolute_spare_diff}==> (elephant={elephant_score}) {ele_args} ==> {human_score + elephant_score}")
-        best_score = human_score + elephant_score
-print(f"{best_score=}, {processed=}, {pruned=}")
+    for subset in sorted_subsets:
+        if subset in highest_score_ignoring:
+            continue
+        human_will_ignore = subset
+        elephant_will_ignore = all_valves - human_will_ignore
+        human_score, human_path, human_spare = instance.solve(human_will_ignore)
+        processed += 1
+        if human_score + best_single_agent_score < best_score:
+            highest_score_ignoring[elephant_will_ignore] = -INF
+            pruned += 1
+            continue
+        elephant_score, elephant_path, elephant_spare = instance.solve(elephant_will_ignore)
+        processed += 1
+        highest_score_ignoring[human_will_ignore] = human_score
+        highest_score_ignoring[elephant_will_ignore] = elephant_score
+        human_args = ", ".join(sorted(elephant_will_ignore))
+        ele_args = ", ".join(sorted(human_will_ignore))
+        combined_spare = human_spare + elephant_spare
+        absolute_spare_diff = abs(human_spare - elephant_spare)
+        if human_score + elephant_score > best_score:
+            print(f"{human_args} (human={human_score}) <=={absolute_spare_diff}==> (elephant={elephant_score}) {ele_args} ==> {human_score + elephant_score}")
+            best_score = human_score + elephant_score
+    print(f"{best_score=}, {processed=}, {pruned=}")
+    return first, best_score
+
+test_cases = {
+    "example1": (1651, 1707, None),
+    "input1": (1850, 2306, None),
+    "input2": (1728, 2304, None),
+    "input3": (4999999999995, 1000000000304, None),
+    "input4": (60, 100, (6, 6)),
+    "input5": (2640, 2670, None),
+    "input6": (13468, 12887, None),
+    "input7": (1288, 1484, None),
+    "input8": (2400, 3680, None),
+}
+
+for filename, test_data in test_cases.items():
+    expected_p1, expected_p2, turn_setup = test_data
+    if turn_setup is None:
+        p1, p2 = solve_both(filename)
+    else:
+        p1, p2 = solve_both(filename, turn_setup)
+    assert p1 == expected_p1, f"got {p1} for p1 for {filename} but expected {expected_p1}"
+    assert p2 == expected_p2, f"got {p2} for p2 for {filename} but expected {expected_p2}"
+
+print("we are good!")
