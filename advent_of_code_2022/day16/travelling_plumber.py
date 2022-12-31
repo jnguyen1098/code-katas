@@ -20,70 +20,6 @@ import pytest
 INF = 0x3F3F3F3F
 MAX_TURNS = 30  # TODO: fix this!
 
-@runtime_checkable
-class Comparable(Protocol):
-    """Interface for something that supports comparison."""
-
-    @abstractmethod
-    def __lt__(self: "Comparable", other: "Comparable") -> bool:  # pragma: no cover
-        """Return True if self < other else False."""
-
-    @abstractmethod
-    def __eq__(self: "Comparable", other: object) -> bool:  # pragma: no cover
-        """Return True if self == other else False."""
-
-
-class BoundedBrancher(ABC):
-    """Exhaustive searcher that uses branch-and-bound heuristics"""
-
-    @abstractmethod
-    def get_start(self) -> Any:  # pragma: no cover
-        """Entrypoint for the algorithm."""
-
-    @abstractmethod
-    def get_lower_bound(self, state: Any) -> Comparable:  # pragma: no cover
-        """Gets lower bound for heuristic value of state."""
-
-    @abstractmethod
-    def get_upper_bound(self, state: Any) -> Comparable:  # pragma: no cover
-        """Gets upper bound for heuristic value of state."""
-
-    @abstractmethod
-    def get_children(self, state: Any) -> Iterable[Any]:  # pragma: no cover
-        """Gets children (successors) of the given node."""
-
-    # TODO: remove this?
-    @abstractmethod
-    def is_goal_state(self, state: Any) -> bool:  # pragma: no cover
-        """Given a state, returns True if it's the end state."""
-
-    def solve(self) -> Comparable:
-        """Attempts to find the problem using the supplied heuristics."""
-
-        start_node = self.get_start()
-        pushed = set()
-        best_node = start_node
-        lower_bound = self.get_lower_bound(start_node)
-        stack = [start_node]
-
-        curr_path = []
-        curr_seen = set()
-
-        while stack:
-            curr_node = stack.pop()
-            if curr_node > best_node:
-                best_node = curr_node
-            if self.is_goal_state(curr_node):
-                continue
-            for child_node in self.get_children(curr_node):
-                if child_node not in pushed:
-                    pushed.add(child_node)
-                    if (upper_bound := self.get_upper_bound(child_node)) < lower_bound:
-                        continue
-                    stack.append(child_node)
-
-        return best_node
-
 
 @dataclass
 class Valve:
@@ -128,7 +64,7 @@ class State:
 
 
 @dataclass
-class TravellingPlumber(BoundedBrancher):
+class TravellingPlumber:
     """Represents a branch-and-bound implementation of AOC 2022, Day 16: Proboscidea Volcanium."""
 
     valves: list[Valve]
@@ -284,18 +220,14 @@ class TravellingPlumber(BoundedBrancher):
         local_profit_by_valve = {}
 
         for next_valve_name in self.maximal_valve_ordering:
-            print(next_valve_name)
             if next_valve_name == curr_valve_name:
-                print("self collision")
                 continue
             next_valve_cost = self.canonical_graph[curr_valve_name][next_valve_name] + 1
             if (next_turns_left := turns_left - next_valve_cost) <= 0:
-                print("turn collision")
                 continue
             next_valve_flow = self.valve_by_name[next_valve_name].flow
             payout = next_turns_left * next_valve_flow
             local_profit_by_valve[next_valve_name] = payout
-            print("successful write")
 
         return local_profit_by_valve
 
@@ -359,15 +291,7 @@ class TravellingPlumber(BoundedBrancher):
             lines = [line.rstrip("\n") for line in file_object]
         return TravellingPlumber.from_lines(lines=lines, start_valve=start_valve, max_turns=max_turns)
 
-    def get_start(self) -> State:
-        """Generates a start state."""
-        return State(curr_flow=0, turns_left=self.max_turns, curr_valve=self.start_valve, curr_relief=0)
-
-    def get_lower_bound(self, state: State) -> Comparable:
-        """Gets the lower bound for a current state."""
-        return state.curr_payout
-
-    def get_upper_bound(self, state: State) -> Comparable:
+    def get_upper_bound(self, state: State) -> int:
         """Gets the upper bound for a current state."""
         if (cache_hit := self.upper_bound_cache.get((state.curr_relief, state.turns_left))):
             return cache_hit
@@ -375,16 +299,8 @@ class TravellingPlumber(BoundedBrancher):
         self.upper_bound_cache[state.curr_relief, state.turns_left] = answer
         return answer
 
-    def is_goal_state(self, state: State) -> bool:
-        """Returns whether the state is terminal."""
-        return not state.turns_left
-
-    def get_children(self, state: State) -> Iterable[State]:
-        """Generates children (successors)."""
-        raise NotImplementedError("Deprecated")
-
-    def solve(self) -> Comparable:
-        start_node = self.get_start()
+    def solve(self) -> State:
+        start_node = State(curr_flow=0, turns_left=self.max_turns, curr_valve=self.start_valve, curr_relief=0)
 
         best_total_relief_node = start_node
 
@@ -410,7 +326,7 @@ class TravellingPlumber(BoundedBrancher):
 
             best_total_relief_node = max(best_total_relief_node, curr_node)
 
-            if self.is_goal_state(curr_node):
+            if not curr_node.turns_left:
                 increment("goal_states_encountered")
                 return
 
@@ -440,7 +356,7 @@ class TravellingPlumber(BoundedBrancher):
                     curr_relief=curr_relief + (curr_flow * next_valve_cost),
                 )
                 increment("children_generated")
-                if self.get_upper_bound(next_state) < self.get_lower_bound(best_total_relief_node):
+                if self.get_upper_bound(next_state) < best_total_relief_node.curr_payout:
                     increment("bound_rejections")
                     continue
                 curr_valve_set.add(next_valve_name)
@@ -588,20 +504,6 @@ def test_plumber_quiescence(example1: TravellingPlumber) -> None:
 
     assert example1.canonical_graph == target_closure
 
-
-def test_plumber_is_goal_state(example1: TravellingPlumber) -> None:
-    """Test goal state detection."""
-    goal_state = State(curr_flow=100, turns_left=0, curr_valve="AA", curr_relief=100)
-    assert example1.is_goal_state(goal_state)
-    unfinished_state = State(curr_flow=10034, turns_left=1, curr_valve="BB", curr_relief=1003234)
-    assert not example1.is_goal_state(unfinished_state)
-    unfinished_state_2 = State(curr_flow=10034, turns_left=30, curr_valve="BB", curr_relief=1003234)
-    assert not example1.is_goal_state(unfinished_state_2)
-
-def test_get_start(example1: TravellingPlumber) -> None:
-    """Tests start state generation."""
-    assert example1.get_start() == State(curr_flow=0, turns_left=30, curr_valve="AA", curr_relief=0)
-
 def test_get_local_profit_by_valve(example1: TravellingPlumber) -> None:
     """Tests that the local payout function ordering works."""
     assert example1.get_local_profit_by_valve("AA", 30) == {
@@ -627,13 +529,30 @@ def test_example1_solve(example1: TravellingPlumber) -> None:
 
 def test_input1_solve(input1: TravellingPlumber) -> None:
     """Tests the input1 input."""
+    solve_node = input1.solve()
+    assert solve_node.curr_payout == 1850
+
+def test_input1_benchmarking() -> None:
+    ## Unknown setup
     # 2022-12-30 14:13 commit -> 1.5 seconds
+
+    ## Running solve()
     # removal of get_children -> 0.75 seconds
     # maximal valve ordering -> 0.7 seconds, 30566 calls
     # maximal valve ordering + remove push -> 0.58 seconds, 31581 calls
     # local profit valve ordering -> 0.65 seconds, 31377 calls
     # local profit valve ordering cached -> 0.42 seconds, 31377 calls
+
+    ## With parse included
+    # removal of pydantic -> 0.547
+
     iterations = 10
-    print(timeit.timeit(lambda: input1.solve(), number=iterations) / iterations)
-    # solve_node = input1.solve()
-    # assert solve_node.curr_payout == 1850 + 1
+    def stress_test() -> None:
+        instance = TravellingPlumber.from_filename(filename="input1", start_valve="AA", max_turns=30)
+        goal_node = instance.solve()
+        assert goal_node.curr_payout == 1850
+
+    total_time = timeit.timeit(stress_test, number=iterations)
+    average_time = total_time / iterations
+    print(f"Average time over {iterations} iterations: {average_time}")
+    assert 0
