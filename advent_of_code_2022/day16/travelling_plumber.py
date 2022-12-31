@@ -105,7 +105,7 @@ class Valve:
     def __post_init__(self) -> None:
         """Validates the arguments of the valve."""
         if self.flow < 0:
-            raise ValueError(f"Negative flow {self_flow} not allowed")
+            raise ValueError(f"Negative flow {self.flow} not allowed")
         if self.name in self.exits:
             raise ValueError(f"Circular valve with self-exit {self.name} not allowed")
 
@@ -284,14 +284,18 @@ class TravellingPlumber(BoundedBrancher):
         local_profit_by_valve = {}
 
         for next_valve_name in self.maximal_valve_ordering:
+            print(next_valve_name)
             if next_valve_name == curr_valve_name:
+                print("self collision")
                 continue
             next_valve_cost = self.canonical_graph[curr_valve_name][next_valve_name] + 1
             if (next_turns_left := turns_left - next_valve_cost) <= 0:
+                print("turn collision")
                 continue
             next_valve_flow = self.valve_by_name[next_valve_name].flow
             payout = next_turns_left * next_valve_flow
             local_profit_by_valve[next_valve_name] = payout
+            print("successful write")
 
         return local_profit_by_valve
 
@@ -488,22 +492,6 @@ def test_valve_negative_flow() -> None:
 
 
 # Travelling Plumber Tests
-def test_plumber_missing_vars() -> None:
-    """Ensures a throw when we forget to include a required variable."""
-    with pytest.raises(ValueError) as exc:
-        TravellingPlumber(
-            lines=[
-                "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB",
-                "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB",
-            ],
-        )
-    assert "missing from instantiation" in str(exc)
-    with pytest.raises(ValueError) as exc:
-        TravellingPlumber(
-            start_valve="AA",
-        )
-    assert "missing from instantiation" in str(exc)
-
 
 def test_plumber_duplicate_valve() -> None:
     """Test plumber validation for duplicate valve."""
@@ -616,7 +604,7 @@ def test_get_start(example1: TravellingPlumber) -> None:
 
 def test_get_local_profit_by_valve(example1: TravellingPlumber) -> None:
     """Tests that the local payout function ordering works."""
-    assert example1.get_local_profit_by_valve("AA", 1) == {
+    assert example1.get_local_profit_by_valve("AA", 30) == {
         "BB": 364,  # 30 turns - 1 turn to reach - 1 turn to active = 28 turns left * 13 flow = 364
         "CC": 54,
         "DD": 560,
@@ -624,13 +612,13 @@ def test_get_local_profit_by_valve(example1: TravellingPlumber) -> None:
         "HH": 528,
         "JJ": 567,
     }
-    assert example1.get_valve_ordering_by_local_profit("AA", 1) == ["JJ", "DD", "HH", "BB", "EE", "CC"]
+    assert example1.get_valve_ordering_by_local_profit("AA", 30) == ["JJ", "DD", "HH", "BB", "EE", "CC"]
     # CC and EE would yield 0 profit despite being "closeable" in time, so I omitted them
-    assert example1.get_local_profit_by_valve("JJ", 26) == {
+    assert example1.get_local_profit_by_valve("JJ", 5) == {
         "BB": 13,
         "DD": 20,
     }
-    assert example1.get_valve_ordering_by_local_profit("JJ", 26) == ["DD", "BB"]
+    assert example1.get_valve_ordering_by_local_profit("JJ", 5) == ["DD", "BB"]
 
 def test_example1_solve(example1: TravellingPlumber) -> None:
     """Tests the example1 input."""
@@ -649,5 +637,3 @@ def test_input1_solve(input1: TravellingPlumber) -> None:
     print(timeit.timeit(lambda: input1.solve(), number=iterations) / iterations)
     # solve_node = input1.solve()
     # assert solve_node.curr_payout == 1850 + 1
-
-test_input1_solve(TravellingPlumber.from_filename(filename="input1", start_valve="AA", max_turns=30))
