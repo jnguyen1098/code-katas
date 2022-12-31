@@ -6,7 +6,6 @@ import timeit
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from functools import cached_property, lru_cache
 from heapq import heappop, heappush
 from typing import Any, Iterable, Protocol, runtime_checkable
 
@@ -18,7 +17,6 @@ import pytest
 # TODO: test maximal greedy?
 
 INF = 0x3F3F3F3F
-MAX_TURNS = 30  # TODO: fix this!
 
 
 @dataclass
@@ -37,30 +35,6 @@ class Valve:
         groups = match.groups()
         valve_name, flow, exits = groups[0], int(groups[1]), groups[2].split(", ")
         return Valve(name=valve_name, flow=flow, exits=exits)
-
-    def __post_init__(self) -> None:
-        """Validates the arguments of the valve."""
-        if self.flow < 0:
-            raise ValueError(f"Negative flow {self.flow} not allowed")
-        if self.name in self.exits:
-            raise ValueError(f"Circular valve with self-exit {self.name} not allowed")
-
-
-@dataclass
-class State:
-    """Represents a node in the exhaustive DFS search."""
-
-    curr_flow: int
-    turns_left: int
-    curr_valve: str
-    curr_relief: int
-
-    @cached_property
-    def curr_payout(self) -> int:
-        return self.curr_relief + (self.curr_flow * self.turns_left)
-
-    def __lt__(self, other) -> bool:
-        return other.curr_payout > self.curr_payout
 
 
 @dataclass
@@ -216,33 +190,6 @@ class TravellingPlumber:
         assert quiescent_valves_reached == quiescent_valves, "Canonical traversal isn't exhaustive"
         return canonical
 
-    def get_local_profit_by_valve(self, curr_valve_name: str, turns_left: int) -> dict[str, int]:
-        local_profit_by_valve = {}
-
-        for next_valve_name in self.maximal_valve_ordering:
-            if next_valve_name == curr_valve_name:
-                continue
-            next_valve_cost = self.canonical_graph[curr_valve_name][next_valve_name] + 1
-            if (next_turns_left := turns_left - next_valve_cost) <= 0:
-                continue
-            next_valve_flow = self.valve_by_name[next_valve_name].flow
-            payout = next_turns_left * next_valve_flow
-            local_profit_by_valve[next_valve_name] = payout
-
-        return local_profit_by_valve
-
-    def get_valve_ordering_by_local_profit(self, curr_valve_name: str, turns_left: int) -> list[str]:
-        if (cache_hit := self.valve_ordering_by_local_profit_cache.get((curr_valve_name, turns_left))):
-            return cache_hit
-        local_profit_by_valve = self.get_local_profit_by_valve(curr_valve_name, turns_left)
-        ordering = sorted(
-            [valve_name for valve_name, local_profit in local_profit_by_valve.items()],
-            key=lambda valve_name: local_profit_by_valve[valve_name],
-            reverse=True,
-        )
-        self.valve_ordering_by_local_profit_cache[curr_valve_name, turns_left] = ordering
-        return ordering
-
     def validate_everything_or_crash(self) -> None:
         """Validates everything else I forgot."""
         canonical_valve_names = set(self.canonical_graph) - {self.start_valve}
@@ -270,14 +217,8 @@ class TravellingPlumber:
             key=lambda valve_name: self.valve_by_name[valve_name].flow,
             reverse=True,
         )
-        # TODO: test this
-        self.least_isolated_valve_ordering = sorted(
-            set(self.canonical_graph.keys()) - {self.start_valve},
-            key=lambda valve_name: sum(self.canonical_graph[valve_name].values()),
-        )
         self.validate_everything_or_crash()
         self.valve_ordering_by_local_profit_cache = {}
-        self.upper_bound_cache = {}
 
     @staticmethod
     def from_lines(*, lines: list[str], start_valve: str, max_turns: int) -> "TravellingPlumber":
@@ -291,76 +232,80 @@ class TravellingPlumber:
             lines = [line.rstrip("\n") for line in file_object]
         return TravellingPlumber.from_lines(lines=lines, start_valve=start_valve, max_turns=max_turns)
 
-    def get_upper_bound(self, state: State) -> int:
-        """Gets the upper bound for a current state."""
-        if (cache_hit := self.upper_bound_cache.get((state.curr_relief, state.turns_left))):
-            return cache_hit
-        answer = state.curr_relief + (self.max_flow * state.turns_left)
-        self.upper_bound_cache[state.curr_relief, state.turns_left] = answer
-        return answer
+    def solve(self) -> tuple[int]:
 
-    def solve(self) -> State:
-        start_node = State(curr_flow=0, turns_left=self.max_turns, curr_valve=self.start_valve, curr_relief=0)
-
-        best_total_relief_node = start_node
-
-        curr_valve_path = [self.start_valve]
-        curr_valve_set = set()
+        CURR_FLOW, TURNS_LEFT, CURR_VALVE, CURR_RELIEF = 0, 1, 2 ,3
 
         metrics = {
             "goal_states_encountered": 0,
             "children_generated": 0,
-            "wait_rejections": 0,
             "duplicate_valve_rejections": 0,
             "bound_rejections": 0,
             "total_calls": 0,
         }
+
         def increment(metric: str) -> None:
             metrics[metric] += 1
 
-        def explore_node(curr_node: State, level: int = 0) -> None:
+        def get_payout(state: tuple[int]) -> int:
+            return state[CURR_RELIEF] + state[CURR_FLOW] * state[TURNS_LEFT]
 
-            nonlocal best_total_relief_node
+        start_node = (0, self.max_turns, self.start_valve, 0)
+
+        best_payout = get_payout(start_node)
+        best_relief_accum = [-1] * self.max_turns
+
+        curr_valve_path = [self.start_valve]
+        curr_relief_accum = [-1] * self.max_turns
+        curr_valve_set = set()
+
+        def explore_node(curr_node: tuple[int], level: int = 0) -> None:
+
+            nonlocal best_payout
+            nonlocal best_relief_accum
 
             increment("total_calls")
 
-            best_total_relief_node = max(best_total_relief_node, curr_node)
+            curr_flow = curr_node[CURR_FLOW]
+            turns_left = curr_node[TURNS_LEFT]
+            curr_valve = curr_node[CURR_VALVE]
+            curr_relief = curr_node[CURR_RELIEF]
 
-            if not curr_node.turns_left:
+            if (curr_payout := get_payout(curr_node)) > best_payout:
+                best_payout = curr_payout
+                best_relief_accum = curr_relief_accum[:]
+
+            if turns_left == 1:
                 increment("goal_states_encountered")
                 return
 
-            curr_flow = curr_node.curr_flow
-            turns_left = curr_node.turns_left
-            curr_valve = curr_node.curr_valve
-            curr_relief = curr_node.curr_relief
-
             assert 0 <= turns_left <= self.max_turns
-
             assert self.canonical_graph is not None
             assert self.valve_by_name is not None
-            for next_valve_name in self.get_valve_ordering_by_local_profit(curr_valve, turns_left):
+
+            for next_valve_name in self.maximal_valve_ordering:
                 if next_valve_name in curr_valve_set:
                     increment("duplicate_valve_rejections")
                     continue
-                next_valve_distance = self.canonical_graph[curr_valve][next_valve_name]
-                next_valve_cost = next_valve_distance + 1
-                next_turns_left = turns_left - next_valve_cost
-                if next_turns_left <= 0:
-                    increment("wait_rejections")
+                activation_cost_in_turns = self.canonical_graph[curr_valve][next_valve_name] + 1
+                next_turns_left = turns_left - activation_cost_in_turns
+                if turns_left - activation_cost_in_turns < 1:
                     continue
-                next_state = State(
-                    curr_flow=curr_flow + self.valve_by_name[next_valve_name].flow,
-                    turns_left=next_turns_left,
-                    curr_valve=next_valve_name,
-                    curr_relief=curr_relief + (curr_flow * next_valve_cost),
+                next_relief = curr_relief + (curr_flow * activation_cost_in_turns)
+                next_flow = curr_flow + self.valve_by_name[next_valve_name].flow
+                next_state = (
+                    next_flow,
+                    next_turns_left,
+                    next_valve_name,
+                    next_relief,
                 )
                 increment("children_generated")
-                if self.get_upper_bound(next_state) < best_total_relief_node.curr_payout:
+                if best_relief_accum[self.max_turns - next_turns_left] >= next_relief:
                     increment("bound_rejections")
                     continue
                 curr_valve_set.add(next_valve_name)
                 curr_valve_path.append(next_valve_name)
+                curr_relief_accum[self.max_turns - next_turns_left] = next_relief
                 explore_node(next_state)
                 curr_valve_path.pop()
                 curr_valve_set.remove(next_valve_name)
@@ -369,8 +314,9 @@ class TravellingPlumber:
 
         for metric_name, value in metrics.items():
             print(f"{metric_name: >30s} -> {value: >10}")
+        print()
 
-        return best_total_relief_node
+        return best_payout
 
 
 @pytest.fixture(name="example1")
@@ -391,20 +337,6 @@ def test_valve_bad_parse() -> None:
     with pytest.raises(ValueError) as exc:
         Valve.from_line("")
     assert "parse" in str(exc).casefold()
-
-
-def test_valve_circular_parse() -> None:
-    """Test that valves with self-referential exits are not allowed."""
-    with pytest.raises(ValueError) as exc:
-        Valve.from_line("Valve AA has flow rate=0; tunnels lead to valve AA")
-    assert "circular" in str(exc).casefold()
-
-
-def test_valve_negative_flow() -> None:
-    """Test that valves with negative flow are rejected."""
-    with pytest.raises(ValueError) as exc:
-        Valve.from_line("Valve AA has flow rate=-1; tunnels lead to valve BB")
-    assert "negative" in str(exc).casefold()
 
 
 # Travelling Plumber Tests
@@ -504,33 +436,13 @@ def test_plumber_quiescence(example1: TravellingPlumber) -> None:
 
     assert example1.canonical_graph == target_closure
 
-def test_get_local_profit_by_valve(example1: TravellingPlumber) -> None:
-    """Tests that the local payout function ordering works."""
-    assert example1.get_local_profit_by_valve("AA", 30) == {
-        "BB": 364,  # 30 turns - 1 turn to reach - 1 turn to active = 28 turns left * 13 flow = 364
-        "CC": 54,
-        "DD": 560,
-        "EE": 81,
-        "HH": 528,
-        "JJ": 567,
-    }
-    assert example1.get_valve_ordering_by_local_profit("AA", 30) == ["JJ", "DD", "HH", "BB", "EE", "CC"]
-    # CC and EE would yield 0 profit despite being "closeable" in time, so I omitted them
-    assert example1.get_local_profit_by_valve("JJ", 5) == {
-        "BB": 13,
-        "DD": 20,
-    }
-    assert example1.get_valve_ordering_by_local_profit("JJ", 5) == ["DD", "BB"]
-
 def test_example1_solve(example1: TravellingPlumber) -> None:
     """Tests the example1 input."""
-    solve_node = example1.solve()
-    assert solve_node.curr_payout == 1651
+    assert example1.solve() == 1651
 
 def test_input1_solve(input1: TravellingPlumber) -> None:
     """Tests the input1 input."""
-    solve_node = input1.solve()
-    assert solve_node.curr_payout == 1850
+    assert input1.solve() == 1850
 
 def test_input1_benchmarking() -> None:
     ## Unknown setup
@@ -545,12 +457,15 @@ def test_input1_benchmarking() -> None:
 
     ## With parse included
     # removal of pydantic -> 0.547
+    # removal of contracts -> 0.506
+    # removal of OO -> 0.499
+    # piecewise maximal relief pruning -> 0.119
 
-    iterations = 10
+    iterations = 25
     def stress_test() -> None:
         instance = TravellingPlumber.from_filename(filename="input1", start_valve="AA", max_turns=30)
-        goal_node = instance.solve()
-        assert goal_node.curr_payout == 1850
+        res = instance.solve()
+        assert res == 1850, f"got {res} instead"
 
     total_time = timeit.timeit(stress_test, number=iterations)
     average_time = total_time / iterations
