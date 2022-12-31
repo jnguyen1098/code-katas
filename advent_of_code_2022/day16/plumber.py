@@ -5,27 +5,14 @@ from __future__ import annotations
 
 import itertools
 import re
-import timeit
-from collections import defaultdict
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Iterable
-
-import pytest
 
 INF = 0x3F3F3F3F
 CURR_FLOW, TURNS_LEFT, CURR_RELIEF = 0, 1, 2
 State = tuple[int, int, int]  # curr_flow, turns_left, curr_relief
 Result = tuple[int, list[str], int]  # payout, path, turns_left
-
-# import cProfile
-# import pstats
-# profiler = cProfile.Profile()
-# profiler.enable()
-# code go here
-# profiler.disable()
-# stats = pstats.Stats(profiler).sort_stats("tottime")
-# stats.print_stats()
 
 
 @dataclass
@@ -222,139 +209,6 @@ class TravellingPlumber:
 
         explore_node(start_node)
         return best_payout, best_valve_path, best_turns_left
-
-
-@pytest.fixture(name="example1")
-def get_example1() -> TravellingPlumber:
-    """Returns a problem instance of the example."""
-    return TravellingPlumber.from_filename(path="example1", start_valve="AA", max_turns=30)
-
-
-@pytest.fixture(name="input1")
-def get_input1() -> TravellingPlumber:
-    """Returns a problem instance of the input."""
-    return TravellingPlumber.from_filename(path="input1", start_valve="AA", max_turns=30)
-
-
-# Valve Tests
-def test_valve_bad_parse() -> None:
-    """Test that invalid lines cause exceptions."""
-    with pytest.raises(ValueError) as exc:
-        Valve.from_line("")
-    assert "parse" in str(exc).casefold()
-
-
-# Travelling Plumber Tests
-
-
-def test_plumber_cost_between_names(example1: TravellingPlumber, input1: TravellingPlumber) -> None:
-    """Test Floyd-Warshall closure."""
-    closures = {
-        "AA": [0, 1, 2, 1, 2, 3, 4, 5, 1, 2],
-        "BB": [1, 0, 1, 2, 3, 4, 5, 6, 2, 3],
-        "CC": [2, 1, 0, 1, 2, 3, 4, 5, 3, 4],
-        "DD": [1, 2, 1, 0, 1, 2, 3, 4, 2, 3],
-        "EE": [2, 3, 2, 1, 0, 2, 3, 4, 2, 3],
-        "FF": [3, 4, 3, 2, 1, 0, 1, 2, 4, 5],
-        "GG": [4, 5, 4, 3, 2, 1, 0, 1, 5, 6],
-        "HH": [5, 6, 5, 4, 3, 2, 1, 0, 6, 7],
-        "II": [1, 2, 3, 2, 3, 4, 5, 6, 0, 1],
-        "JJ": [2, 3, 4, 3, 4, 5, 6, 7, 1, 0],
-    }
-    valve_names = sorted(list(closures.keys()))
-
-    target_closure: dict[str, dict[str, int]] = defaultdict(dict)
-    for i, from_name in enumerate(valve_names):
-        for j, to_name in enumerate(valve_names):
-            if from_name == to_name:
-                continue
-            target_closure[from_name][to_name] = closures[valve_names[i]][j]
-            target_closure[to_name][from_name] = closures[valve_names[i]][j]
-
-    assert example1.cost_between == target_closure
-
-    assert input1.cost_between is not None
-    for valve in input1.valves:
-        for exit_valve_name in valve.exits:
-            assert input1.cost_between[valve.name][exit_valve_name] == 1
-    assert input1.cost_between["ZS"]["SB"] == 2
-
-
-def test_plumber_quiescence(example1: TravellingPlumber) -> None:
-    """Test Floyd-Warshall quiescent closure."""
-    closures = {
-        "AA": [0, 1, 2, 1, 2, 5, 2],
-        "BB": [0, 0, 1, 2, 3, 6, 3],
-        "CC": [0, 1, 0, 1, 2, 5, 4],
-        "DD": [0, 2, 1, 0, 1, 4, 3],
-        "EE": [0, 3, 2, 1, 0, 3, 4],
-        "HH": [0, 6, 5, 4, 3, 0, 7],
-        "JJ": [0, 3, 4, 3, 4, 7, 0],
-    }
-    valve_names = sorted(list(closures.keys()))
-
-    target_closure: dict[str, dict[str, int]] = defaultdict(dict)
-    for i, from_name in enumerate(valve_names):
-        for j, to_name in enumerate(valve_names):
-            if to_name in {from_name, example1.start_valve_name}:
-                continue
-            target_closure[from_name][to_name] = closures[valve_names[i]][j]
-            if from_name != example1.start_valve_name:
-                target_closure[to_name][from_name] = closures[valve_names[i]][j]
-
-    assert example1.canonical_graph == target_closure
-
-
-def test_example1_solve(example1: TravellingPlumber) -> None:
-    """Tests the example1 input."""
-    payout, _path, _turns_left = example1.solve()
-    assert payout == 1651
-
-
-def test_input1_solve(input1: TravellingPlumber) -> None:
-    """Tests the input1 input."""
-    payout, _path, _turns_left = input1.solve()
-    assert payout == 1850
-
-
-def test_input1_benchmarking() -> None:
-    """Benchmarks the input1 test."""
-    # Unknown setup
-    # 2022-12-30 14:13 commit -> 1.5 seconds
-
-    # Running solve()
-    # removal of get_children -> 0.75 seconds
-    # maximal valve ordering -> 0.7 seconds, 30566 calls
-    # maximal valve ordering + remove push -> 0.58 seconds, 31581 calls
-    # local profit valve ordering -> 0.65 seconds, 31377 calls
-    # local profit valve ordering cached -> 0.42 seconds, 31377 calls
-
-    # With parse included
-    # removal of pydantic -> 0.547
-    # removal of contracts -> 0.506
-    # removal of OO -> 0.499
-    # piecewise maximal relief pruning -> 0.119
-
-    iterations = 25
-
-    def stress_test() -> None:
-        instance = TravellingPlumber.from_filename(path="input1", start_valve="AA", max_turns=30)
-        payout, _path, _turns_left = instance.solve()
-        assert payout == 1850, f"got {payout} instead of 1850"
-
-    total_time = timeit.timeit(stress_test, number=iterations)
-    average_time = total_time / iterations
-    print(f"Average time over {iterations} iterations: {average_time}")
-
-
-def test_example1_piecewise_answer() -> None:
-    """Tests the optimal partition for example1 just to see if it can at least calculate that."""
-    instance = TravellingPlumber.from_filename(path="example1", start_valve="AA", max_turns=26)
-    # DD BB JJ HH EE CC
-    human = instance.solve({"DD", "HH", "EE"})
-    elephant = instance.solve({"JJ", "BB", "CC"})
-    res = human[0] + elephant[0]
-    assert res == 1707
 
 
 class ElephantSolver:
