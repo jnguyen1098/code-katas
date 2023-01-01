@@ -56,6 +56,11 @@ static void parse_line(char *line)
     int i = 0;
     int lim = 128;
     char curr = 0;
+
+    char *output = calloc(1, 1000);
+    *output = '\0';
+    char *ptr = output;
+
     for (; i < lim; i++) {
         if (!line[pos]){
             break;
@@ -72,7 +77,7 @@ static void parse_line(char *line)
             if (lowercase_or_space(curr)) {
                 pos++;
             } else if (capital(curr)) {
-                warning(f("write valve[0]=%c", curr));
+                *ptr++ = curr;
                 state = 'c';
                 pos++;
             } else {
@@ -80,7 +85,8 @@ static void parse_line(char *line)
             }
         } else if (state == 'c') {
             if (capital(curr)) {
-                warning(f("write valve[1]=%c", curr));
+                *ptr++ = curr;
+                *ptr++ = ',';
                 state = 'd';
                 pos++;
             } else {
@@ -97,7 +103,7 @@ static void parse_line(char *line)
             if (non_digit(curr)) {
                 pos++;
             } else if (digit(curr)) {
-                warning(f("write digit=%c", curr));
+                *ptr++ = curr;
                 state = 'f';
                 pos++;
             } else {
@@ -105,11 +111,11 @@ static void parse_line(char *line)
             }
         } else if (state == 'f') {
             if (lower_space_or_semi(curr)) {
-                warning("flush digit");
+                *ptr++ = ',';
                 state = 'g';
                 pos++;
             } else if (digit(curr)) {
-                warning(f("write digit=%c", curr));
+                *ptr++ = curr;
                 state = 'f';
                 pos++;
             } else {
@@ -120,7 +126,7 @@ static void parse_line(char *line)
                 state = 'g';
                 pos++;
             } else if (capital(curr)) {
-                warning(f("write valve[0]=%c", curr));
+                *ptr++ = curr;
                 state = 'h';
                 pos++;
             } else {
@@ -128,7 +134,8 @@ static void parse_line(char *line)
             }
         } else if (state == 'h') {
             if (capital(curr)) {
-                warning(f("write valve[1]=%c", curr));
+                *ptr++ = curr;
+                *ptr++ = ',';
                 state = 'i';
                 pos++;
             } else {
@@ -158,6 +165,7 @@ static void parse_line(char *line)
     if (state != 'i') {
         die(f("can only terminate on state i but currently on state %c", state));
     }
+    info(f("final output: %s", output));
     return;
 }
 
