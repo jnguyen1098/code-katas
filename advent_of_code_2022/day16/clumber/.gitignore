@@ -1,0 +1,4 @@
+html/
+latex/
+*.plist
+include/*.gch
