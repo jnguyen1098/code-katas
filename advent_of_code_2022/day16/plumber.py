@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import itertools
 import re
-from functools import cached_property
 from typing import Iterable
 
 INF = 0x3F3F3F3F
@@ -42,9 +41,13 @@ class TravellingPlumber:
         self.max_turns = max_turns
         self.start_valve_name = start_valve_name
         self.valve_by_name = {valve[NAME]: valve for valve in self.valves}
+        self.cache = {}
+        self.cost_between = self.get_cost_between()
+        self.quiescent_mask = self.get_quiescent_mask()
+        self.canonical_graph = self.get_canonical_graph()
+        self.maximal_valve_ordering = self.get_maximal_valve_ordering()
 
-    @cached_property
-    def cost_between(self) -> dict[str, dict[str, int]]:
+    def get_cost_between(self) -> dict[str, dict[str, int]]:
         """Establishes the transitive closure of the graph using the Floyd-Warshall algorithm."""
         cost_between = {}
 
@@ -76,8 +79,7 @@ class TravellingPlumber:
 
         return expanded_dict
 
-    @cached_property
-    def canonical_graph(self) -> dict[str, dict[str, int]]:
+    def get_canonical_graph(self) -> dict[str, dict[str, int]]:
         """
         Takes the transitive closure created by the Floyd-Warshall algorithm and reduces it.
 
@@ -85,46 +87,46 @@ class TravellingPlumber:
         """
         canonical_graph: dict[str, dict[str, int]] = {}
 
-        if len(self.quiescent_valves) > 32:
-            raise ValueError(f"There are {len(self.quiescent_valves)} quiescent valves, exceeding the 32 limit")
-
-        for quiescent_valve_name in self.quiescent_valves:
-            if quiescent_valve_name not in canonical_graph:
-                canonical_graph[quiescent_valve_name] = {}
-            for target in self.cost_between[quiescent_valve_name]:
-                if target not in self.quiescent_valves:
-                    continue
-                if target not in canonical_graph:
-                    canonical_graph[target] = {}
-                canonical_graph[quiescent_valve_name][target] = self.cost_between[quiescent_valve_name][target]
-                canonical_graph[target][quiescent_valve_name] = self.cost_between[target][quiescent_valve_name]
+        for quiescent_valve_name in range(1, 32):
+            if self.quiescent_mask & (1 << quiescent_valve_name):
+                if quiescent_valve_name not in canonical_graph:
+                    canonical_graph[quiescent_valve_name] = {}
+                for target in self.cost_between[quiescent_valve_name]:
+                    if not self.quiescent_mask & (1 << target):
+                        continue
+                    if target not in canonical_graph:
+                        canonical_graph[target] = {}
+                    canonical_graph[quiescent_valve_name][target] = self.cost_between[quiescent_valve_name][target]
+                    canonical_graph[target][quiescent_valve_name] = self.cost_between[target][quiescent_valve_name]
 
         canonical_graph[self.start_valve_name] = {}
         for end in self.cost_between[self.start_valve_name]:
-            if end not in self.quiescent_valves:
+            if not self.quiescent_mask & (1 << end):
                 continue
             canonical_graph[self.start_valve_name][end] = self.cost_between[self.start_valve_name][end]
 
         return canonical_graph
 
-    @cached_property
-    def maximal_valve_ordering(self) -> list[str]:
+    def get_maximal_valve_ordering(self) -> list[str]:
         """The ordering of valves based on flow."""
-        return sorted(
-            self.quiescent_valves,
-            key=lambda valve_name: self.valve_by_name[valve_name][FLOW],
-            reverse=True,
-        )
+        ordering = []
+        for i in range(self.quiescent_mask.bit_count()):
+            ordering.append(i + 1)
+        return sorted(ordering, key=lambda valve_name: self.valve_by_name[valve_name][FLOW], reverse=True)
 
-    @cached_property
-    def quiescent_valves(self) -> set[str]:
+    def get_quiescent_mask(self) -> set[str]:
         """Valves that have non-zero flow."""
-        return {valve[NAME] for valve in self.valves if valve[FLOW] > 0 and valve[NAME] != self.start_valve_name}
-
-    @cached_property
-    def sorted_quiescent_valves(self) -> list[str]:
-        """Takes our quiescent valves and creates a sorted view."""
-        return sorted(self.quiescent_valves)
+        if (cache_hit := self.cache.get("qm")) is not None:
+            return cache_hit
+        pos = 1
+        mask = 0
+        for valve in self.valves:
+            if valve[FLOW] > 0:
+                assert pos < 32, "32-bit limit reached"
+                mask |= (1 << pos)
+                pos += 1
+        self.cache["qm"] = mask
+        return self.cache["qm"]
 
     @staticmethod
     def reduce_indices(valves: tuple[int, int, list[int]], start_valve: int, max_turns: int) -> tuple[tuple[int, int, list[int]], int, int]:
@@ -175,15 +177,11 @@ class TravellingPlumber:
         the maximum turns, start valve, and the valves themselves.
         """
 
-        def get_payout(r, f, l) -> int:
-            return r + f * l
-
         best_payout = 0
         best_relief_accum = [-1] * self.max_turns
-        best_valve_path = []
+        best_valve_set = 0
         best_turns_left = INF
 
-        curr_valve_stack = [self.start_valve_name]
         curr_flow_stack = [0]
         turns_left_stack = [self.max_turns]
         curr_relief_stack = [0]
@@ -191,16 +189,14 @@ class TravellingPlumber:
         curr_relief_accum = [-1] * self.max_turns
         curr_valve_set = ignore_mask
 
-
-        def explore_node() -> None:
+        def explore_node(curr_valve) -> None:
 
             nonlocal best_payout
             nonlocal best_relief_accum
-            nonlocal best_valve_path
+            nonlocal best_valve_set
             nonlocal best_turns_left
             nonlocal curr_valve_set
 
-            curr_valve = curr_valve_stack[-1]
             curr_relief = curr_relief_stack[-1]
             turns_left = turns_left_stack[-1]
             curr_flow = curr_flow_stack[-1]
@@ -208,7 +204,7 @@ class TravellingPlumber:
             if (curr_payout := curr_relief + curr_flow * turns_left) > best_payout:
                 best_payout = curr_payout
                 best_relief_accum = curr_relief_accum[:]
-                best_valve_path = curr_valve_stack[:]
+                best_valve_set = curr_valve_set
                 best_turns_left = turns_left
 
             if turns_left == 1:
@@ -226,20 +222,18 @@ class TravellingPlumber:
                 if best_relief_accum[self.max_turns - next_turns_left] >= next_relief:
                     continue
                 curr_valve_set |= (1 << next_valve_name)
-                curr_valve_stack.append(next_valve_name)
                 curr_flow_stack.append(next_flow)
                 curr_relief_accum[self.max_turns - next_turns_left] = next_relief
                 curr_relief_stack.append(next_relief)
                 turns_left_stack.append(next_turns_left)
-                explore_node()
+                explore_node(next_valve_name)
                 turns_left_stack.pop()
                 curr_relief_stack.pop()
                 curr_flow_stack.pop()
-                curr_valve_stack.pop()
                 curr_valve_set &= ~(1 << next_valve_name)
 
-        explore_node()
-        return best_payout, best_valve_path, best_turns_left
+        explore_node(self.start_valve_name)
+        return best_payout, best_valve_set, best_turns_left
 
 
 class ElephantSolver:
@@ -248,64 +242,58 @@ class ElephantSolver:
     def __init__(self, plumber: TravellingPlumber) -> None:
         """Instantiates the Elephant Solver."""
         self.plumber = plumber
+        self.cache = {}
 
-    def generate_subsets(self, start_idx: int = 0) -> Iterable[int]:
+    def generate_subsets(self) -> Iterable[int]:
         """Iterates all subsets modulo the given cardinality, starting at a certain position within."""
-        for i in range(2 ** len(self.plumber.quiescent_valves)):
+        for i in range(2 ** self.plumber.quiescent_mask.bit_count()):
             yield i << 1
 
     def get_single_agent_result(self, ignore_mask: int) -> Result:
         """Gets the optimal result given a single agent and valves to ignore."""
         return self.plumber.solve(ignore_mask)
 
-    @cached_property
-    def best_single_agent_result(self) -> Result:
+    def get_best_single_agent_result(self) -> Result:
         """Returns the tuple representing the best single agent result."""
-        return self.plumber.solve()
+        if (cache_hit := self.cache.get("sar")) is not None:
+            return cache_hit
+        self.cache["sar"] = self.plumber.solve()
+        return self.cache["sar"]
 
-    @cached_property
-    def valve_subsets_sorted_by_increasing_cardinality_gap(self) -> list[frozenset[str]]:
+    def get_valve_subsets_sorted_by_increasing_cardinality_gap(self) -> list[frozenset[str]]:
         """Gets all subsets of every quiescent valve, sorted by the cardinality gap between the human and elephant."""
-        return sorted(self.generate_subsets(), key=lambda subst: abs(subst.bit_count() - self.quiescent_mask.bit_count()))
+        if (cache_hit := self.cache.get("icg")) is not None:
+            return cache_hit
+        self.cache["icg"] = sorted(self.generate_subsets(), key=lambda subst: abs(subst.bit_count() - self.plumber.get_quiescent_mask().bit_count()))
+        return self.cache["icg"]
 
-    @cached_property
-    def start_bound(self) -> int:
+    def get_start_bound(self) -> int:
         """
         Calculates a reasonable "best so far".
 
         Uses the result obtained from greedily giving leftover valves to the elephant.
         When the first part of an assignment has no hope of beating the bound, we prune.
         """
-        best_single_agent_score, best_single_agent_path = self.best_single_agent_result[0:2]
-        best_complement_score = self.plumber.solve(ElephantSolver.set_to_bitmask(best_single_agent_path))[0]
-        return best_single_agent_score + best_complement_score
+        if (cache_hit := self.cache.get("sb")) is not None:
+            return cache_hit
+        best_single_agent_score, best_single_agent_path = self.get_best_single_agent_result()[0:2]
+        best_complement_score = self.plumber.solve(best_single_agent_path)[0]
+        self.cache["sb"] = best_single_agent_score + best_complement_score
+        return self.cache["sb"]
 
-    @cached_property
-    def part_one(self) -> int:
+    def solve_part_one(self) -> int:
         """Returns the answer to part 1."""
-        return self.best_single_agent_result[0]
+        return self.get_best_single_agent_result()[0]
 
-    @staticmethod
-    def set_to_bitmask(subset: set[int]) -> int:
-        mask = 0
-        for valve in subset:
-            mask |= (1 << valve)
-        return mask
-
-    @cached_property
-    def quiescent_mask(self) -> int:
-        return ElephantSolver.set_to_bitmask(self.plumber.canonical_graph.keys()) & ~(1 << self.plumber.start_valve_name)
-
-    @cached_property
-    def part_two(self) -> int:
+    def solve_part_two(self) -> int:
         """Returns the answer to part 2."""
         highest_score_ignoring = {}
-        best_score = self.start_bound
-        best_single_agent_score = self.part_one
-        for human_will_ignore in self.valve_subsets_sorted_by_increasing_cardinality_gap:
+        best_score = self.get_start_bound()
+        best_single_agent_score = self.solve_part_one()
+        for human_will_ignore in self.get_valve_subsets_sorted_by_increasing_cardinality_gap():
             if human_will_ignore in highest_score_ignoring:
                 continue
-            elephant_will_ignore = self.quiescent_mask & ~human_will_ignore
+            elephant_will_ignore = self.plumber.get_quiescent_mask() & ~human_will_ignore
             human_score = self.get_single_agent_result(human_will_ignore)[0]
             highest_score_ignoring[human_will_ignore] = human_score
             if human_score + best_single_agent_score < best_score:
@@ -339,7 +327,7 @@ def run_all_tests() -> None:
         max_turns = 30
         if turn_setup is not None:
             max_turns = turn_setup[0]
-        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).part_one
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).solve_part_one()
         assert actual == expected, f"got {actual} for p1 for {filename} but expected {expected}"
 
     print("\nPart 2")
@@ -349,7 +337,7 @@ def run_all_tests() -> None:
         max_turns = 26
         if turn_setup is not None:
             max_turns = turn_setup[1]
-        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).part_two
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).solve_part_two()
         assert actual == expected, f"got {actual} for p2 for {filename} but expected {expected}"
 
 
