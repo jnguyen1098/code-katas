@@ -44,14 +44,7 @@ class TravellingPlumber:
         self.valves = valves
         self.max_turns = max_turns
         self.start_valve_name = start_valve_name
-
-    @cached_property
-    def valve_by_name(self) -> dict[str, Valve]:
-        """Takes the valve list and creates a dictionary for easy reference."""
-        valve_by_name = {}
-        for valve in self.valves:
-            valve_by_name[valve[NAME]] = valve
-        return valve_by_name
+        self.valve_by_name = {valve[NAME]: valve for valve in self.valves}
 
     @cached_property
     def cost_between(self) -> dict[str, dict[str, int]]:
@@ -95,6 +88,9 @@ class TravellingPlumber:
         """
         canonical_graph: dict[str, dict[str, int]] = {}
 
+        if len(self.quiescent_valves) > 32:
+            raise ValueError(f"There are {len(self.quiescent_valves)} quiescent valves, exceeding the 32 limit")
+
         for quiescent_valve_name in self.quiescent_valves:
             if quiescent_valve_name not in canonical_graph:
                 canonical_graph[quiescent_valve_name] = {}
@@ -102,7 +98,7 @@ class TravellingPlumber:
                 if target not in self.quiescent_valves:
                     continue
                 if target not in canonical_graph:
-                    canonical_graph[target] = {}
+                    canonical_graph[target] = {}  # is this necessary? TODO
                 canonical_graph[quiescent_valve_name][target] = self.cost_between[quiescent_valve_name][target]
                 canonical_graph[target][quiescent_valve_name] = self.cost_between[target][quiescent_valve_name]
 
@@ -128,20 +124,27 @@ class TravellingPlumber:
         """Valves that have non-zero flow."""
         return {valve[NAME] for valve in self.valves if valve[FLOW] > 0 and valve[NAME] != self.start_valve_name}
 
+    @cached_property
+    def sorted_quiescent_valves(self) -> list[str]:
+        """Takes our quiescent valves and creates a sorted view."""
+        return sorted(self.quiescent_valves)
+
     @staticmethod
     def reduce_indices(valves: tuple[int, int, list[int]], start_valve: int, max_turns: int) -> tuple[tuple[int, int, list[int]], int, int]:
-        idx = 0
+        idx = 1
         normalized = {}
         new_valves = []
         for name, flow, exits in valves:
-            if name not in normalized:
+            if name == start_valve:
+                normalized[name] = 0
+            if name not in normalized and flow != 0:
                 normalized[name] = idx
                 idx += 1
         for name, flow, exits in valves:
-            for ex in exits:
-                if ex not in normalized:
-                    normalized[ex] = idx
-                    idx += 1
+            if name not in normalized:
+                assert flow == 0
+                normalized[name] = idx
+                idx += 1
         new_start_valve = None
         for name, flow, exits in valves:
             if name == start_valve:
@@ -167,7 +170,6 @@ class TravellingPlumber:
             name, flow, exits = valve_to_num(parse[0]), int(parse[1]), list(map(valve_to_num, parse[2:]))
             valves.append((name, flow, exits))
         valves, start_valve, max_turns = TravellingPlumber.reduce_indices(valves, start_valve, max_turns)
-        # print(valves, start_valve, max_turns)
         return TravellingPlumber(valves=valves, start_valve_name=start_valve, max_turns=max_turns)
 
 
@@ -246,15 +248,10 @@ class ElephantSolver:
         """Instantiates the Elephant Solver."""
         self.plumber = plumber
 
-    @cached_property
-    def sorted_quiescent_valves(self) -> list[str]:
-        """Takes our quiescent valves and creates a sorted view."""
-        return sorted(self.plumber.quiescent_valves)
-
     def get_subset_from_mask(self, mask: int) -> frozenset[str]:
         """Takes a given bitmask and returns a set of valves based on membership."""
         res = set()
-        for idx, valve in enumerate(reversed(self.sorted_quiescent_valves)):
+        for idx, valve in enumerate(reversed(self.plumber.sorted_quiescent_valves)):
             if (mask & (1 << idx)):
                 res.add(valve)
         return frozenset(res)
@@ -262,7 +259,7 @@ class ElephantSolver:
     def set_to_mask(self, valve_set: set[str]) -> list[int]:
         """Takes a set of valves and converts it back to a bitmask."""
         mask = []
-        for valve in self.sorted_quiescent_valves:
+        for valve in self.plumber.sorted_quiescent_valves:
             if valve in valve_set:
                 mask.append(1)
             else:
