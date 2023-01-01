@@ -58,8 +58,8 @@ class TravellingPlumber:
         self.start_valve_name = start_valve_name
         self.valve_by_name = {valve[0]: valve for valve in self.valves}  # TODO
         self.quiescent_mask = self.get_quiescent_mask()
-        self.canonical_graph = self.get_canonical_graph()
         self.maximal_valve_ordering = self.get_maximal_valve_ordering()
+        self.transitive_closure = self.get_floyd_warshall_closure()
 
     def get_floyd_warshall_closure(self) -> list[int]:
         """Establishes the transitive closure of the graph using the Floyd-Warshall algorithm."""
@@ -84,25 +84,6 @@ class TravellingPlumber:
                     )
 
         return cost_transitive_closure
-
-    def get_canonical_graph(self) -> list[int]:
-        """
-        Takes the transitive closure created by the Floyd-Warshall algorithm and reduces it.
-
-        Now that every shortest cost is found, we only want non-zero interactions.
-        """
-        cost_transitive_closure = self.get_floyd_warshall_closure()
-        raw_valve_count = len(self.valves)
-        active_valve_count = self.quiescent_mask.bit_length()
-        canonical_graph: list[int] = [0] * active_valve_count**2
-
-        for quiescent_valve_name in range(active_valve_count):
-            for target in range(active_valve_count):
-                canonical_graph[quiescent_valve_name * active_valve_count + target] = cost_transitive_closure[
-                    quiescent_valve_name * raw_valve_count + target
-                ]
-
-        return canonical_graph
 
     def get_maximal_valve_ordering(self) -> list[int]:
         """The ordering of valves based on flow."""
@@ -207,7 +188,7 @@ class TravellingPlumber:
             for next_valve_name in self.maximal_valve_ordering:
                 if curr_valve_set & (1 << next_valve_name):
                     continue
-                activation_cost_in_turns = self.canonical_graph[curr_valve * self.quiescent_mask.bit_length() + next_valve_name] + 1
+                activation_cost_in_turns = self.transitive_closure[curr_valve * len(self.valves) + next_valve_name] + 1
                 next_turns_left = turns_left - activation_cost_in_turns
                 if turns_left - activation_cost_in_turns < 1:
                     continue
