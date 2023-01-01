@@ -46,10 +46,19 @@ bool lower_space_or_semi(char c) { return lowercase_or_space(c) || c == ';'; }
 bool space(char c) { return c == ' '; }
 bool comma(char c) { return c == ','; }
 
+void v_mealy_action(char c, char *state, char **out)
+{
+    if (c == 'V') {
+        *state = 'b';
+    } else {
+        *state = 'k';
+    }
+}
+
 /*
  * /^V[a-z ]+([A-Z]{2})\D*\d+;[a-z ]+([A-Z]{2})(, [A-Z]{2})*$/
  */
-static void parse_line(char *line)
+static char *parse_line(char *line)
 {
     int pos = 0;
     char state = 'a';
@@ -67,12 +76,8 @@ static void parse_line(char *line)
         }
         curr = line[pos];
         if (state == 'a') {
-            if (curr == 'V') {
-                state = 'b';
-                pos++;
-            } else {
-                die(f("expected 'V' but got '%c' (%d)", curr, (int)curr));
-            }
+            v_mealy_action(curr, &state, &ptr);
+            pos++;
         } else if (state == 'b') {
             if (lowercase_or_space(curr)) {
                 pos++;
@@ -81,7 +86,7 @@ static void parse_line(char *line)
                 state = 'c';
                 pos++;
             } else {
-                die(f("expected [a-z ]+ or [A-Z] but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'c') {
             if (capital(curr)) {
@@ -90,14 +95,14 @@ static void parse_line(char *line)
                 state = 'd';
                 pos++;
             } else {
-                die(f("expected second [A-Z] for valve but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'd') {
             if (non_digit(curr)) {
                 state = 'e';
                 pos++;
             } else {
-                die(f("expected non digit but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'e') {
             if (non_digit(curr)) {
@@ -107,7 +112,7 @@ static void parse_line(char *line)
                 state = 'f';
                 pos++;
             } else {
-                die(f("impossible branch but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'f') {
             if (lower_space_or_semi(curr)) {
@@ -119,7 +124,7 @@ static void parse_line(char *line)
                 state = 'f';
                 pos++;
             } else {
-                die(f("expected [;a-z ] or [0-9] but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'g') {
             if (lower_space_or_semi(curr)) {
@@ -130,7 +135,7 @@ static void parse_line(char *line)
                 state = 'h';
                 pos++;
             } else {
-                die(f("expected [;a-z ] or [A-Z] but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'h') {
             if (capital(curr)) {
@@ -139,23 +144,25 @@ static void parse_line(char *line)
                 state = 'i';
                 pos++;
             } else {
-                die(f("expected second half of valve but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'i') {
             if (comma(curr)) {
                 state = 'j';
                 pos++;
             } else {
-                die(f("expected comma but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
         } else if (state == 'j') {
             if (space(curr)) {
                 state = 'g';
                 pos++;
             } else {
-                die(f("expected space but got '%c' (%d)", curr, (int)curr));
+                state = 'k';
             }
-        }  else {
+        } else if (state == 'k') {
+            pos++;
+        } else {
             die(f("unknown state %c", state));
         }
     }
@@ -165,8 +172,7 @@ static void parse_line(char *line)
     if (state != 'i') {
         die(f("can only terminate on state i but currently on state %c", state));
     }
-    info(f("final output: %s", output));
-    return;
+    return output;
 }
 
 static void parse_file(char *filename)
@@ -177,13 +183,15 @@ static void parse_file(char *filename)
         die(f("Could not open %s", filename));
     }
     char buf[BUFSIZ];
+
+    printf("%s|", filename);
     while (fgets(buf, BUFSIZ, fp)) {
         buf[strcspn(buf, "\r\n")] = '\0';
-        printf("%s\n", buf);
-        parse_line(buf);
-        printf("parsed\n");
-        printf("\n");
+        // printf("%s\n", buf);
+        char *result = parse_line(buf);
+        printf("%s|", result);
     }
+    puts("");
     fclose(fp);
 }
 
