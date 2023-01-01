@@ -61,9 +61,8 @@ class TravellingPlumber:
         self.canonical_graph = self.get_canonical_graph()
         self.maximal_valve_ordering = self.get_maximal_valve_ordering()
 
-    def get_floyd_warshall_closure(self) -> dict[int, dict[int, int]]:
+    def get_floyd_warshall_closure(self) -> list[int]:
         """Establishes the transitive closure of the graph using the Floyd-Warshall algorithm."""
-        from collections import defaultdict
         raw_valve_count = len(self.valves)
         cost_transitive_closure: list[int] = [INF] * raw_valve_count**2
 
@@ -86,7 +85,7 @@ class TravellingPlumber:
 
         return cost_transitive_closure
 
-    def get_canonical_graph(self) -> dict[int, dict[int, int]]:
+    def get_canonical_graph(self) -> list[int]:
         """
         Takes the transitive closure created by the Floyd-Warshall algorithm and reduces it.
 
@@ -99,7 +98,9 @@ class TravellingPlumber:
 
         for quiescent_valve_name in range(active_valve_count):
             for target in range(active_valve_count):
-                canonical_graph[quiescent_valve_name * active_valve_count + target] = cost_transitive_closure[quiescent_valve_name * raw_valve_count + target]
+                canonical_graph[quiescent_valve_name * active_valve_count + target] = cost_transitive_closure[
+                    quiescent_valve_name * raw_valve_count + target
+                ]
 
         return canonical_graph
 
