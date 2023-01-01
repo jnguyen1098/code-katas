@@ -11,9 +11,6 @@ from typing import Iterable
 INF = 0x3F3F3F3F
 DEFAULT_START_VALVE = 0
 
-State = tuple[int, int, int]  # curr_flow, turns_left, curr_relief
-CURR_FLOW, TURNS_LEFT, CURR_RELIEF = 0, 1, 2
-
 Valve = tuple[str, int, list[str]]  # name, flow, exits
 NAME, FLOW, EXITS = 0, 1, 2
 
@@ -98,7 +95,7 @@ class TravellingPlumber:
                 if target not in self.quiescent_valves:
                     continue
                 if target not in canonical_graph:
-                    canonical_graph[target] = {}  # is this necessary? TODO
+                    canonical_graph[target] = {}
                 canonical_graph[quiescent_valve_name][target] = self.cost_between[quiescent_valve_name][target]
                 canonical_graph[target][quiescent_valve_name] = self.cost_between[target][quiescent_valve_name]
 
@@ -168,6 +165,8 @@ class TravellingPlumber:
         return TravellingPlumber(valves=valves, start_valve_name=start_valve, max_turns=max_turns)
 
 
+    # TODO instead of storing valve objects, just use valve indexes
+    # TODO do stack stuff for next-state?
     def solve(self, ignore_mask: int = 0) -> Result:
         """
         Solves Advent of Code, 2022, Day 16 for a single agent.
@@ -176,68 +175,70 @@ class TravellingPlumber:
         the maximum turns, start valve, and the valves themselves.
         """
 
-        def get_payout(state: State) -> int:
-            return state[CURR_RELIEF] + state[CURR_FLOW] * state[TURNS_LEFT]
+        def get_payout(r, f, l) -> int:
+            return r + f * l
 
-        start_node = (0, self.max_turns, 0)
-
-        best_payout = get_payout(start_node)
+        best_payout = 0
         best_relief_accum = [-1] * self.max_turns
         best_valve_path = []
         best_turns_left = INF
 
-        curr_valve_path = [self.start_valve_name]
+        curr_valve_stack = [self.start_valve_name]
+        curr_flow_stack = [0]
+        turns_left_stack = [self.max_turns]
+        curr_relief_stack = [0]
+
         curr_relief_accum = [-1] * self.max_turns
         curr_valve_set = ignore_mask
 
-        calls = 0
 
-        def explore_node(curr_node: State) -> None:
+        def explore_node() -> None:
 
             nonlocal best_payout
             nonlocal best_relief_accum
             nonlocal best_valve_path
             nonlocal best_turns_left
             nonlocal curr_valve_set
-            nonlocal calls
-            calls += 1
 
-            curr_valve = curr_valve_path[-1]
-            curr_relief = curr_node[CURR_RELIEF]
+            curr_valve = curr_valve_stack[-1]
+            curr_relief = curr_relief_stack[-1]
+            turns_left = turns_left_stack[-1]
+            curr_flow = curr_flow_stack[-1]
 
-            if (curr_payout := get_payout(curr_node)) > best_payout:
+            if (curr_payout := curr_relief + curr_flow * turns_left) > best_payout:
                 best_payout = curr_payout
                 best_relief_accum = curr_relief_accum[:]
-                best_valve_path = curr_valve_path[:]
-                best_turns_left = curr_node[TURNS_LEFT]
+                best_valve_path = curr_valve_stack[:]
+                best_turns_left = turns_left
 
-            if curr_node[TURNS_LEFT] == 1:
+            if turns_left == 1:
                 return
 
             for next_valve_name in self.maximal_valve_ordering:
                 if curr_valve_set & (1 << next_valve_name):
                     continue
                 activation_cost_in_turns = self.canonical_graph[curr_valve][next_valve_name] + 1
-                next_turns_left = curr_node[TURNS_LEFT] - activation_cost_in_turns
-                if curr_node[TURNS_LEFT] - activation_cost_in_turns < 1:
+                next_turns_left = turns_left - activation_cost_in_turns
+                if turns_left - activation_cost_in_turns < 1:
                     continue
-                next_relief = curr_relief + (curr_node[CURR_FLOW] * activation_cost_in_turns)
-                next_flow = curr_node[CURR_FLOW] + self.valve_by_name[next_valve_name][FLOW]
-                next_state = (
-                    next_flow,
-                    next_turns_left,
-                    next_relief,
-                )
+                next_relief = curr_relief + (curr_flow * activation_cost_in_turns)
+                next_flow = curr_flow + self.valve_by_name[next_valve_name][FLOW]
                 if best_relief_accum[self.max_turns - next_turns_left] >= next_relief:
                     continue
                 curr_valve_set |= (1 << next_valve_name)
-                curr_valve_path.append(next_valve_name)
+                curr_valve_stack.append(next_valve_name)
+                curr_flow_stack.append(next_flow)
                 curr_relief_accum[self.max_turns - next_turns_left] = next_relief
-                explore_node(next_state)
-                curr_valve_path.pop()
+                curr_relief_stack.append(next_relief)
+                turns_left_stack.append(next_turns_left)
+                explore_node()
+                turns_left_stack.pop()
+                curr_relief_stack.pop()
+                curr_flow_stack.pop()
+                curr_valve_stack.pop()
                 curr_valve_set &= ~(1 << next_valve_name)
 
-        explore_node(start_node)
+        explore_node()
         return best_payout, best_valve_path, best_turns_left
 
 
@@ -248,13 +249,10 @@ class ElephantSolver:
         """Instantiates the Elephant Solver."""
         self.plumber = plumber
 
-    def generate_all_subsets_starting_from(self, start_idx: int = 0) -> Iterable[int]:
+    def generate_subsets(self, start_idx: int = 0) -> Iterable[int]:
         """Iterates all subsets modulo the given cardinality, starting at a certain position within."""
-        subsets = []
         for i in range(2 ** len(self.plumber.quiescent_valves)):
-            # yield ((i + start_idx) % (2 ** len(self.plumber.quiescent_valves))) << 1
-            subsets.append(((i + start_idx) % (2 ** len(self.plumber.quiescent_valves))) << 1)
-        return subsets
+            yield i << 1
 
     def get_single_agent_result(self, ignore_mask: int) -> Result:
         """Gets the optimal result given a single agent and valves to ignore."""
@@ -268,7 +266,7 @@ class ElephantSolver:
     @cached_property
     def valve_subsets_sorted_by_increasing_cardinality_gap(self) -> list[frozenset[str]]:
         """Gets all subsets of every quiescent valve, sorted by the cardinality gap between the human and elephant."""
-        return sorted(list(self.generate_all_subsets_starting_from()), key=lambda subst: abs(subst.bit_count() - self.quiescent_mask.bit_count()))
+        return sorted(self.generate_subsets(), key=lambda subst: abs(subst.bit_count() - self.quiescent_mask.bit_count()))
 
     @cached_property
     def start_bound(self) -> int:
@@ -304,7 +302,7 @@ class ElephantSolver:
         highest_score_ignoring = {}
         best_score = self.start_bound
         best_single_agent_score = self.part_one
-        for idx, human_will_ignore in enumerate(self.valve_subsets_sorted_by_increasing_cardinality_gap):
+        for human_will_ignore in self.valve_subsets_sorted_by_increasing_cardinality_gap:
             if human_will_ignore in highest_score_ignoring:
                 continue
             elephant_will_ignore = self.quiescent_mask & ~human_will_ignore
