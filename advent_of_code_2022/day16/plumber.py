@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import itertools
+import math
 import re
 from typing import Iterable
 
@@ -87,17 +88,19 @@ class TravellingPlumber:
         """
         canonical_graph: dict[str, dict[str, int]] = {}
 
-        for quiescent_valve_name in range(1, 32):
-            if self.quiescent_mask & (1 << quiescent_valve_name):
-                if quiescent_valve_name not in canonical_graph:
-                    canonical_graph[quiescent_valve_name] = {}
-                for target in self.cost_between[quiescent_valve_name]:
-                    if not self.quiescent_mask & (1 << target):
-                        continue
-                    if target not in canonical_graph:
-                        canonical_graph[target] = {}
-                    canonical_graph[quiescent_valve_name][target] = self.cost_between[quiescent_valve_name][target]
-                    canonical_graph[target][quiescent_valve_name] = self.cost_between[target][quiescent_valve_name]
+        q_mask = self.quiescent_mask
+        while q_mask:
+            quiescent_valve_name = int(math.log2(q_mask))
+            q_mask &= ~(1 << quiescent_valve_name)
+            if quiescent_valve_name not in canonical_graph:
+                canonical_graph[quiescent_valve_name] = {}
+            for target in self.cost_between[quiescent_valve_name]:
+                if not self.quiescent_mask & (1 << target):
+                    continue
+                if target not in canonical_graph:
+                    canonical_graph[target] = {}
+                canonical_graph[quiescent_valve_name][target] = self.cost_between[quiescent_valve_name][target]
+                canonical_graph[target][quiescent_valve_name] = self.cost_between[target][quiescent_valve_name]
 
         canonical_graph[self.start_valve_name] = {}
         for end in self.cost_between[self.start_valve_name]:
