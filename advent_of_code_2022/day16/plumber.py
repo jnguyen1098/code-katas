@@ -9,6 +9,7 @@ from functools import cached_property
 from typing import Iterable
 
 INF = 0x3F3F3F3F
+DEFAULT_START_VALVE = 0
 
 State = tuple[int, int, int]  # curr_flow, turns_left, curr_relief
 CURR_FLOW, TURNS_LEFT, CURR_RELIEF = 0, 1, 2
@@ -76,7 +77,6 @@ class TravellingPlumber:
         for pair, cost in cost_between.items():
             left, right = pair
             rev_cost = cost_between[right, left]
-            assert cost == rev_cost, f"Cost-between-valves is not symmetric between {pair} and {right, left}"
             if left not in expanded_dict:
                 expanded_dict[left] = {}
             if right not in expanded_dict:
@@ -129,6 +129,34 @@ class TravellingPlumber:
         return {valve[NAME] for valve in self.valves if valve[FLOW] > 0 and valve[NAME] != self.start_valve_name}
 
     @staticmethod
+    def reduce_indices(valves: tuple[int, int, list[int]], start_valve: int, max_turns: int) -> tuple[tuple[int, int, list[int]], int, int]:
+        idx = 0
+        normalized = {}
+        new_valves = []
+        for name, flow, exits in valves:
+            if name not in normalized:
+                normalized[name] = idx
+                idx += 1
+        for name, flow, exits in valves:
+            for ex in exits:
+                if ex not in normalized:
+                    normalized[ex] = idx
+                    idx += 1
+        new_start_valve = None
+        for name, flow, exits in valves:
+            if name == start_valve:
+                new_start_valve = normalized[name]
+            new_name = normalized[name]
+            new_exits = [normalized[old_exit] for old_exit in exits]
+            new_valves.append((new_name, flow, new_exits))
+            undo = {v: k for k, v in normalized.items()}
+            new_name_df = undo[new_name]
+            assert new_name_df == name
+            new_exits_df = [undo[ex] for ex in new_exits]
+            assert new_exits_df == exits
+        return new_valves, new_start_valve, max_turns
+
+    @staticmethod
     def from_filename(*, path: str, start_valve: str, max_turns: int) -> "TravellingPlumber":
         """Parses the valves for the problem from a file."""
         with open(path, "r", encoding="ascii") as file_object:
@@ -138,6 +166,8 @@ class TravellingPlumber:
             parse = re.findall(r"([A-Z]{2}|\d+)", line)
             name, flow, exits = valve_to_num(parse[0]), int(parse[1]), list(map(valve_to_num, parse[2:]))
             valves.append((name, flow, exits))
+        valves, start_valve, max_turns = TravellingPlumber.reduce_indices(valves, start_valve, max_turns)
+        # print(valves, start_valve, max_turns)
         return TravellingPlumber(valves=valves, start_valve_name=start_valve, max_turns=max_turns)
 
 
@@ -221,14 +251,13 @@ class ElephantSolver:
         """Takes our quiescent valves and creates a sorted view."""
         return sorted(self.plumber.quiescent_valves)
 
-    def get_subset_from_mask(self, mask: list[int]) -> frozenset[str]:
+    def get_subset_from_mask(self, mask: int) -> frozenset[str]:
         """Takes a given bitmask and returns a set of valves based on membership."""
-        return frozenset(itertools.compress(self.sorted_quiescent_valves, mask))
-
-    @staticmethod
-    def get_nth_mask(idx: int, cardinality: int) -> list[int]:
-        """Gets a particular bitmask based on position within cardinality."""
-        return list(map(int, bin(2**cardinality + idx)[3:]))
+        res = set()
+        for idx, valve in enumerate(reversed(self.sorted_quiescent_valves)):
+            if (mask & (1 << idx)):
+                res.add(valve)
+        return frozenset(res)
 
     def set_to_mask(self, valve_set: set[str]) -> list[int]:
         """Takes a set of valves and converts it back to a bitmask."""
@@ -240,17 +269,11 @@ class ElephantSolver:
                 mask.append(0)
         return mask
 
-    @staticmethod
-    def mask_to_num(mask: list[int]) -> int:
-        """Takes a given bitmask and converts it back to an integer."""
-        return int("".join(map(str, mask)), 2)
-
     def generate_all_subsets_starting_from(self, start_idx: int = 0) -> Iterable[frozenset[str]]:
         """Iterates all subsets modulo the given cardinality, starting at a certain position within."""
         for i in range(2 ** len(self.plumber.quiescent_valves)):
             final_value = (i + start_idx) % (2 ** len(self.plumber.quiescent_valves))
-            mask = self.get_nth_mask(final_value, len(self.plumber.quiescent_valves))
-            subset = self.get_subset_from_mask(mask)
+            subset = self.get_subset_from_mask(final_value)
             yield subset
 
     def get_single_agent_result(self, ignore_set: frozenset[str] = frozenset()) -> Result:
@@ -327,7 +350,7 @@ def run_all_tests() -> None:
         max_turns = 30
         if turn_setup is not None:
             max_turns = turn_setup[0]
-        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=0, max_turns=max_turns)).part_one
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).part_one
         assert actual == expected, f"got {actual} for p1 for {filename} but expected {expected}"
 
     print("\nPart 2")
@@ -337,8 +360,8 @@ def run_all_tests() -> None:
         max_turns = 26
         if turn_setup is not None:
             max_turns = turn_setup[1]
-        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=0, max_turns=max_turns)).part_two
-    assert actual == expected, f"got {actual} for p2 for {filename} but expected {expected}"
+        actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).part_two
+        assert actual == expected, f"got {actual} for p2 for {filename} but expected {expected}"
 
 
 if __name__ == "__main__":
