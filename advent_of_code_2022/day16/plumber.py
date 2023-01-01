@@ -152,11 +152,6 @@ class TravellingPlumber:
             new_name = normalized[name]
             new_exits = [normalized[old_exit] for old_exit in exits]
             new_valves.append((new_name, flow, new_exits))
-            undo = {v: k for k, v in normalized.items()}
-            new_name_df = undo[new_name]
-            assert new_name_df == name
-            new_exits_df = [undo[ex] for ex in new_exits]
-            assert new_exits_df == exits
         return new_valves, new_start_valve, max_turns
 
     @staticmethod
@@ -173,7 +168,7 @@ class TravellingPlumber:
         return TravellingPlumber(valves=valves, start_valve_name=start_valve, max_turns=max_turns)
 
 
-    def solve(self, ignore_set: set[str] | frozenset[str] = frozenset()) -> Result:
+    def solve(self, ignore_mask: int = 0) -> Result:
         """
         Solves Advent of Code, 2022, Day 16 for a single agent.
 
@@ -193,7 +188,9 @@ class TravellingPlumber:
 
         curr_valve_path = [self.start_valve_name]
         curr_relief_accum = [-1] * self.max_turns
-        curr_valve_set = set() | ignore_set
+        curr_valve_set = ignore_mask
+
+        calls = 0
 
         def explore_node(curr_node: State) -> None:
 
@@ -201,6 +198,9 @@ class TravellingPlumber:
             nonlocal best_relief_accum
             nonlocal best_valve_path
             nonlocal best_turns_left
+            nonlocal curr_valve_set
+            nonlocal calls
+            calls += 1
 
             curr_valve = curr_valve_path[-1]
             curr_relief = curr_node[CURR_RELIEF]
@@ -215,7 +215,7 @@ class TravellingPlumber:
                 return
 
             for next_valve_name in self.maximal_valve_ordering:
-                if next_valve_name in curr_valve_set:
+                if curr_valve_set & (1 << next_valve_name):
                     continue
                 activation_cost_in_turns = self.canonical_graph[curr_valve][next_valve_name] + 1
                 next_turns_left = curr_node[TURNS_LEFT] - activation_cost_in_turns
@@ -230,14 +230,15 @@ class TravellingPlumber:
                 )
                 if best_relief_accum[self.max_turns - next_turns_left] >= next_relief:
                     continue
-                curr_valve_set.add(next_valve_name)
+                curr_valve_set |= (1 << next_valve_name)
                 curr_valve_path.append(next_valve_name)
                 curr_relief_accum[self.max_turns - next_turns_left] = next_relief
                 explore_node(next_state)
                 curr_valve_path.pop()
-                curr_valve_set.remove(next_valve_name)
+                curr_valve_set &= ~(1 << next_valve_name)
 
         explore_node(start_node)
+        print(f"{calls=}")
         return best_payout, best_valve_path, best_turns_left
 
 
@@ -248,34 +249,17 @@ class ElephantSolver:
         """Instantiates the Elephant Solver."""
         self.plumber = plumber
 
-    def get_subset_from_mask(self, mask: int) -> frozenset[str]:
-        """Takes a given bitmask and returns a set of valves based on membership."""
-        res = set()
-        for idx, valve in enumerate(reversed(self.plumber.sorted_quiescent_valves)):
-            if (mask & (1 << idx)):
-                res.add(valve)
-        return frozenset(res)
-
-    def set_to_mask(self, valve_set: set[str]) -> list[int]:
-        """Takes a set of valves and converts it back to a bitmask."""
-        mask = []
-        for valve in self.plumber.sorted_quiescent_valves:
-            if valve in valve_set:
-                mask.append(1)
-            else:
-                mask.append(0)
-        return mask
-
-    def generate_all_subsets_starting_from(self, start_idx: int = 0) -> Iterable[frozenset[str]]:
+    def generate_all_subsets_starting_from(self, start_idx: int = 0) -> Iterable[int]:
         """Iterates all subsets modulo the given cardinality, starting at a certain position within."""
+        subsets = []
         for i in range(2 ** len(self.plumber.quiescent_valves)):
-            final_value = (i + start_idx) % (2 ** len(self.plumber.quiescent_valves))
-            subset = self.get_subset_from_mask(final_value)
-            yield subset
+            # yield ((i + start_idx) % (2 ** len(self.plumber.quiescent_valves))) << 1
+            subsets.append(((i + start_idx) % (2 ** len(self.plumber.quiescent_valves))) << 1)
+        return subsets
 
-    def get_single_agent_result(self, ignore_set: frozenset[str] = frozenset()) -> Result:
+    def get_single_agent_result(self, ignore_mask: int) -> Result:
         """Gets the optimal result given a single agent and valves to ignore."""
-        return self.plumber.solve(ignore_set)
+        return self.plumber.solve(ignore_mask)
 
     @cached_property
     def best_single_agent_result(self) -> Result:
@@ -285,7 +269,7 @@ class ElephantSolver:
     @cached_property
     def valve_subsets_sorted_by_increasing_cardinality_gap(self) -> list[frozenset[str]]:
         """Gets all subsets of every quiescent valve, sorted by the cardinality gap between the human and elephant."""
-        return sorted(list(self.generate_all_subsets_starting_from()), key=lambda subst: abs(len(subst) - len(self.plumber.quiescent_valves)))
+        return sorted(list(self.generate_all_subsets_starting_from()), key=lambda subst: abs(subst.bit_count() - (self.quiescent_mask & ~(subst)).bit_count()))
 
     @cached_property
     def start_bound(self) -> int:
@@ -296,7 +280,7 @@ class ElephantSolver:
         When the first part of an assignment has no hope of beating the bound, we prune.
         """
         best_single_agent_score, best_single_agent_path = self.best_single_agent_result[0:2]
-        best_complement_score = self.plumber.solve(set(best_single_agent_path))[0]
+        best_complement_score = self.plumber.solve(ElephantSolver.set_to_bitmask(best_single_agent_path))[0]
         return best_single_agent_score + best_complement_score
 
     @cached_property
@@ -304,24 +288,69 @@ class ElephantSolver:
         """Returns the answer to part 1."""
         return self.best_single_agent_result[0]
 
+    @staticmethod
+    def set_to_bitmask(subset: set[int]) -> int:
+        mask = 0
+        for valve in subset:
+            mask |= (1 << valve)
+        return mask
+
+    @cached_property
+    def quiescent_mask(self) -> int:
+        return ElephantSolver.set_to_bitmask(self.plumber.canonical_graph.keys()) & ~(1 << self.plumber.start_valve_name)
+
     @cached_property
     def part_two(self) -> int:
         """Returns the answer to part 2."""
         highest_score_ignoring = {}
         best_score = self.start_bound
         best_single_agent_score = self.part_one
-        for human_will_ignore in self.valve_subsets_sorted_by_increasing_cardinality_gap:
+        prune = 0
+        processed = 0
+        print(f"start_bound={best_score}, {best_single_agent_score=}")
+        total_count = 0
+        hot_cache_hits = 0
+        cold_cache_hits = 0
+        blocker = set()
+        for idx, human_will_ignore in enumerate(self.valve_subsets_sorted_by_increasing_cardinality_gap):
+            print(f"\n==========ITERATION {idx}=========")
             if human_will_ignore in highest_score_ignoring:
+                hot_cache_hits += 1
+                print(f"JUDGEMENT: CACHE HIT")
+                for key, value in highest_score_ignoring.items():
+                    print(f"{key:016b} -> {value}")
+                print("==========")
                 continue
-            elephant_will_ignore = frozenset(self.plumber.quiescent_valves - human_will_ignore)
+            cold_cache_hits += 1
+            elephant_will_ignore = self.quiescent_mask & ~human_will_ignore
+            assert human_will_ignore not in blocker
+            blocker.add(human_will_ignore)
+            assert elephant_will_ignore not in blocker
+            blocker.add(elephant_will_ignore)
+            print(f"hum={human_will_ignore:016b}")
+            print(f"ele={elephant_will_ignore:016b}")
+            print(f"qui={self.quiescent_mask:016b}")
+            print()
             human_score = self.get_single_agent_result(human_will_ignore)[0]
+            processed += 1
             highest_score_ignoring[human_will_ignore] = human_score
             if human_score + best_single_agent_score < best_score:
                 highest_score_ignoring[elephant_will_ignore] = -INF
+                prune += 1
+                print(f"JUDGEMENT: PRUNED")
+                for key, value in highest_score_ignoring.items():
+                    print(f"{key:016b} -> {value}")
+                print("==========")
                 continue
             elephant_score = self.get_single_agent_result(elephant_will_ignore)[0]
+            processed += 1
             highest_score_ignoring[elephant_will_ignore] = elephant_score
             best_score = max(best_score, human_score + elephant_score)
+            print(f"JUDGEMENT: EXHAUSTED")
+            for key, value in highest_score_ignoring.items():
+                print(f"{key:016b} -> {value}")
+            print("==========")
+        print(f"{processed=}, {prune=}, {hot_cache_hits=} {cold_cache_hits=}")
         return best_score
 
 
@@ -359,6 +388,7 @@ def run_all_tests() -> None:
             max_turns = turn_setup[1]
         actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).part_two
         assert actual == expected, f"got {actual} for p2 for {filename} but expected {expected}"
+        break
 
 
 if __name__ == "__main__":
