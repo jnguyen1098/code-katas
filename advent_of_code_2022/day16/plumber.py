@@ -84,14 +84,7 @@ class TravellingPlumber:
                         cost_transitive_closure[i * raw_valve_count + k] + cost_transitive_closure[k * raw_valve_count + j],
                     )
 
-        expanded_dict: dict[int, int] = defaultdict(lambda: defaultdict(lambda: INF))
-
-        for x in range(raw_valve_count):
-            for y in range(raw_valve_count):
-                expanded_dict[x][y] = cost_transitive_closure[x * raw_valve_count + y]
-                expanded_dict[y][x] = cost_transitive_closure[x * raw_valve_count + y]
-
-        return expanded_dict
+        return cost_transitive_closure
 
     def get_canonical_graph(self) -> dict[int, dict[int, int]]:
         """
@@ -100,22 +93,13 @@ class TravellingPlumber:
         Now that every shortest cost is found, we only want non-zero interactions.
         """
         cost_transitive_closure = self.get_floyd_warshall_closure()
-        canonical_graph: dict[int, dict[int, int]] = {}
+        raw_valve_count = len(self.valves)
+        active_valve_count = self.quiescent_mask.bit_length()
+        canonical_graph: list[int] = [0] * active_valve_count**2
 
-        for quiescent_valve_name in range(self.quiescent_mask.bit_count() + 1):
-            if quiescent_valve_name not in canonical_graph:
-                canonical_graph[quiescent_valve_name] = {}
-            for target in range(self.quiescent_mask.bit_count() + 1):
-                if target not in canonical_graph:
-                    canonical_graph[target] = {}
-                canonical_graph[quiescent_valve_name][target] = cost_transitive_closure[quiescent_valve_name][target]
-                canonical_graph[target][quiescent_valve_name] = cost_transitive_closure[target][quiescent_valve_name]
-
-        canonical_graph[self.start_valve_name] = {}
-        for end in cost_transitive_closure[self.start_valve_name]:
-            if not self.quiescent_mask & (1 << end):
-                continue
-            canonical_graph[self.start_valve_name][end] = cost_transitive_closure[self.start_valve_name][end]
+        for quiescent_valve_name in range(active_valve_count):
+            for target in range(active_valve_count):
+                canonical_graph[quiescent_valve_name * active_valve_count + target] = cost_transitive_closure[quiescent_valve_name * raw_valve_count + target]
 
         return canonical_graph
 
@@ -222,7 +206,7 @@ class TravellingPlumber:
             for next_valve_name in self.maximal_valve_ordering:
                 if curr_valve_set & (1 << next_valve_name):
                     continue
-                activation_cost_in_turns = self.canonical_graph[curr_valve][next_valve_name] + 1
+                activation_cost_in_turns = self.canonical_graph[curr_valve * self.quiescent_mask.bit_length() + next_valve_name] + 1
                 next_turns_left = turns_left - activation_cost_in_turns
                 if turns_left - activation_cost_in_turns < 1:
                     continue
