@@ -28,19 +28,155 @@ static struct {
     int part_1_expected;
     int part_2_expected;
 } test_cases[] = {
-    {.filename = "example1", .part_1_expected =  1651, .part_2_expected =  1707},
-    {.filename =   "input1", .part_1_expected =  1850, .part_2_expected =  2306},
-    {.filename =   "input2", .part_1_expected =  1728, .part_2_expected =  2304},
-    {.filename =  "input33", .part_1_expected = 50000, .part_2_expected = 50304},
-    {.filename =   "input5", .part_1_expected =  2640, .part_2_expected =  2670},
-    {.filename =   "input6", .part_1_expected = 13468, .part_2_expected = 12887},
-    {.filename =   "input7", .part_1_expected =  1288, .part_2_expected =  1484},
-    {.filename =   "input8", .part_1_expected =  2400, .part_2_expected =  3680},
+    {.filename = "test_data/example1", .part_1_expected =  1651, .part_2_expected =  1707},
+    {.filename =   "test_data/input1", .part_1_expected =  1850, .part_2_expected =  2306},
+    {.filename =   "test_data/input2", .part_1_expected =  1728, .part_2_expected =  2304},
+    {.filename =  "test_data/input33", .part_1_expected = 50000, .part_2_expected = 50304},
+    {.filename =   "test_data/input5", .part_1_expected =  2640, .part_2_expected =  2670},
+    {.filename =   "test_data/input6", .part_1_expected = 13468, .part_2_expected = 12887},
+    {.filename =   "test_data/input7", .part_1_expected =  1288, .part_2_expected =  1484},
+    {.filename =   "test_data/input8", .part_1_expected =  2400, .part_2_expected =  3680},
 };
+
+bool digit(char c) { return c >= '0' && c <= '9'; }
+bool capital(char c) { return c >= 'A' && c <= 'Z'; }
+bool non_digit(char c) { return c < '0' || c > '9'; }
+bool lowercase_or_space(char c) { return c == ' ' || (c >= 'a' && c <= 'z'); }
+bool lower_space_or_semi(char c) { return lowercase_or_space(c) || c == ';'; }
+bool space(char c) { return c == ' '; }
+bool comma(char c) { return c == ','; }
+
+/*
+ * /^V[a-z ]+([A-Z]{2})\D*\d+;[a-z ]+([A-Z]{2})(, [A-Z]{2})*$/
+ */
+static void parse_line(char *line)
+{
+    int pos = 0;
+    char state = 'a';
+    int i = 0;
+    int lim = 128;
+    char curr = 0;
+    for (; i < lim; i++) {
+        if (!line[pos]){
+            break;
+        }
+        curr = line[pos];
+        if (state == 'a') {
+            if (curr == 'V') {
+                state = 'b';
+                pos++;
+            } else {
+                die(f("expected 'V' but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'b') {
+            if (lowercase_or_space(curr)) {
+                pos++;
+            } else if (capital(curr)) {
+                warning(f("write valve[0]=%c", curr));
+                state = 'c';
+                pos++;
+            } else {
+                die(f("expected [a-z ]+ or [A-Z] but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'c') {
+            if (capital(curr)) {
+                warning(f("write valve[1]=%c", curr));
+                state = 'd';
+                pos++;
+            } else {
+                die(f("expected second [A-Z] for valve but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'd') {
+            if (non_digit(curr)) {
+                state = 'e';
+                pos++;
+            } else {
+                die(f("expected non digit but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'e') {
+            if (non_digit(curr)) {
+                pos++;
+            } else if (digit(curr)) {
+                warning(f("write digit=%c", curr));
+                state = 'f';
+                pos++;
+            } else {
+                die(f("impossible branch but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'f') {
+            if (lower_space_or_semi(curr)) {
+                warning("flush digit");
+                state = 'g';
+                pos++;
+            } else if (digit(curr)) {
+                warning(f("write digit=%c", curr));
+                state = 'f';
+                pos++;
+            } else {
+                die(f("expected [;a-z ] or [0-9] but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'g') {
+            if (lower_space_or_semi(curr)) {
+                state = 'g';
+                pos++;
+            } else if (capital(curr)) {
+                warning(f("write valve[0]=%c", curr));
+                state = 'h';
+                pos++;
+            } else {
+                die(f("expected [;a-z ] or [A-Z] but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'h') {
+            if (capital(curr)) {
+                warning(f("write valve[1]=%c", curr));
+                state = 'i';
+                pos++;
+            } else {
+                die(f("expected second half of valve but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'i') {
+            if (comma(curr)) {
+                state = 'j';
+                pos++;
+            } else {
+                die(f("expected comma but got '%c' (%d)", curr, (int)curr));
+            }
+        } else if (state == 'j') {
+            if (space(curr)) {
+                state = 'g';
+                pos++;
+            } else {
+                die(f("expected space but got '%c' (%d)", curr, (int)curr));
+            }
+        }  else {
+            die(f("unknown state %c", state));
+        }
+    }
+    if (i == lim) {
+        die(f("timed out while parsing pos=%d at char=%c", pos, curr));
+    }
+    if (state != 'i') {
+        die(f("can only terminate on state i but currently on state %c", state));
+    }
+    return;
+}
 
 static void parse_file(char *filename)
 {
-    return;
+    FILE *fp;
+    if (!(fp = fopen(filename, "r"))) {
+        perror("fopen");
+        die(f("Could not open %s", filename));
+    }
+    char buf[BUFSIZ];
+    while (fgets(buf, BUFSIZ, fp)) {
+        buf[strcspn(buf, "\r\n")] = '\0';
+        printf("%s\n", buf);
+        parse_line(buf);
+        printf("parsed\n");
+        printf("\n");
+    }
+    fclose(fp);
 }
 
 static void run_parsing_tests(void)
@@ -50,6 +186,7 @@ static void run_parsing_tests(void)
 
 static int solve_part_one(char *filename)
 {
+    parse_file(filename);
     return 0;
 }
 
@@ -83,9 +220,6 @@ static void run_all_tests(void)
 
 int main(void)
 {
-    int num = 42;
-    char *string = "lmao";
-    error(f("this is a number: %d but this is a string: %s\n", num, string));
     run_all_tests();
     return 0;
 }
