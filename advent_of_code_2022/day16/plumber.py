@@ -238,7 +238,6 @@ class TravellingPlumber:
                 curr_valve_set &= ~(1 << next_valve_name)
 
         explore_node(start_node)
-        print(f"{calls=}")
         return best_payout, best_valve_path, best_turns_left
 
 
@@ -269,7 +268,7 @@ class ElephantSolver:
     @cached_property
     def valve_subsets_sorted_by_increasing_cardinality_gap(self) -> list[frozenset[str]]:
         """Gets all subsets of every quiescent valve, sorted by the cardinality gap between the human and elephant."""
-        return sorted(list(self.generate_all_subsets_starting_from()), key=lambda subst: abs(subst.bit_count() - (self.quiescent_mask & ~(subst)).bit_count()))
+        return sorted(list(self.generate_all_subsets_starting_from()), key=lambda subst: abs(subst.bit_count() - self.quiescent_mask.bit_count()))
 
     @cached_property
     def start_bound(self) -> int:
@@ -305,52 +304,18 @@ class ElephantSolver:
         highest_score_ignoring = {}
         best_score = self.start_bound
         best_single_agent_score = self.part_one
-        prune = 0
-        processed = 0
-        print(f"start_bound={best_score}, {best_single_agent_score=}")
-        total_count = 0
-        hot_cache_hits = 0
-        cold_cache_hits = 0
-        blocker = set()
         for idx, human_will_ignore in enumerate(self.valve_subsets_sorted_by_increasing_cardinality_gap):
-            print(f"\n==========ITERATION {idx}=========")
             if human_will_ignore in highest_score_ignoring:
-                hot_cache_hits += 1
-                print(f"JUDGEMENT: CACHE HIT")
-                for key, value in highest_score_ignoring.items():
-                    print(f"{key:016b} -> {value}")
-                print("==========")
                 continue
-            cold_cache_hits += 1
             elephant_will_ignore = self.quiescent_mask & ~human_will_ignore
-            assert human_will_ignore not in blocker
-            blocker.add(human_will_ignore)
-            assert elephant_will_ignore not in blocker
-            blocker.add(elephant_will_ignore)
-            print(f"hum={human_will_ignore:016b}")
-            print(f"ele={elephant_will_ignore:016b}")
-            print(f"qui={self.quiescent_mask:016b}")
-            print()
             human_score = self.get_single_agent_result(human_will_ignore)[0]
-            processed += 1
             highest_score_ignoring[human_will_ignore] = human_score
             if human_score + best_single_agent_score < best_score:
                 highest_score_ignoring[elephant_will_ignore] = -INF
-                prune += 1
-                print(f"JUDGEMENT: PRUNED")
-                for key, value in highest_score_ignoring.items():
-                    print(f"{key:016b} -> {value}")
-                print("==========")
                 continue
             elephant_score = self.get_single_agent_result(elephant_will_ignore)[0]
-            processed += 1
             highest_score_ignoring[elephant_will_ignore] = elephant_score
             best_score = max(best_score, human_score + elephant_score)
-            print(f"JUDGEMENT: EXHAUSTED")
-            for key, value in highest_score_ignoring.items():
-                print(f"{key:016b} -> {value}")
-            print("==========")
-        print(f"{processed=}, {prune=}, {hot_cache_hits=} {cold_cache_hits=}")
         return best_score
 
 
@@ -388,7 +353,6 @@ def run_all_tests() -> None:
             max_turns = turn_setup[1]
         actual = ElephantSolver(TravellingPlumber.from_filename(path=filename, start_valve=DEFAULT_START_VALVE, max_turns=max_turns)).part_two
         assert actual == expected, f"got {actual} for p2 for {filename} but expected {expected}"
-        break
 
 
 if __name__ == "__main__":
