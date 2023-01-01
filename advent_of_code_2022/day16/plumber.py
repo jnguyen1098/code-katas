@@ -9,8 +9,10 @@ from typing import Iterable
 
 INF = 0x3F3F3F3F
 DEFAULT_START_VALVE = 0
+BIT_LENGTH = 16
 
-Valve = tuple[int, int, list[int]]  # name, flow, exits
+RawValve = tuple[int, int, list[int]]  # name, flow, exits
+Valve = tuple[int, int, int]  # name, flow, exits
 NAME, FLOW, EXITS = 0, 1, 2
 
 Result = tuple[int, int, int]  # payout, path set, turns_left
@@ -18,8 +20,6 @@ Result = tuple[int, int, int]  # payout, path set, turns_left
 # (a - y) * 26 + (b - y)
 # 26a - 26y + b - y
 # 26a - 27y + b
-
-# TODO: list of exits... instead of list of int, represent as single int?
 
 
 def valve_to_num(valve: str) -> int:
@@ -40,6 +40,15 @@ def num_to_valve(val: int) -> str:
     return "".join(res)
 
 
+def int_list_to_mask(ints: list[int]) -> int:
+    """Converts a list of integers into a bitset."""
+    mask = 0
+    for num in ints:
+        assert 0 <= num < BIT_LENGTH, "Fixed-width constraint violated"
+        mask |= 1 << num
+    return mask
+
+
 class TravellingPlumber:
     """Represents a branch-and-bound implementation of AOC 2022, Day 16: Proboscidea Volcanium."""
 
@@ -57,8 +66,11 @@ class TravellingPlumber:
         cost_transitive_closure: dict[tuple[int, int], int] = {}
 
         for valve in self.valve_by_name.values():
-            for exit_name in valve[2]:  # TODO
+            exit_mask = valve[2]  # TODO
+            while exit_mask:
+                exit_name = int(math.log2(exit_mask))
                 cost_transitive_closure[valve[0], exit_name] = 1  # TODO
+                exit_mask &= ~(1 << exit_name)
 
         for k in (valve_names := list(self.valve_by_name.keys())):
             for i in valve_names:
@@ -127,13 +139,13 @@ class TravellingPlumber:
         mask = 0
         for valve in self.valves:
             if valve[1] > 0:  # TODO
-                assert pos < 32, "32-bit limit reached"
+                assert pos < BIT_LENGTH, "Fixed-width constraint violated"
                 mask |= 1 << pos
                 pos += 1
         return mask
 
     @staticmethod
-    def reduce_indices(valves: list[Valve], start_valve: int, max_turns: int) -> tuple[list[Valve], int, int]:
+    def reduce_indices(valves: list[RawValve], start_valve: int, max_turns: int) -> tuple[list[Valve], int, int]:
         """Takes a series of valve integers and creates a monotonically-increasing sequence map."""
         idx = 1
         normalized = {}
@@ -154,7 +166,9 @@ class TravellingPlumber:
             if name == start_valve:
                 new_start_valve = normalized[name]
             new_name = normalized[name]
-            new_exits = [normalized[old_exit] for old_exit in exits]
+            new_exits = 0
+            for old_exit in exits:
+                new_exits |= 1 << normalized[old_exit]
             new_valves.append((new_name, flow, new_exits))
         return new_valves, new_start_valve, max_turns
 
@@ -166,10 +180,10 @@ class TravellingPlumber:
         valves = []
         for line in lines:
             parse = re.findall(r"([A-Z]{2}|\d+)", line)
-            name, flow, exits = valve_to_num(parse[0]), int(parse[1]), list(map(valve_to_num, parse[2:]))
-            valves.append((name, flow, exits))
-        valves, start_valve, max_turns = TravellingPlumber.reduce_indices(valves, start_valve, max_turns)
-        return TravellingPlumber(valves=valves, start_valve_name=start_valve, max_turns=max_turns)
+            name, flow, exit_list = valve_to_num(parse[0]), int(parse[1]), list(map(valve_to_num, parse[2:]))
+            valves.append((name, flow, exit_list))
+        updated_valves, updated_start_valve, updated_max_turns = TravellingPlumber.reduce_indices(valves, start_valve, max_turns)
+        return TravellingPlumber(valves=updated_valves, start_valve_name=updated_start_valve, max_turns=updated_max_turns)
 
     def solve(self, ignore_mask: int = 0) -> Result:
         """
