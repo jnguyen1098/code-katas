@@ -63,13 +63,15 @@ class TravellingPlumber:
 
     def get_floyd_warshall_closure(self) -> dict[int, dict[int, int]]:
         """Establishes the transitive closure of the graph using the Floyd-Warshall algorithm."""
-        cost_transitive_closure: dict[tuple[int, int], int] = {}
+        from collections import defaultdict
+        raw_valve_count = len(self.valves)
+        cost_transitive_closure: list[int] = [INF] * raw_valve_count**2
 
         for valve in self.valve_by_name.values():
             exit_mask = valve[2]  # TODO
             while exit_mask:
                 exit_name = int(math.log2(exit_mask))
-                cost_transitive_closure[valve[0], exit_name] = 1  # TODO
+                cost_transitive_closure[valve[0] * raw_valve_count + exit_name] = 1  # TODO
                 exit_mask &= ~(1 << exit_name)
 
         for k in (valve_names := list(self.valve_by_name.keys())):
@@ -77,21 +79,17 @@ class TravellingPlumber:
                 for j in valve_names:
                     if i == j:
                         continue
-                    cost_transitive_closure[i, j] = min(
-                        cost_transitive_closure.get((i, j), INF),
-                        cost_transitive_closure.get((i, k), INF) + cost_transitive_closure.get((k, j), INF),
+                    cost_transitive_closure[i * raw_valve_count + j] = min(
+                        cost_transitive_closure[i * raw_valve_count + j],
+                        cost_transitive_closure[i * raw_valve_count + k] + cost_transitive_closure[k * raw_valve_count + j],
                     )
 
-        expanded_dict: dict[int, dict[int, int]] = {}
+        expanded_dict: dict[int, int] = defaultdict(lambda: defaultdict(lambda: INF))
 
-        for pair, cost in cost_transitive_closure.items():
-            left, right = pair
-            if left not in expanded_dict:
-                expanded_dict[left] = {}
-            if right not in expanded_dict:
-                expanded_dict[right] = {}
-            expanded_dict[left][right] = cost
-            expanded_dict[right][left] = cost
+        for x in range(raw_valve_count):
+            for y in range(raw_valve_count):
+                expanded_dict[x][y] = cost_transitive_closure[x * raw_valve_count + y]
+                expanded_dict[y][x] = cost_transitive_closure[x * raw_valve_count + y]
 
         return expanded_dict
 
@@ -104,15 +102,10 @@ class TravellingPlumber:
         cost_transitive_closure = self.get_floyd_warshall_closure()
         canonical_graph: dict[int, dict[int, int]] = {}
 
-        q_mask = self.quiescent_mask
-        while q_mask:
-            quiescent_valve_name = int(math.log2(q_mask))
-            q_mask &= ~(1 << quiescent_valve_name)
+        for quiescent_valve_name in range(self.quiescent_mask.bit_count() + 1):
             if quiescent_valve_name not in canonical_graph:
                 canonical_graph[quiescent_valve_name] = {}
-            for target in cost_transitive_closure[quiescent_valve_name]:
-                if not self.quiescent_mask & (1 << target):
-                    continue
+            for target in range(self.quiescent_mask.bit_count() + 1):
                 if target not in canonical_graph:
                     canonical_graph[target] = {}
                 canonical_graph[quiescent_valve_name][target] = cost_transitive_closure[quiescent_valve_name][target]
