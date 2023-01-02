@@ -27,7 +27,7 @@ $(BIN)/%.o: $(SRC)/%.c $(DEPS)
 
 valgrind:
 	@echo "Running valgrind"
-	valgrind $(EXE) $(VFLAGS)
+	valgrind $(VFLAGS) $(EXE)
 
 lint: all
 	make cppcheck

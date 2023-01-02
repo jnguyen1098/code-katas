@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdnoreturn.h>
 #include <string.h>
@@ -14,6 +15,6 @@
 
 noreturn void die(char *message);
 static void test_assert(int expected, int actual);
-char *f(const char *fmt, ...);
+char *fmt(const char *fmt, ...);
 
 #endif

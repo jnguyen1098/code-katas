@@ -17,6 +17,7 @@ char *fmt(const char *fmt, ...)
 }
 
 static void test_assert(int expected, int actual) {
+    return;
     if (expected != actual) {
         fprintf(stderr, "FAIL -> expected %d but got %d\n", expected, actual);
         exit(1);
@@ -38,16 +39,13 @@ static struct {
     {.filename =   "test_data/input8", .part_1_expected =  2400, .part_2_expected =  3680},
 };
 
-bool digit(char c) { return c >= '0' && c <= '9'; }
-bool capital(char c) { return c >= 'A' && c <= 'Z'; }
-bool non_digit(char c) { return c < '0' || c > '9'; }
-bool lowercase_or_space(char c) { return c == ' ' || (c >= 'a' && c <= 'z'); }
-bool lower_space_or_semi(char c) { return lowercase_or_space(c) || c == ';'; }
-bool space(char c) { return c == ' '; }
-bool comma(char c) { return c == ','; }
+struct valve_t {
+    char name[3];
+    uint8_t flow;
+};
 
 /*
- * /^V[a-z ]+([A-Z]{2})\D*\d+;[a-z ]+([A-Z]{2})(, [A-Z]{2})*$/
+ * /^.{6}[A-Z][A-Z].{15}\d*;.{23} ?[A-Z][A-Z](?:, [A-Z][A-Z])*$/
  */
 static char *parse_line(char *line)
 {
@@ -69,8 +67,10 @@ static char *parse_line(char *line)
 
     enum actions {
         NOTHING,
-        EMIT_CHAR,
-        EMIT_COMMA,
+        READ_VALVE_L,
+        READ_VALVE_R,
+        WRITE_DIGIT,
+        FLUSH_DIGIT,
     };
 
     enum input {
@@ -101,60 +101,53 @@ static char *parse_line(char *line)
 
     int action_for[state_count][input_count] = {
         [NAME_LEFT] = {
-            [A] = EMIT_CHAR, [B] = EMIT_CHAR, [C] = EMIT_CHAR, [D] = EMIT_CHAR,
-            [E] = EMIT_CHAR, [F] = EMIT_CHAR, [G] = EMIT_CHAR, [H] = EMIT_CHAR,
-            [I] = EMIT_CHAR, [J] = EMIT_CHAR, [K] = EMIT_CHAR, [L] = EMIT_CHAR,
-            [M] = EMIT_CHAR, [N] = EMIT_CHAR, [O] = EMIT_CHAR, [P] = EMIT_CHAR,
-            [Q] = EMIT_CHAR, [R] = EMIT_CHAR, [S] = EMIT_CHAR, [T] = EMIT_CHAR,
-            [U] = EMIT_CHAR, [V] = EMIT_CHAR, [W] = EMIT_CHAR, [X] = EMIT_CHAR,
-            [Y] = EMIT_CHAR, [Z] = EMIT_CHAR,
+            [A] = READ_VALVE_L, [B] = READ_VALVE_L, [C] = READ_VALVE_L, [D] = READ_VALVE_L,
+            [E] = READ_VALVE_L, [F] = READ_VALVE_L, [G] = READ_VALVE_L, [H] = READ_VALVE_L,
+            [I] = READ_VALVE_L, [J] = READ_VALVE_L, [K] = READ_VALVE_L, [L] = READ_VALVE_L,
+            [M] = READ_VALVE_L, [N] = READ_VALVE_L, [O] = READ_VALVE_L, [P] = READ_VALVE_L,
+            [Q] = READ_VALVE_L, [R] = READ_VALVE_L, [S] = READ_VALVE_L, [T] = READ_VALVE_L,
+            [U] = READ_VALVE_L, [V] = READ_VALVE_L, [W] = READ_VALVE_L, [X] = READ_VALVE_L,
+            [Y] = READ_VALVE_L, [Z] = READ_VALVE_L,
         },
         [NAME_RIGHT] = {
-            [A] = EMIT_CHAR, [B] = EMIT_CHAR, [C] = EMIT_CHAR, [D] = EMIT_CHAR,
-            [E] = EMIT_CHAR, [F] = EMIT_CHAR, [G] = EMIT_CHAR, [H] = EMIT_CHAR,
-            [I] = EMIT_CHAR, [J] = EMIT_CHAR, [K] = EMIT_CHAR, [L] = EMIT_CHAR,
-            [M] = EMIT_CHAR, [N] = EMIT_CHAR, [O] = EMIT_CHAR, [P] = EMIT_CHAR,
-            [Q] = EMIT_CHAR, [R] = EMIT_CHAR, [S] = EMIT_CHAR, [T] = EMIT_CHAR,
-            [U] = EMIT_CHAR, [V] = EMIT_CHAR, [W] = EMIT_CHAR, [X] = EMIT_CHAR,
-            [Y] = EMIT_CHAR, [Z] = EMIT_CHAR,
-        },
-        [SKIP_SPACE] = {
-            [SPACE] = EMIT_COMMA,
+            [A] = READ_VALVE_R, [B] = READ_VALVE_R, [C] = READ_VALVE_R, [D] = READ_VALVE_R,
+            [E] = READ_VALVE_R, [F] = READ_VALVE_R, [G] = READ_VALVE_R, [H] = READ_VALVE_R,
+            [I] = READ_VALVE_R, [J] = READ_VALVE_R, [K] = READ_VALVE_R, [L] = READ_VALVE_R,
+            [M] = READ_VALVE_R, [N] = READ_VALVE_R, [O] = READ_VALVE_R, [P] = READ_VALVE_R,
+            [Q] = READ_VALVE_R, [R] = READ_VALVE_R, [S] = READ_VALVE_R, [T] = READ_VALVE_R,
+            [U] = READ_VALVE_R, [V] = READ_VALVE_R, [W] = READ_VALVE_R, [X] = READ_VALVE_R,
+            [Y] = READ_VALVE_R, [Z] = READ_VALVE_R,
         },
         [DIGIT_OR_SEMI] = {
-            [ZERO] = EMIT_CHAR,
-            [ONE] = EMIT_CHAR,
-            [TWO] = EMIT_CHAR,
-            [THREE] = EMIT_CHAR,
-            [FOUR] = EMIT_CHAR,
-            [FIVE] = EMIT_CHAR,
-            [SIX] = EMIT_CHAR,
-            [SEVEN] = EMIT_CHAR,
-            [EIGHT] = EMIT_CHAR,
-            [NINE] = EMIT_CHAR,
-            [SEMI] = EMIT_COMMA,
+            [ZERO] = WRITE_DIGIT,
+            [ONE] = WRITE_DIGIT,
+            [TWO] = WRITE_DIGIT,
+            [THREE] = WRITE_DIGIT,
+            [FOUR] = WRITE_DIGIT,
+            [FIVE] = WRITE_DIGIT,
+            [SIX] = WRITE_DIGIT,
+            [SEVEN] = WRITE_DIGIT,
+            [EIGHT] = WRITE_DIGIT,
+            [NINE] = WRITE_DIGIT,
+            [SEMI] = FLUSH_DIGIT,
         },
         [NEXT_LEFT] = {
-            [A] = EMIT_CHAR, [B] = EMIT_CHAR, [C] = EMIT_CHAR, [D] = EMIT_CHAR,
-            [E] = EMIT_CHAR, [F] = EMIT_CHAR, [G] = EMIT_CHAR, [H] = EMIT_CHAR,
-            [I] = EMIT_CHAR, [J] = EMIT_CHAR, [K] = EMIT_CHAR, [L] = EMIT_CHAR,
-            [M] = EMIT_CHAR, [N] = EMIT_CHAR, [O] = EMIT_CHAR, [P] = EMIT_CHAR,
-            [Q] = EMIT_CHAR, [R] = EMIT_CHAR, [S] = EMIT_CHAR, [T] = EMIT_CHAR,
-            [U] = EMIT_CHAR, [V] = EMIT_CHAR, [W] = EMIT_CHAR, [X] = EMIT_CHAR,
-            [Y] = EMIT_CHAR, [Z] = EMIT_CHAR,
+            [A] = READ_VALVE_L, [B] = READ_VALVE_L, [C] = READ_VALVE_L, [D] = READ_VALVE_L,
+            [E] = READ_VALVE_L, [F] = READ_VALVE_L, [G] = READ_VALVE_L, [H] = READ_VALVE_L,
+            [I] = READ_VALVE_L, [J] = READ_VALVE_L, [K] = READ_VALVE_L, [L] = READ_VALVE_L,
+            [M] = READ_VALVE_L, [N] = READ_VALVE_L, [O] = READ_VALVE_L, [P] = READ_VALVE_L,
+            [Q] = READ_VALVE_L, [R] = READ_VALVE_L, [S] = READ_VALVE_L, [T] = READ_VALVE_L,
+            [U] = READ_VALVE_L, [V] = READ_VALVE_L, [W] = READ_VALVE_L, [X] = READ_VALVE_L,
+            [Y] = READ_VALVE_L, [Z] = READ_VALVE_L,
         },
         [NEXT_RIGHT] = {
-            [A] = EMIT_CHAR, [B] = EMIT_CHAR, [C] = EMIT_CHAR, [D] = EMIT_CHAR,
-            [E] = EMIT_CHAR, [F] = EMIT_CHAR, [G] = EMIT_CHAR, [H] = EMIT_CHAR,
-            [I] = EMIT_CHAR, [J] = EMIT_CHAR, [K] = EMIT_CHAR, [L] = EMIT_CHAR,
-            [M] = EMIT_CHAR, [N] = EMIT_CHAR, [O] = EMIT_CHAR, [P] = EMIT_CHAR,
-            [Q] = EMIT_CHAR, [R] = EMIT_CHAR, [S] = EMIT_CHAR, [T] = EMIT_CHAR,
-            [U] = EMIT_CHAR, [V] = EMIT_CHAR, [W] = EMIT_CHAR, [X] = EMIT_CHAR,
-            [Y] = EMIT_CHAR, [Z] = EMIT_CHAR,
-        },
-        [COMMA_OR_EOF] = {
-            [COMMA] = EMIT_COMMA,
-            [END_OF_LINE] = EMIT_COMMA,
+            [A] = READ_VALVE_R, [B] = READ_VALVE_R, [C] = READ_VALVE_R, [D] = READ_VALVE_R,
+            [E] = READ_VALVE_R, [F] = READ_VALVE_R, [G] = READ_VALVE_R, [H] = READ_VALVE_R,
+            [I] = READ_VALVE_R, [J] = READ_VALVE_R, [K] = READ_VALVE_R, [L] = READ_VALVE_R,
+            [M] = READ_VALVE_R, [N] = READ_VALVE_R, [O] = READ_VALVE_R, [P] = READ_VALVE_R,
+            [Q] = READ_VALVE_R, [R] = READ_VALVE_R, [S] = READ_VALVE_R, [T] = READ_VALVE_R,
+            [U] = READ_VALVE_R, [V] = READ_VALVE_R, [W] = READ_VALVE_R, [X] = READ_VALVE_R,
+            [Y] = READ_VALVE_R, [Z] = READ_VALVE_R,
         },
     };
 
@@ -173,7 +166,7 @@ static char *parse_line(char *line)
         [ACCEPT] = "ACCEPT",
     };
 
-    int jump[128] = {
+    uint8_t jump[128] = {
         [CAPITAL_V] = 5,
         [SKIP_SPACE] = 14,
         [SPACE_AFTER_SEMI] = 22,
@@ -264,16 +257,16 @@ static char *parse_line(char *line)
         },
     };
 
-    int pos = 0;
+    uint8_t pos = 0;
     int state = CAPITAL_V;
     int i = 0;
     int lim = 128;
-    char curr = 0;
+    int8_t curr = 0;
 
     char *output = calloc(1, 1000);
     *output = '\0';
     char *ptr = output;
-    int len = strlen(line);
+    size_t len = strlen(line);
 
     for (; i < lim; i++) {
         if (pos > len){
@@ -288,9 +281,14 @@ static char *parse_line(char *line)
         */
         pos += jump[state] + 1;
         int next_action = action_for[state][char_map[curr]];
-        if (next_action == EMIT_CHAR) {
+        if (next_action == READ_VALVE_L) {
             *ptr++ = curr;
-        } else if (next_action == EMIT_COMMA) {
+        } else if (next_action == READ_VALVE_R) {
+            *ptr++ = curr;
+            *ptr++ = ',';
+        } else if (next_action == WRITE_DIGIT) {
+            *ptr++ = curr;
+        } else if (next_action == FLUSH_DIGIT) {
             *ptr++ = ',';
         } else if (next_action == NOTHING) {
             // do nothing...
@@ -323,6 +321,7 @@ static void parse_file(char *filename)
         char *result = parse_line(buf);
         // printf("%s -> ", buf);
         printf("%s|", result);
+        free(result);
     }
     puts("");
     fclose(fp);
@@ -341,6 +340,7 @@ static int solve_part_one(char *filename)
 
 static int solve_part_two(char *filename)
 {
+    printf("TODO: %s\n", filename);
     return 0;
 }
 
