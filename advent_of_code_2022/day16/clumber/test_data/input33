@@ -27,4 +27,4 @@ Valve ZZ has flow rate=0; tunnel leads to valve AB, YY
 Valve AB has flow rate=0; tunnel leads to valve AC, ZZ
 Valve AC has flow rate=0; tunnel leads to valve AD, AB
 Valve AD has flow rate=0; tunnel leads to valve AE, AC
-Valve AE has flow rate=999999999999; tunnel leads to valve AD
+Valve AE has flow rate=10000; tunnel leads to valve AD

@@ -1,13 +1,17 @@
 #define _GNU_SOURCE
 #include "plumber.h"
 
-#define VALVE_MAX 64
-
 static struct valve_t {
-    char name[3];
+    char char_name[3];
+    int int_name;
+
     int flow;
-    char exits[VALVE_MAX][3];
-    int num_exits;
+
+    char char_exits[VALVE_MAX][3];
+    int num_char_exits;
+
+    int int_exits[VALVE_MAX];
+    int num_int_exits;
 } valves[VALVE_MAX];
 
 static int num_valves = 0;
@@ -28,11 +32,81 @@ char *fmt(const char *fmt, ...)
 }
 
 static void test_assert(int expected, int actual) {
-    return;
     if (expected != actual) {
         fprintf(stderr, "FAIL -> expected %d but got %d\n", expected, actual);
         exit(1);
     }
+}
+
+int valve_to_num(char *valve_name)
+{
+    return 26 * valve_name[0] + valve_name[1] - 1755;
+}
+
+void reduce_valves(void)
+{
+    int raw_valve_by_normalized_index[26 * 26] = {0};
+    int normalized_index_by_raw_valve[26 * 26] = {0};
+    uint8_t seen[26 * 26] = {0};
+    int next_idx = 1;
+    for (int i = 0; i < num_valves; i++) {
+        printf("%d\n", i);
+        int valve_name = valve_to_num(valves[i].char_name);
+        printf("%s -> %d\n", valves[i].char_name, valve_to_num(valves[i].char_name));
+        if (seen[valve_name]) {
+            continue;
+        }
+        if (valve_name == DEFAULT_START_VALVE) {
+            puts("gotem");
+            raw_valve_by_normalized_index[0] = valve_name;
+            normalized_index_by_raw_valve[valve_name] = 0;
+            seen[valve_name] = 1;
+        } else if (valves[i].flow != 0) {
+            raw_valve_by_normalized_index[next_idx] = valve_name;
+            normalized_index_by_raw_valve[valve_name] = next_idx;
+            next_idx++;
+            seen[valve_name] = 1;
+        }
+    }
+    for (int i = 0; i < num_valves; i++) {
+        int valve_name = valve_to_num(valves[i].char_name);
+        if (seen[valve_name]) {
+            continue;
+        }
+        assert(valves[i].flow == 0);  // TODO remove this
+        seen[valve_name] = 1;
+        raw_valve_by_normalized_index[next_idx] = valve_name;
+        normalized_index_by_raw_valve[valve_name] = next_idx;
+        next_idx++;
+    }
+    for (int i = 0; i < num_valves; i++) {
+        int valve_name = valve_to_num(valves[i].char_name);
+        if (valve_name == DEFAULT_START_VALVE) {
+            assert(normalized_index_by_raw_valve[valve_name] == DEFAULT_START_VALVE);  // TODO remove
+            continue;
+        }
+        valves[i].int_name = normalized_index_by_raw_valve[valve_name];
+        for (int j = 0; j < valves[i].num_char_exits; j++) {
+            valves[i].int_exits[j] = normalized_index_by_raw_valve[valve_to_num(valves[i].char_exits[j])];
+        }
+    }
+    printf("========================================\n");
+    for (int i = 0; i < num_valves; i++) {
+        puts("\n");
+        printf("reduced valve name: %s (%d)\n", valves[i].char_name, valves[i].int_name);
+        printf("valve flow: %d\n", valves[i].flow);
+        printf("reduced valve exits: ");
+        for (int j = 0; j < valves[j].num_char_exits; j++) {
+            printf("%s (%d) ", valves[i].char_exits[j], valves[i].int_exits[j]);
+        }
+        puts("");
+    }
+    printf("========================================\n");
+}
+
+int *get_floyd_warshall_closure(void)
+{
+    return NULL;
 }
 
 static struct {
@@ -55,12 +129,6 @@ static struct {
  */
 static char *parse_line(char *line)
 {
-    // reset state
-    num_valves = 0;
-    for (int i = 0; i < VALVE_MAX; i++) {
-        valves[i].num_exits = 0;
-    }
-
     enum states {
         REJECT,
         CAPITAL_V,
@@ -297,20 +365,20 @@ static char *parse_line(char *line)
         int next_action = action_for[state][char_map[curr]];
         if (next_action == READ_VALVE_L) {
             if (name_written == 0) {
-                valves[num_valves].name[0] = curr;
+                valves[num_valves].char_name[0] = curr;
             } else {
-                valves[num_valves].exits[valves[num_valves].num_exits][0] = curr;
+                valves[num_valves].char_exits[valves[num_valves].num_char_exits][0] = curr;
             }
             *ptr++ = curr;
         } else if (next_action == READ_VALVE_R) {
             if (name_written == 0) {
-                valves[num_valves].name[1] = curr;
-                valves[num_valves].name[2] = 0;
+                valves[num_valves].char_name[1] = curr;
+                valves[num_valves].char_name[2] = 0;
                 name_written = 1;
             } else {
-                valves[num_valves].exits[valves[num_valves].num_exits][1] = curr;
-                valves[num_valves].exits[valves[num_valves].num_exits][2] = 0;
-                valves[num_valves].num_exits++;
+                valves[num_valves].char_exits[valves[num_valves].num_char_exits][1] = curr;
+                valves[num_valves].char_exits[valves[num_valves].num_char_exits][2] = 0;
+                valves[num_valves].num_char_exits++;
             }
             *ptr++ = curr;
             *ptr++ = ',';
@@ -335,11 +403,11 @@ static char *parse_line(char *line)
     }
     puts("\n");
     printf("Line: %s\n", line);
-    printf("Valve name: %s\n", valves[num_valves].name);
+    printf("Valve name: %s (%d)\n", valves[num_valves].char_name, valve_to_num(valves[num_valves].char_name));
     printf("Valve flow: %d\n", valves[num_valves].flow);
     printf("Valve exits: ");
-    for (int i = 0; i < valves[num_valves].num_exits; i++) {
-        printf("%s ", valves[num_valves].exits[i]);
+    for (int i = 0; i < valves[num_valves].num_char_exits; i++) {
+        printf("%s (%d) ", valves[num_valves].char_exits[i], valve_to_num(valves[num_valves].char_exits[i]));
     }
     puts("");
     num_valves++;
@@ -348,6 +416,15 @@ static char *parse_line(char *line)
 
 static void parse_file(char *filename)
 {
+    // reset state
+    num_valves = 0;
+    for (int i = 0; i < VALVE_MAX; i++) {
+        valves[i].num_char_exits = 0;
+        valves[i].num_int_exits = 0;
+    }
+    memset(valves, 0, VALVE_MAX * sizeof(struct valve_t));
+
+    // read file
     FILE *fp;
     if (!(fp = fopen(filename, "r"))) {
         perror("fopen");
@@ -357,6 +434,7 @@ static void parse_file(char *filename)
 
     printf("%s|", filename);
     while (fgets(buf, BUFSIZ, fp)) {
+        printf("before parsing the line, we are at %d num_valves\n", num_valves);
         buf[strcspn(buf, "\r\n")] = '\0';
         char *result = parse_line(buf);
         // printf("%s -> ", buf);
@@ -365,6 +443,7 @@ static void parse_file(char *filename)
     }
     puts("");
     fclose(fp);
+    reduce_valves();
 }
 
 static void run_parsing_tests(void)
