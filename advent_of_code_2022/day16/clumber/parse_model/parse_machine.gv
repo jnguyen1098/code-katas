@@ -1,0 +1,29 @@
+digraph G {
+    a[label=""];
+    b[label=""];
+    c[label="write valve[0]"];
+    d[label="write valve[1] and flush"];
+    e[label=""];
+    f[label="write digit"];
+    g[label="flush digit"];
+    h[label="write valve[0]"];
+    i[label="write valve[1] and flush"];
+    j[label=""];
+    k[label="end"];
+    
+    a -> b[label="V"];
+    b -> b[label="[a-z ]"];
+    b -> c[label="[A-Z]"];
+    c -> d[label="[A-Z]"];
+    d -> e[label="[^0-9]"];
+    e -> e[label="[^0-9]"];
+    e -> f[label="[0-9]"];
+    f -> f[label="[0-9]"];
+    f -> g[label="[;a-z ]"];
+    g -> g[label="[;a-z ]"];
+    g -> h[label="[A-Z]"];
+    h -> i[label="[A-Z]"];
+    i -> j[label="(comma)"];
+    i -> k[label="$"];
+    j -> g[label="(space)"];
+}

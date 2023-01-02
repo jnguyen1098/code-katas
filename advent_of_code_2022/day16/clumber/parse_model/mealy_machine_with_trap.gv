@@ -1,0 +1,37 @@
+digraph G {
+    rankdir=LR;
+	fontname="Helvetica,Arial,sans-serif"
+	node [fontname="Helvetica,Arial,sans-serif"]
+	edge [fontname="Helvetica,Arial,sans-serif"]
+    node[shape=circle];
+    ENTRY_POINT[shape=point]
+    CAPITAL_V[label="V"]
+    VALVE_NAME[label="[A-Z]{2}"]
+    SKIP_SPACE[label="(space)"]
+    DIGIT_OR_SEMI[label="\\d+"]
+    SEMI_AFTER_DIGIT[label=";"]
+    CHILD_VALVE[label="[A-Z]{2}"]
+    COMMA_OR_EOF[label="[,$]"]
+    ACCEPT[label="ACCEPT", shape=doublecircle]
+    REJECT[label="TRAP"]
+    
+    ENTRY_POINT -> CAPITAL_V
+    CAPITAL_V -> VALVE_NAME[label="skip 6"]
+    VALVE_NAME -> SKIP_SPACE[label="read valve"]
+    SKIP_SPACE -> DIGIT_OR_SEMI[label="skip 15"]
+    DIGIT_OR_SEMI -> SEMI_AFTER_DIGIT[label="read int"]
+    SEMI_AFTER_DIGIT -> CHILD_VALVE[label="skip 23/24"]
+    CHILD_VALVE -> COMMA_OR_EOF[label="read valve"]
+    COMMA_OR_EOF -> CHILD_VALVE[label="skip 2"]
+    COMMA_OR_EOF -> ACCEPT[label="EOF"]
+    
+    CAPITAL_V -> REJECT[label="reject"]
+    VALVE_NAME -> REJECT[label="reject"]
+    SKIP_SPACE -> REJECT[label="reject"]
+    DIGIT_OR_SEMI -> REJECT[label="reject"]
+    SEMI_AFTER_DIGIT -> REJECT[label="reject"]
+    CHILD_VALVE -> REJECT[label="reject"]
+    COMMA_OR_EOF -> REJECT[label="reject"]
+    COMMA_OR_EOF -> REJECT[label="reject"]
+    REJECT -> REJECT[label="reject"]
+}
