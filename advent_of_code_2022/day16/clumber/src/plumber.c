@@ -1,6 +1,17 @@
 #define _GNU_SOURCE
 #include "plumber.h"
 
+#define VALVE_MAX 64
+
+static struct valve_t {
+    char name[3];
+    int flow;
+    char exits[VALVE_MAX][3];
+    int num_exits;
+} valves[VALVE_MAX];
+
+static int num_valves = 0;
+
 noreturn void die(char *message)
 {
     fprintf(stderr, "%s\n", message);
@@ -39,16 +50,17 @@ static struct {
     {.filename =   "test_data/input8", .part_1_expected =  2400, .part_2_expected =  3680},
 };
 
-struct valve_t {
-    char name[3];
-    uint8_t flow;
-};
-
 /*
  * /^.{6}[A-Z][A-Z].{15}\d*;.{23} ?[A-Z][A-Z](?:, [A-Z][A-Z])*$/
  */
 static char *parse_line(char *line)
 {
+    // reset state
+    num_valves = 0;
+    for (int i = 0; i < VALVE_MAX; i++) {
+        valves[i].num_exits = 0;
+    }
+
     enum states {
         REJECT,
         CAPITAL_V,
@@ -267,7 +279,9 @@ static char *parse_line(char *line)
     *output = '\0';
     char *ptr = output;
     size_t len = strlen(line);
-
+    int name_written = 0;
+    int dig = 0;
+    char digit_buf[16] = "";
     for (; i < lim; i++) {
         if (pos > len){
             break;
@@ -282,14 +296,30 @@ static char *parse_line(char *line)
         pos += jump[state] + 1;
         int next_action = action_for[state][char_map[curr]];
         if (next_action == READ_VALVE_L) {
+            if (name_written == 0) {
+                valves[num_valves].name[0] = curr;
+            } else {
+                valves[num_valves].exits[valves[num_valves].num_exits][0] = curr;
+            }
             *ptr++ = curr;
         } else if (next_action == READ_VALVE_R) {
+            if (name_written == 0) {
+                valves[num_valves].name[1] = curr;
+                valves[num_valves].name[2] = 0;
+                name_written = 1;
+            } else {
+                valves[num_valves].exits[valves[num_valves].num_exits][1] = curr;
+                valves[num_valves].exits[valves[num_valves].num_exits][2] = 0;
+                valves[num_valves].num_exits++;
+            }
             *ptr++ = curr;
             *ptr++ = ',';
         } else if (next_action == WRITE_DIGIT) {
             *ptr++ = curr;
+            digit_buf[dig++] = curr;
         } else if (next_action == FLUSH_DIGIT) {
             *ptr++ = ',';
+            valves[num_valves].flow = atoi(digit_buf);
         } else if (next_action == NOTHING) {
             // do nothing...
         } else {
@@ -303,6 +333,16 @@ static char *parse_line(char *line)
     if (state != ACCEPT) {
         die(fmt("can only terminate on state ACCEPT but currently on state %s", state_names[state]));
     }
+    puts("\n");
+    printf("Line: %s\n", line);
+    printf("Valve name: %s\n", valves[num_valves].name);
+    printf("Valve flow: %d\n", valves[num_valves].flow);
+    printf("Valve exits: ");
+    for (int i = 0; i < valves[num_valves].num_exits; i++) {
+        printf("%s ", valves[num_valves].exits[i]);
+    }
+    puts("");
+    num_valves++;
     return output;
 }
 
@@ -320,8 +360,8 @@ static void parse_file(char *filename)
         buf[strcspn(buf, "\r\n")] = '\0';
         char *result = parse_line(buf);
         // printf("%s -> ", buf);
-        printf("%s|", result);
-        free(result);
+        // printf("%s|", result);
+        free(result);  // TODO
     }
     puts("");
     fclose(fp);
