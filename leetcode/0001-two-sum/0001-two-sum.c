@@ -1,3 +1,4 @@
+// A ddtion of two numbers
 int* twoSum(int* nums, int numsSize, int target, int* returnSize){
     int *to_return = malloc(sizeof(int) * 2);
     *returnSize = 2; // ???

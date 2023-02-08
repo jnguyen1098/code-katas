@@ -1,3 +1,4 @@
+//Array changing from number to roman
 char *table[1001] = {
     [1] = "I",
     [4] = "IV",
@@ -18,6 +19,7 @@ int choices[] = {
     1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1,
 }, n = sizeof(choices) / sizeof(*choices);
 
+//Function changing number to roman
 char *intToRoman(int num)
 {
     char *result = calloc(1000, 1);
